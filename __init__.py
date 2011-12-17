@@ -29,8 +29,9 @@ class CustomDict(dict):
             required_or_merged |= required_options
         unsupported = passed_keywords - required - optional - required_or_merged
         if unsupported:
-            raise TypeError('The following arguments are unsupported: ' +
-                            ', '.join(unsupported))
+            cls_name = self.__class__.__name__
+            warn('The following arguments for {} are '.format(cls_name) +
+                 'unsupported: ' + ', '.join(unsupported))
         self.update(args)
 
     def __getattr__(self, name):
@@ -41,21 +42,26 @@ class Reference(CustomDict):
     def __init__(self, key, type, **args):
         self.key = key
         self.type = type
-        required_or = [set(csl.VARIABLES)]
-        optional = {'uri', 'container_uri', 'contributor', 'date'}
-        super().__init__(args, optional=optional, required_or=required_or)
+        #required_or = [set(csl.VARIABLES)]
+        optional = ({'uri', 'container_uri', 'contributor', 'date'} |
+                    set(csl.VARIABLES))
+        super().__init__(args, optional=optional)
 
 
 class Name(CustomDict):
     def __init__(self, **args):
-        # TODO: complete (csl-data.rnc)
         if 'name' in args:
             required = {'name'}
             optional = {}
         else:
             required = {'given', 'family'}
-            optional = {}
-        super().__init__(args, required)
+            optional = {'dropping-particle', 'non-dropping-particle', 'suffix'}
+        super().__init__(args, required, optional)
+
+    def parts(self):
+        return (self.get('given'), self.get('family'),
+                self.get('dropping-particle'),
+                self.get('non-dropping-particle'), self.get('suffix'))
 
     def given_initials(self):
         names = re.split(r'[- ]', self.given)
@@ -66,6 +72,9 @@ class DateBase(CustomDict):
     def __init__(self, args, required=set(), optional=set()):
         optional = {'circa'} | optional
         super().__init__(args, required, optional)
+        # defaults
+        if 'circa' not in self:
+            self['circa'] = False
 
 
 class Date(DateBase):
@@ -77,12 +86,20 @@ class Date(DateBase):
                             'the month')
         super().__init__(args, required, optional)
 
+    def __eq__(self, other):
+        # TODO: for sorting
+        raise NotImplementedError
+
 
 class DateRange(DateBase):
     def __init__(self, **args):
         required = {'begin'}
         optional = {'end'}
         super().__init__(args, required, optional)
+
+    def __eq__(self, other):
+        # TODO: for sorting
+        raise NotImplementedError
 
 
 class Bibliography(list):

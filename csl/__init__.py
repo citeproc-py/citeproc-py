@@ -1,10 +1,17 @@
 
 import os
+from glob import glob
+
 from lxml import etree, objectify
 
 from . import type
+from .model import CitationStylesElement
 from ...util import DATA_PATH
 
+
+SCHEMA_PATH = os.path.join(DATA_PATH, 'csl', 'schema', 'csl.rng')
+LOCALES_PATH = os.path.join(DATA_PATH, 'csl', 'locales')
+STYLES_PATH = os.path.join(DATA_PATH, 'csl', 'styles')
 
 
 NAMES = ['author', 'collection_editor', 'composer', 'container_author',
@@ -29,113 +36,113 @@ VARIABLES = (['abstract', 'annote', 'archive', 'archive_location',
               'title', 'title_short', 'URL', 'version', 'year_suffix'] +
              NAMES + DATES + NUMBERS)
 
-
-SCHEMA_PATH = os.path.join(DATA_PATH, 'csl', 'schema', 'csl.rng')
-LOCALES_PATH = os.path.join(DATA_PATH, 'csl', 'locales')
-STYLES_PATH = os.path.join(DATA_PATH, 'csl', 'styles')
+LOCALES = [os.path.basename(path)[8:-4]
+           for path in glob(os.path.join(LOCALES_PATH, 'locales-*.xml'))]
 
 
-class LocalizedSimpleTerm(object):
-    def __init__(self, string):
-        self.string = string
-
-
-class LocalizedCompoundTerm(object):
-    def __init__(self, single, multiple):
-        self.single = single
-        self.multiple = multiple
-
-
-class LocalizedDate(object):
-    def __init__(self, parts):
-        self.parts = parts
-
-
-class Formatted(object):
-    def __init__(self, font_style=None, font_variant=None, font_weight=None,
-                 text_decoration=None, vertical_align=None):
-        self.font_style = font_style
-        self.font_variant = font_variant
-        self.font_weight = font_weight
-        self.text_decoration = text_decoration
-        self.vertical_align = vertical_align
-
-
-class DatePart(Formatted):
-    def __init__(self, form=None, text_case=None, prefix=None, suffix=None,
-                 **kwargs):
-        self.form = form
-        self.text_case = text_case
-        super().__init__(**kwargs)
-
-
-class Day(DatePart):
-    pass
-
-
-class Month(DatePart):
-    def __init__(self, form=None, text_case=None, strip_periods=False, **kwargs):
-        self.strip_periods = strip_periods
-        super().__init__(form, text_case, **kwargs)
-
-
-class Year(DatePart):
-    pass
-
-
-class Locale(object):
-    def __init__(self, locale):
-        locale_path = os.path.join(LOCALES_PATH, 'locales-{}.xml'.format(locale))
-##        lookup = etree.ElementNamespaceClassLookup()
-##        namespace = lookup.get_namespace('http://purl.org/net/xbiblio/csl')
-##        namespace[None] = CustomElement
-##        namespace.update(dict([(cls.__name__.lower(), cls)
-##                               for cls in CustomElement.__subclasses__()]))
+class CitationStylesXML(object):
+    def __init__(self, f):
+        lookup = etree.ElementNamespaceClassLookup()
+        namespace = lookup.get_namespace('http://purl.org/net/xbiblio/csl')
+        namespace[None] = CitationStylesElement
+        namespace.update(dict([(cls.__name__.replace('_', '-').lower(), cls)
+                               for cls in CitationStylesElement.__subclasses__()]))
 
         self.parser = objectify.makeparser(remove_comments=True,
-                                           no_network=True)
-##        self.parser.set_element_class_lookup(lookup)
+                                           encoding='UTF-8', no_network=True)
+        self.parser.set_element_class_lookup(lookup)
         self.schema = etree.RelaxNG(etree.parse(SCHEMA_PATH))
-        try:
-            self.xml = objectify.parse(locale_path, self.parser)#, base_url=".")
-        except IOError:
-            raise ValueError("'{}' is not a known locale".format(locale))
+        self.xml = objectify.parse(f, self.parser)#, base_url=".")
         if not self.schema.validate(self.xml):
             err = self.schema.error_log
             raise Exception("XML file didn't pass schema validation:\n%s" % err)
             # TODO: proper error reporting
         self.root = self.xml.getroot()
 
-        self.terms = {}
-        for term in self.root.terms.term:
-            name = term.get('name')
-            try:
-                self.terms[name] = LocalizedCompoundTerm(term.single,
-                                                         term.multiple)
-            except AttributeError:
-                self.terms[name] = LocalizedSimpleTerm(term.text)
 
-        for date in self.root.date:
-            parts = []
-            for date_part in date['date-part']:
-                attributes = {}
-                for key, value in date_part.attrib.items():
-                    if key == 'name':
-                        if value == 'day':
-                            cls = Day
-                        elif value == 'month':
-                            cls = Month
-                        elif value == 'year':
-                            cls = Year
-                    else:
-                        attributes[key.replace('-', '_')] = value
-                parts.append(cls(**attributes))
-            if date.get('form') == 'text':
-                self.date_text = LocalizedDate(parts)
-            elif date.get('form') == 'numeric':
-                self.date_numeric = LocalizedDate(parts)
+class CitationStylesLocale(CitationStylesXML):
+    def __init__(self, locale):
+        locale_path = os.path.join(LOCALES_PATH, 'locales-{}.xml'.format(locale))
+        try:
+            super().__init__(locale_path)
+        except IOError:
+            raise ValueError("'{}' is not a known locale".format(style))
 
-        punct = self.root['style-options'].get('punctuation-in-quote')
-        self.options = {}
-        self.options['punctuation-in-quote'] = punct.lower() == 'true'
-        # TODO: use ObjectifiedElements to do the parsing?
+
+class CitationStylesStyle(CitationStylesXML):
+    def __init__(self, style, locale='en-US'):
+        try:
+            if not os.path.exists(style):
+                style = os.path.join(STYLES_PATH, '{}.csl'.format(style))
+        except TypeError:
+            pass
+        try:
+            super().__init__(style)
+        except IOError:
+            raise ValueError("'{}' is not a known style".format(style))
+        self.xml.locales = self.get_locale_list(locale)
+
+    def render_citation(self, reference, **options):
+        return self.root.citation.layout.render_citation(reference)
+
+    def render_bibliography(self, references, **options):
+        return self.root.bibliography.layout.render_bibliography(references)
+
+    def get_locale_list(self, system_locale):
+        def search_locale(locale):
+            return self.root.xpath_search('./cs:locale[@xml:lang="{}"]'
+                                          .format(locale))[0]
+
+        locales = []
+        try:
+            locales.append(search_locale(system_locale))
+        except IndexError:
+            pass
+
+        language = system_locale.split('-')[0]
+        try:
+            locales.append(search_locale(language))
+        except IndexError:
+            pass
+
+        try:
+            expr = './cs:locale[not(@xml:lang)]'
+            locales.append(self.root.xpath_search(expr)[0])
+        except IndexError:
+            pass
+
+        locales.append(CitationStylesLocale(system_locale))
+        return locales
+
+
+##class CitationStylesBibliographyFormatter(BibliographyFormatter):
+##    def __init__(self, style, locale='en-US'):
+##        self.style = Style(style).root
+##        self.locale = Locale(locale)
+##    READ "Locale Prioritization"
+##    def format_citation(self, references):
+##        try:
+##            references = self.style.citation.sort(references)
+##        except AttributeError:
+##            pass
+##
+####        try:
+####            index = self.bibliography.index(reference)
+####            return StyledText('[{}]'.format(index + 1))
+####        except:
+####            return StyledText('[ERROR]')
+##
+##    def format_bibliography(self, target):
+##        items = []
+##        heading = Heading('References', style=acknowledgement_heading_style)
+##        target.add_flowable(heading)
+##        for i, ref in enumerate(self.bibliography):
+##            authors = ['{} {}'.format(name.given_initials(), name.family)
+##                       for name in ref.author]
+##            authors = ', '.join(authors)
+##            item = '[{}]&nbsp;{}, "{}", '.format(i + 1, authors, ref.title)
+##            item += Emphasized(ref['container_title'])
+##            item += ', {}'.format(ref.issued.year)
+##            items.append(item)
+##            paragraph = Paragraph(item, style=bibliographyStyle)
+##            target.add_flowable(paragraph)
