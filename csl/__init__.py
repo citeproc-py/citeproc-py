@@ -80,39 +80,13 @@ class CitationStylesStyle(CitationStylesXML):
             super().__init__(style)
         except IOError:
             raise ValueError("'{}' is not a known style".format(style))
-        self.xml.locales = self.get_locale_list(locale)
+        self.root.set_locale_list(locale)
 
     def render_citation(self, reference, **options):
-        return self.root.citation.layout.render_citation(reference)
+        return self.root.citation.render(reference)
 
     def render_bibliography(self, references, **options):
-        return self.root.bibliography.layout.render_bibliography(references)
-
-    def get_locale_list(self, system_locale):
-        def search_locale(locale):
-            return self.root.xpath_search('./cs:locale[@xml:lang="{}"]'
-                                          .format(locale))[0]
-
-        locales = []
-        try:
-            locales.append(search_locale(system_locale))
-        except IndexError:
-            pass
-
-        language = system_locale.split('-')[0]
-        try:
-            locales.append(search_locale(language))
-        except IndexError:
-            pass
-
-        try:
-            expr = './cs:locale[not(@xml:lang)]'
-            locales.append(self.root.xpath_search(expr)[0])
-        except IndexError:
-            pass
-
-        locales.append(CitationStylesLocale(system_locale))
-        return locales
+        return self.root.bibliography.render(references)
 
 
 ##class CitationStylesBibliographyFormatter(BibliographyFormatter):

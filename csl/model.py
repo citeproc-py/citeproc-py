@@ -3,19 +3,28 @@ import re
 
 from html.entities import codepoint2name
 
-from lxml import objectify
+from lxml import etree
 
 
 # Base class
 
-class CitationStylesElement(objectify.ObjectifiedElement):
+class SomewhatObjectifiedElement(etree.ElementBase):
+    nsmap = {'cs': 'http://purl.org/net/xbiblio/csl',
+             'xml': 'http://www.w3.org/XML/1998/namespace'}
+
+    # TODO: what about multiple instances of the same name?
+    def __getattr__(self, name):
+        return self.find('cs:' + name, self.nsmap)
+
+
+class CitationStylesElement(SomewhatObjectifiedElement):
     _default_options = {# global options
                         'initialize-with-hyphen': 'true',
                         'page-range-format': None,
                         'demote-non-dropping-particle': 'display-and-sort',
 
                         # inheritable name(s) options
-                        'and': 'text',
+                        'and': None,
                         'delimiter-precedes-last': 'contextual',
                         'et-al-min': 0,
                         'et-al-use-first': 0,
@@ -33,9 +42,7 @@ class CitationStylesElement(objectify.ObjectifiedElement):
         return self.getroottree().getroot()
 
     def xpath_search(self, expression):
-        nsmap = {'cs': 'http://purl.org/net/xbiblio/csl',
-                 'xml': 'http://www.w3.org/XML/1998/namespace'}
-        return self.xpath(expression, namespaces=nsmap)
+        return self.xpath(expression, namespaces=self.nsmap)
 
     def get_option(self, name):
         return self.get(name, self._default_options[name])
@@ -52,25 +59,59 @@ class CitationStylesElement(objectify.ObjectifiedElement):
 
     # TODO: Locale methods
     def get_term(self, name):
-        try:
-            return self.get_style().locale.get_term(name)
-        except AttributeError:
-            return self.get_style()['system-locale'].get_term(name)
+        for locale in self.get_style().locales:
+            try:
+                return locale.get_term(name)
+            except IndexError: # TODO: create custom exception
+                continue
 
     def get_date(self, form):
-        try:
-            return self.get_style().locale.get_date(name)
-        except AttributeError:
-            return self.get_style()['system-locale'].get_date(name)
+        for locale in self.get_style().locales:
+            try:
+                return locale.get_date(name)
+            except IndexError:
+                continue
 
     def get_locale_option(self, name):
-        try:
-            return self.get_style().locale.get_option(name)
-        except AttributeError:
-            return self.get_style()['system-locale'].get_option(name)
+        for locale in self.get_style().locales:
+            try:
+                return locale.get_option(name)
+            except IndexError:
+                continue
 
 
 # Top level elements
+
+class Style(CitationStylesElement):
+    def set_locale_list(self, system_locale):
+        from . import CitationStylesLocale
+
+        def search_locale(locale):
+            return self.xpath_search('./cs:locale[@xml:lang="{}"]'
+                                     .format(locale))[0]
+
+        self.locales = []
+        try:
+            self.locales.append(search_locale(system_locale))
+        except IndexError:
+            pass
+
+        language = system_locale.split('-')[0]
+        try:
+            self.locales.append(search_locale(language))
+        except IndexError:
+            pass
+
+        try:
+            expr = './cs:locale[not(@xml:lang)]'
+            self.locales.append(self.xpath_search(expr)[0])
+        except IndexError:
+            pass
+
+        self.locales.append(CitationStylesLocale(system_locale).root)
+        # TODO: add other locales with same locale
+        self.locales.append(CitationStylesLocale('en-US').root)
+
 
 class Locale(CitationStylesElement):
     _default_options = {'punctuation-in-quote': 'false'}
@@ -87,12 +128,7 @@ class Locale(CitationStylesElement):
         return self.xpath_search(expr)[0]
 
     def get_option(self, name):
-        return self['style-options'].get(name, self._default_options[name])
-
-
-# TODO: too hackish?
-class System_Locale(Locale, CitationStylesElement):
-    pass
+        return self.find('style-options').get(name, self._default_options[name])
 
 
 class Citation(CitationStylesElement):
@@ -110,6 +146,9 @@ class Citation(CitationStylesElement):
                         # note distance
                         'near-note-distance': 5}
 
+    def render(self, reference):
+        return self.layout.render_citation(reference)
+
     def get_option(self, name):
         if name in self._default_options:
             return self.get(name, self._default_options[name])
@@ -125,6 +164,9 @@ class Bibliography(CitationStylesElement):
                         'entry-spacing': 1,
                         # reference grouping
                         'subsequent-author-substitute': None}
+
+    def render(self, reference):
+        return self.layout.render_bibliography(reference)
 
     def get_option(self, name):
         if name in self._default_options:
@@ -245,14 +287,14 @@ class Term(CitationStylesElement):
     @property
     def single(self):
         try:
-            return self['single'].text
+            return self.find('single').text
         except AttributeError:
             return self.text
 
     @property
     def multiple(self):
         try:
-            return self['multiple'].text
+            return self.find('multiple').text
         except AttributeError:
             return self.text
 
@@ -321,7 +363,6 @@ class Date(CitationStylesElement, Parent, Formatted, Affixed, Delimited):
         for part in self.iterchildren():
             output.append(part.render(reference, variable))
         return self.wrap(self.join(output))
-
 
 
 class Date_Part(CitationStylesElement, Formatted, Affixed):
@@ -440,7 +481,7 @@ class Name(CitationStylesElement, Formatted, Affixed, Delimited):
             for i, name in enumerate(names):
                 name_parts = name.parts()
                 try:
-                    for part in self['name-part']:
+                    for part in self.findall('name-part', self.nsmap):
                         name_parts = part.format_part(name_parts)
                 except AttributeError:
                     pass
@@ -464,7 +505,17 @@ class Name(CitationStylesElement, Formatted, Affixed, Delimited):
                     text = ' '.join([n for n in short_form if n])
 
                 output.append(text)
-            text = self.join(output, ', ')
+            if and_ is not None and len(output) > 1:
+                text = self.join(output[:-1], ', ')
+                if (delimiter_precedes_last == 'always' or
+                    (delimiter_precedes_last == 'contextual' and
+                     len(output) > 2)):
+                        text = self.join([text, ''])
+                else:
+                    text += ' '
+                text += '{} '.format(and_term) + output[-1]
+            else:
+                text = self.join(output, ', ')
         return self.wrap(text)
 
     def initialize(self, given, mark):
@@ -545,12 +596,12 @@ class ConditionFailed(Exception):
 class Choose(CitationStylesElement):
     def render(self, reference):
         try:
-            return self['if'].render(reference)
+            return self.find('if').render(reference)
         except ConditionFailed:
             pass
 
         try:
-            for else_if in self['else-if']:
+            for else_if in self.find('else-if'):
                 try:
                     return else_if.render(reference)
                 except ConditionFailed:
@@ -559,7 +610,7 @@ class Choose(CitationStylesElement):
             pass
 
         try:
-            return self['else'].render(reference)
+            return self.find('else').render(reference)
         except AttributeError or ConditionFailed:
             return ''
 
@@ -606,7 +657,7 @@ class If(CitationStylesElement, Parent):
 
     def _is_uncertain_date(self, reference):
         date_variable = self.get('is-uncertain-date')
-        return reference[date_variable]['circa']
+        return reference[date_variable].get('circa', False)
 
     def _locator(self, reference):
         raise NotImplementedError
