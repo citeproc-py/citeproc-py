@@ -128,7 +128,8 @@ class Locale(CitationStylesElement):
         return self.xpath_search(expr)[0]
 
     def get_option(self, name):
-        return self.find('style-options').get(name, self._default_options[name])
+        options = self.find('cs:style-options', self.nsmap)
+        return options.get(name, self._default_options[name])
 
 
 class Citation(CitationStylesElement):
@@ -287,14 +288,14 @@ class Term(CitationStylesElement):
     @property
     def single(self):
         try:
-            return self.find('single').text
+            return self.find('cs:single', self.nsmap).text
         except AttributeError:
             return self.text
 
     @property
     def multiple(self):
         try:
-            return self.find('multiple').text
+            return self.find('cs:multiple', self.nsmap).text
         except AttributeError:
             return self.text
 
@@ -480,11 +481,8 @@ class Name(CitationStylesElement, Formatted, Affixed, Delimited):
         else:
             for i, name in enumerate(names):
                 name_parts = name.parts()
-                try:
-                    for part in self.findall('name-part', self.nsmap):
-                        name_parts = part.format_part(name_parts)
-                except AttributeError:
-                    pass
+                for part in self.findall('cs:name-part', self.nsmap):
+                    name_parts = part.format_part(name_parts)
 
                 given, family, dp, ndp, suffix = name_parts
 
@@ -596,12 +594,12 @@ class ConditionFailed(Exception):
 class Choose(CitationStylesElement):
     def render(self, reference):
         try:
-            return self.find('if').render(reference)
+            return self.find('cs:if', self.nsmap).render(reference)
         except ConditionFailed:
             pass
 
         try:
-            for else_if in self.find('else-if'):
+            for else_if in self.find('cs:else-if', self.nsmap):
                 try:
                     return else_if.render(reference)
                 except ConditionFailed:
@@ -610,7 +608,7 @@ class Choose(CitationStylesElement):
             pass
 
         try:
-            return self.find('else').render(reference)
+            return self.find('cs:else', self.nsmap).render(reference)
         except AttributeError or ConditionFailed:
             return ''
 
