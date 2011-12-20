@@ -263,7 +263,8 @@ class Quoted(object):
 class StrippedPeriods(object):
     def strip_periods(self, string):
         if self.get('strip-periods', False):
-            return string.strip('.')
+            string = string.replace('.', '')
+        return string
 
 
 class TextCased(object):
@@ -343,7 +344,8 @@ class Layout(CitationStylesElement, Parent, Formatted, Affixed, Delimited):
         return self.wrap(self.render_children(reference))
 
 
-class Text(CitationStylesElement, Formatted, Affixed, TextCased):
+class Text(CitationStylesElement, Formatted, Affixed, TextCased,
+           StrippedPeriods):
     def render(self, reference, context=None):
         if 'variable' in self.attrib:
             short = self.get('form') == 'short' # TODO: do something with this
@@ -368,7 +370,7 @@ class Text(CitationStylesElement, Formatted, Affixed, TextCased):
             text = self.get('value')
 
         # TODO: display, formatting, quotes, strip-periods, text-case
-        return self.wrap(self.case(text))
+        return self.wrap(self.case(self.strip_periods(text)))
 
 
 class Date(CitationStylesElement, Parent, Formatted, Affixed, Delimited):
@@ -651,7 +653,7 @@ class Label(CitationStylesElement, Formatted, Affixed, StrippedPeriods,
         else:
             text = term.single
 
-        return self.wrap(self.format(self.case(text)))
+        return self.wrap(self.format(self.case(self.strip_periods(text))))
 
 
 class Group(CitationStylesElement, Parent, Formatted, Affixed, Delimited):
