@@ -354,7 +354,16 @@ class Text(CitationStylesElement, Formatted, Affixed, TextCased):
         elif 'macro' in self.attrib:
             text = self.get_macro(self.get('macro')).render(reference, self)
         elif 'term' in self.attrib:
-            text = self.get_term(self.get('term'))
+            form = self.get('form', 'long')
+            plural = self.get('plural', 'false').lower() == 'true'
+            if form == 'long':
+                form = None
+            term = self.get_term(self.get('term'), form)
+
+            if plural:
+                text = term.multiple
+            else:
+                text = term.single
         elif 'value' in self.attrib:
             text = self.get('value')
 
@@ -437,12 +446,12 @@ class Names(CitationStylesElement, Parent, Formatted, Affixed, Delimited):
         output = []
         for variable in self.get('variable').split(' '):
             text = self.name.render(reference, variable, context=context)
-            try:
-                plural = len(reference[variable]) > 1
-                text += self.label.render(reference, plural, variable)
-            except (KeyError, AttributeError):
-                pass
             if text:
+                plural = len(reference[variable]) > 1
+                try:
+                    text += self.label.render(reference, plural, variable)
+                except AttributeError:
+                    pass
                 output.append(text)
         if self.name.get('form') == 'count':
             total = sum(output)
@@ -468,6 +477,15 @@ class Name(CitationStylesElement, Formatted, Affixed, Delimited):
                 value = value.lower() == 'true'
         return value
 
+    def et_al(self):
+        expr = './following-sibling::*[self::cs:et-al][1]'
+        try:
+            et_al = self.xpath_search(expr)[0]
+            result = et_al.render()
+        except IndexError:
+            result = self.get_term('et-al').single
+        return result
+
     def render(self, reference, variable, context=None):
         and_ = self.get_option('and', context)
         delimiter_precedes_last = self.get_option('delimiter-precedes-last',
@@ -490,6 +508,8 @@ class Name(CitationStylesElement, Formatted, Affixed, Delimited):
             and_term = self.get_term('and')
         elif and_ == 'symbol':
             and_term = '&' + codepoint2name[ord('&')] + ';'
+
+        et_al = self.et_al()
 
         output = []
         if form == 'count':
@@ -524,8 +544,8 @@ class Name(CitationStylesElement, Formatted, Affixed, Delimited):
                     text = ' '.join([n for n in short_form if n])
 
                 output.append(text)
-            if et_al_truncate:
-                text += ' {}'.format(self.get_term('et-al').single)
+            if et_al_truncate and et_al:
+                text += ' ' + et_al
             elif and_ is not None and len(output) > 1:
                 text = self.join(output[:-1], ', ')
                 if (delimiter_precedes_last == 'always' or
@@ -596,6 +616,16 @@ class Label(CitationStylesElement, Formatted, Affixed, StrippedPeriods,
             text = term.single
 
         return self.wrap(self.format(self.case(text)))
+
+
+class Et_Al(CitationStylesElement, Formatted, Affixed):
+    def render(self):
+        variable = self.get('term', 'et-al')
+        term = self.get_term('variable')
+        if term:
+            return self.wrap(self.format(text))
+        else:
+            return None
 
 
 class Group(CitationStylesElement, Parent, Formatted, Affixed, Delimited):
