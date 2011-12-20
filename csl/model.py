@@ -521,7 +521,7 @@ class Name(CitationStylesElement, Formatted, Affixed, Delimited):
         names = reference.get(variable, [])
 
         if and_ == 'text':
-            and_term = self.get_term('and')
+            and_term = self.get_term('and').single
         elif and_ == 'symbol':
             and_term = '&' + codepoint2name[ord('&')] + ';'
 
