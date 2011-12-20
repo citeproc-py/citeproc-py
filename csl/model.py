@@ -442,23 +442,38 @@ class Names(CitationStylesElement, Parent, Formatted, Affixed, Delimited):
         parent = context.xpath_search(expr)[0]
         return parent.get_option('names-delimiter')
 
+    def substitute(self):
+        expr = './cs:substitute[1]'
+        try:
+            result = self.xpath_search(expr)[0]
+        except IndexError:
+            result = None
+        return result
+
     def render(self, reference, context=None):
+        if context is None:
+            context = self
+
         output = []
-        for variable in self.get('variable').split(' '):
-            text = self.name.render(reference, variable, context=context)
+        for var in self.get('variable').split(' '):
+            text = context.name.render(reference, var, context=context)
             if text:
-                plural = len(reference[variable]) > 1
+                plural = len(reference[var]) > 1
                 try:
-                    text += self.label.render(reference, plural, variable)
+                    text += context.label.render(reference, plural, var)
                 except AttributeError:
                     pass
                 output.append(text)
-        if self.name.get('form') == 'count':
+            else:
+                substitute = self.substitute()
+                if substitute is not None:
+                    output.append(substitute.render(reference))
+        if context.name.get('form') == 'count':
             total = sum(output)
             text = str(total) if total > 0 else ''
         else:
-            text = self.join(output, self.get_parent_delimiter(context))
-        return self.wrap(self.format(text))
+            text = context.join(output, self.get_parent_delimiter(context))
+        return context.wrap(context.format(text))
 
 
 class Name(CitationStylesElement, Formatted, Affixed, Delimited):
@@ -478,10 +493,9 @@ class Name(CitationStylesElement, Formatted, Affixed, Delimited):
         return value
 
     def et_al(self):
-        expr = './following-sibling::*[self::cs:et-al][1]'
+        expr = './following-sibling::cs:et-al[1]'
         try:
-            et_al = self.xpath_search(expr)[0]
-            result = et_al.render()
+            result = self.xpath_search(expr)[0].render()
         except IndexError:
             result = self.get_term('et-al').single
         return result
@@ -510,7 +524,6 @@ class Name(CitationStylesElement, Formatted, Affixed, Delimited):
             and_term = '&' + codepoint2name[ord('&')] + ';'
 
         et_al = self.et_al()
-
         output = []
         if form == 'count':
             count = min(len(names), et_al_use_first)
@@ -557,7 +570,7 @@ class Name(CitationStylesElement, Formatted, Affixed, Delimited):
                 text += '{} '.format(and_term) + output[-1]
             else:
                 text = self.join(output, ', ')
-        return self.wrap(text)
+            return self.wrap(text)
 
     def initialize(self, given, mark, context):
         if self.get_option('initialize-with-hyphen', context):
@@ -598,6 +611,29 @@ class Name_Part(CitationStylesElement, Formatted, TextCased):
         return given, family, dp, ndp, suffix
 
 
+class Et_Al(CitationStylesElement, Formatted, Affixed):
+    def render(self):
+        variable = self.get('term', 'et-al')
+        term = self.get_term('variable')
+        if term:
+            return self.wrap(self.format(text))
+        else:
+            return None
+
+
+class Substitute(CitationStylesElement):
+    def render(self, reference):
+        for child in self.getchildren():
+            if isinstance(child, Names) and child.name is None:
+                names = self.xpath_search('./parent::cs:names[1]')[0]
+                text = child.render(reference, context=names)
+            else:
+                text = child.render(reference)
+            if text:
+                break
+        return text
+
+
 class Label(CitationStylesElement, Formatted, Affixed, StrippedPeriods,
             TextCased):
     def render(self, reference, plural, variable=None):
@@ -616,16 +652,6 @@ class Label(CitationStylesElement, Formatted, Affixed, StrippedPeriods,
             text = term.single
 
         return self.wrap(self.format(self.case(text)))
-
-
-class Et_Al(CitationStylesElement, Formatted, Affixed):
-    def render(self):
-        variable = self.get('term', 'et-al')
-        term = self.get_term('variable')
-        if term:
-            return self.wrap(self.format(text))
-        else:
-            return None
 
 
 class Group(CitationStylesElement, Parent, Formatted, Affixed, Delimited):
