@@ -1,8 +1,9 @@
 
 import os
 from glob import glob
+from warnings import warn
 
-from lxml import etree, objectify
+from lxml import etree
 
 from . import type
 from .model import CitationStylesElement
@@ -48,14 +49,15 @@ class CitationStylesXML(object):
         namespace.update(dict([(cls.__name__.replace('_', '-').lower(), cls)
                                for cls in CitationStylesElement.__subclasses__()]))
 
-        self.parser = objectify.makeparser(remove_comments=True,
-                                           encoding='UTF-8', no_network=True)
+        self.parser = etree.XMLParser(remove_comments=True, encoding='UTF-8',
+                                      no_network=True)
         self.parser.set_element_class_lookup(lookup)
         self.schema = etree.RelaxNG(etree.parse(SCHEMA_PATH))
-        self.xml = objectify.parse(f, self.parser)#, base_url=".")
+        self.xml = etree.parse(f, self.parser)#, base_url=".")
         if not self.schema.validate(self.xml):
             err = self.schema.error_log
-            raise Exception("XML file didn't pass schema validation:\n%s" % err)
+            #raise Exception("XML file didn't pass schema validation:\n%s" % err)
+            warn("XML file didn't pass schema validation:\n%s" % err)
             # TODO: proper error reporting
         self.root = self.xml.getroot()
 
