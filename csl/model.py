@@ -45,7 +45,7 @@ class CitationStylesElement(SomewhatObjectifiedElement):
         return self.xpath(expression, namespaces=self.nsmap)
 
     def get_option(self, name):
-        return self.get(name, self._default_options[name])
+        return self.get(name, __class__._default_options[name])
 
     def get_citation(self):
         return self.get_style().citation
@@ -56,6 +56,9 @@ class CitationStylesElement(SomewhatObjectifiedElement):
     def get_macro(self, name):
         expression = "cs:macro[@name='{}'][1]".format(name)
         return self.get_style().xpath_search(expression)[0]
+
+    def get_layout(self):
+        return self.xpath_search('./ancestor::cs:layout[1]')[0]
 
     # TODO: Locale methods
     def get_term(self, name, form=None):
@@ -132,10 +135,21 @@ class Locale(CitationStylesElement):
 
     def get_option(self, name):
         options = self.find('cs:style-options', self.nsmap)
-        return options.get(name, self._default_options[name])
+        return options.get(name, __class__._default_options[name])
 
 
-class Citation(CitationStylesElement):
+class FormattingInstructions(object):
+    def get_option(self, name):
+        if name in self._default_options:
+            return self.get(name, self._default_options[name])
+        else:
+            return self.get(name, self.get_style().get_option(name))
+
+    def render(self, reference):
+        raise NotImplementedError
+
+
+class Citation(FormattingInstructions, CitationStylesElement):
     _default_options = {# disambiguation
                         'disambiguate-add-names': False,
                         'disambiguate-add-givenname': False,
@@ -153,30 +167,19 @@ class Citation(CitationStylesElement):
     def render(self, reference):
         return self.layout.render_citation(reference)
 
-    def get_option(self, name):
-        if name in self._default_options:
-            return self.get(name, self._default_options[name])
-        else:
-            return self.get(name, self.get_style().get_option(name))
 
-
-class Bibliography(CitationStylesElement):
+class Bibliography(FormattingInstructions, CitationStylesElement):
     _default_options = {# whitespace
                         'hanging-indent': False,
                         'second-field-align': None,
                         'line-spacing': 1,
                         'entry-spacing': 1,
+
                         # reference grouping
                         'subsequent-author-substitute': None}
 
     def render(self, reference):
         return self.layout.render_bibliography(reference)
-
-    def get_option(self, name):
-        if name in self._default_options:
-            return self.get(name, self._default_options[name])
-        else:
-            return self.get(name, self.get_style().get_option(name))
 
 
 # Style behavior
@@ -337,8 +340,12 @@ class Macro(CitationStylesElement, Parent, Delimited):
 class Layout(CitationStylesElement, Parent, Formatted, Affixed, Delimited):
     def render_citation(self, references):
         # TODO: formatting
-        out = [''.join(self.render_children(ref)) for ref in references]
-        return self.wrap(self.join(out))
+        self.repressed = {}
+        out = []
+        for ref in references:
+            out.append(''.join(self.render_children(ref)))
+            self.repressed = {}
+        return self.format(self.wrap(self.join(out)))
 
     def render_bibliography(self, reference):
         return self.wrap(self.render_children(reference))
@@ -347,10 +354,18 @@ class Layout(CitationStylesElement, Parent, Formatted, Affixed, Delimited):
 class Text(CitationStylesElement, Formatted, Affixed, TextCased,
            StrippedPeriods):
     def render(self, reference, context=None):
+        if context is None:
+            context = context or self
+
         if 'variable' in self.attrib:
+            variable = self.get('variable')
+            repressed = context.get_layout().repressed
+            if self.tag in repressed and variable in repressed[self.tag]:
+                return ''
+
             short = self.get('form') == 'short' # TODO: do something with this
             try:
-                text = reference[self.get('variable').replace('-', '_')]
+                text = reference[variable.replace('-', '_')]
             except KeyError:
                 return ''
         elif 'macro' in self.attrib:
@@ -453,29 +468,39 @@ class Names(CitationStylesElement, Parent, Formatted, Affixed, Delimited):
         return result
 
     def render(self, reference, context=None):
+        # if this instance substitutes another
         if context is None:
             context = self
 
         output = []
-        for var in self.get('variable').split(' '):
-            text = context.name.render(reference, var, context=context)
-            if text:
-                plural = len(reference[var]) > 1
+        for role in self.get('variable').split(' '):
+            if role in reference:
+                name_elem = context.name
+                if name_elem is None:
+                    name_elem = Name()
+                    context.insert(0, name_elem)
+                text = name_elem.render(reference, role, context=context)
+                plural = len(reference[role]) > 1
                 try:
-                    text += context.label.render(reference, plural, var)
+                    text += context.label.render(reference, plural, role)
                 except AttributeError:
                     pass
                 output.append(text)
+
+        if output:
+            if isinstance(output[0], int):
+                total = sum(output)
+                text = str(total) if total > 0 else ''
             else:
-                substitute = self.substitute()
-                if substitute is not None:
-                    output.append(substitute.render(reference))
-        if context.name.get('form') == 'count':
-            total = sum(output)
-            text = str(total) if total > 0 else ''
+                text = context.join(output, self.get_parent_delimiter(context))
         else:
-            text = context.join(output, self.get_parent_delimiter(context))
-        return context.wrap(context.format(text))
+            substitute = self.substitute()
+            if substitute is not None:
+                text = substitute.render(reference)
+        try:
+            return self.wrap(self.format(text))
+        except NameError:
+            return ''
 
 
 class Name(CitationStylesElement, Formatted, Affixed, Delimited):
@@ -518,6 +543,13 @@ class Name(CitationStylesElement, Formatted, Affixed, Delimited):
         sort_separator = self.get_option('sort-separator', context)
 
         form = self.get('form', 'long')
+        demote_ndp = self.get_option('demote-non-dropping-particle')
+
+        def format_name_parts(given, family):
+            for part in self.findall('cs:name-part', self.nsmap):
+                given, family = part.format_part(given, family)
+            return given, family
+
         names = reference.get(variable, [])
 
         if and_ == 'text':
@@ -536,11 +568,7 @@ class Name(CitationStylesElement, Formatted, Affixed, Delimited):
             if et_al_truncate:
                 names = names[:et_al_use_first]
             for i, name in enumerate(names):
-                name_parts = name.parts()
-                for part in self.findall('cs:name-part', self.nsmap):
-                    name_parts = part.format_part(name_parts)
-
-                given, family, dp, ndp, suffix = name_parts
+                given, family, dp, ndp, suffix = name.parts()
 
                 if initialize_with is not None:
                     given = self.initialize(given, initialize_with, context)
@@ -548,19 +576,33 @@ class Name(CitationStylesElement, Formatted, Affixed, Delimited):
                 if form == 'long':
                     if (name_as_sort_order == 'all' or
                         (name_as_sort_order == 'first' and i == 0)):
-                        fam = ' '.join([n for n in (ndp, family) if n])
-                        long_form = fam, given, suffix
-                        text = sort_separator.join([n for n in long_form if n])
+                        if demote_ndp in ('never', 'sort-only'):
+                            family = ' '.join([n for n in (ndp, family) if n])
+                            given = ' '.join([n for n in (given, dp) if n])
+                        else:
+                            given = ' '.join([n for n in (given, dp, ndp) if n])
+
+                        given, family = format_name_parts(given, family)
+                        order = family, given, suffix
+                        text = sort_separator.join([n for n in order if n])
                     else:
-                        long_form = given, dp, ndp, family, suffix
-                        text = ' '.join([n for n in long_form if n])
+                        family = ' '.join([n for n in (dp, ndp, family) if n])
+                        given, family = format_name_parts(given, family)
+                        order = given, family, suffix
+                        text = ' '.join([n for n in order if n])
                 elif form == 'short':
-                    short_form = ndp, family
-                    text = ' '.join([n for n in short_form if n])
+                    given, family = format_name_parts(given, family)
+                    text = family
 
                 output.append(text)
             if et_al_truncate and et_al:
-                text += ' ' + et_al
+                if (delimiter_precedes_last == 'always' or
+                    (delimiter_precedes_last == 'contextual' and
+                     len(output) >= 2)):
+                    output.append(et_al)
+                    text = self.join(output, ', ')
+                else:
+                    text = self.join(output, ', ') + ' ' + et_al
             elif and_ is not None and len(output) > 1:
                 text = self.join(output[:-1], ', ')
                 if (delimiter_precedes_last == 'always' or
@@ -572,7 +614,7 @@ class Name(CitationStylesElement, Formatted, Affixed, Delimited):
                 text += '{} '.format(and_term) + output[-1]
             else:
                 text = self.join(output, ', ')
-            return self.wrap(text)
+            return self.wrap(self.format(text))
 
     def initialize(self, given, mark, context):
         if self.get_option('initialize-with-hyphen', context):
@@ -582,7 +624,7 @@ class Name(CitationStylesElement, Formatted, Affixed, Delimited):
 
         result_parts = []
         for hyphen_part in hyphen_parts:
-            parts = hyphen_part.split()
+            parts = hyphen_part.replace('.', ' ').split()
             hyphen_result = ''
             group = []
             for part in parts:
@@ -599,18 +641,13 @@ class Name(CitationStylesElement, Formatted, Affixed, Delimited):
         return '-'.join(result_parts)
 
 
-class Name_Part(CitationStylesElement, Formatted, TextCased):
-    def format_part(self, name_parts):
-        given, family, dp, ndp, suffix = name_parts
+class Name_Part(CitationStylesElement, Formatted, Affixed, TextCased):
+    def format_part(self, given, family):
         if self.get('name') == 'given':
-            given = self.format(self.case(given))
+            given = self.wrap(self.format(self.case(given)))
         elif self.get('name') == 'family':
-            family = self.format(self.case(family))
-            if dp is not None:
-                dp = self.format(self.case(dp))
-            if ndp is not None:
-                ndp = self.format(self.case(ndp))
-        return given, family, dp, ndp, suffix
+            family = self.wrap(self.format(self.case(family)))
+        return given, family
 
 
 class Et_Al(CitationStylesElement, Formatted, Affixed):
@@ -632,8 +669,15 @@ class Substitute(CitationStylesElement):
             else:
                 text = child.render(reference)
             if text:
+                self.add_to_repressed_list(child)
                 break
         return text
+
+    def add_to_repressed_list(self, child):
+        layout = self.get_layout()
+        tag_list = layout.repressed.get(child.tag, [])
+        tag_list.append(child.get('variable'))
+        layout.repressed[child.tag] = tag_list
 
 
 class Label(CitationStylesElement, Formatted, Affixed, StrippedPeriods,
@@ -648,12 +692,16 @@ class Label(CitationStylesElement, Formatted, Affixed, StrippedPeriods,
         else:
             term = self.get_term(variable, form)
 
-        if plural_option == 'contextual' and plural or plural_option == 'always':
+        if (plural_option == 'contextual' and plural or
+            plural_option == 'always'):
             text = term.multiple
         else:
             text = term.single
 
-        return self.wrap(self.format(self.case(self.strip_periods(text))))
+        if text is None:
+            return ''
+        else:
+            return self.wrap(self.format(self.case(self.strip_periods(text))))
 
 
 class Group(CitationStylesElement, Parent, Formatted, Affixed, Delimited):
