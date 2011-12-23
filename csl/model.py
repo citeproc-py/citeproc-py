@@ -38,7 +38,7 @@ class CitationStylesElement(SomewhatObjectifiedElement):
                         'name-delimiter': ', ',
                         'names-delimiter': ', '}
 
-    def get_style(self):
+    def get_root(self):
         return self.getroottree().getroot()
 
     def xpath_search(self, expression):
@@ -48,35 +48,38 @@ class CitationStylesElement(SomewhatObjectifiedElement):
         return self.get(name, __class__._default_options[name])
 
     def get_citation(self):
-        return self.get_style().citation
+        return self.get_root().citation
 
     def get_bibliography(self):
-        return self.get_style().bibliography
+        return self.get_root().bibliography
 
     def get_macro(self, name):
         expression = "cs:macro[@name='{}'][1]".format(name)
-        return self.get_style().xpath_search(expression)[0]
+        return self.get_root().xpath_search(expression)[0]
 
     def get_layout(self):
         return self.xpath_search('./ancestor::cs:layout[1]')[0]
 
     # TODO: Locale methods
     def get_term(self, name, form=None):
-        for locale in self.get_style().locales:
-            try:
-                return locale.get_term(name, form)
-            except IndexError: # TODO: create custom exception
-                continue
+        if isinstance(self.get_root(), Locale):
+            return self.get_root().get_term(name, form)
+        else:
+            for locale in self.get_root().locales:
+                try:
+                    return locale.get_term(name, form)
+                except IndexError: # TODO: create custom exception
+                    continue
 
     def get_date(self, form):
-        for locale in self.get_style().locales:
+        for locale in self.get_root().locales:
             try:
-                return locale.get_date(name)
+                return locale.get_date(form)
             except IndexError:
                 continue
 
     def get_locale_option(self, name):
-        for locale in self.get_style().locales:
+        for locale in self.get_root().locales:
             try:
                 return locale.get_option(name)
             except IndexError:
@@ -127,7 +130,10 @@ class Locale(CitationStylesElement):
         else:
             attributes += " and not(@form)"
         expr = './cs:term[{}]'.format(attributes)
-        return self.terms.xpath_search(expr)[0]
+        try:
+            return self.terms.xpath_search(expr)[0]
+        except AttributeError:
+            raise IndexError
 
     def get_date(self, form):
         expr = "./cs:date[@form='{}']".format(form)
@@ -143,7 +149,7 @@ class FormattingInstructions(object):
         if name in self._default_options:
             return self.get(name, self._default_options[name])
         else:
-            return self.get(name, self.get_style().get_option(name))
+            return self.get(name, self.get_root().get_option(name))
 
     def render(self, reference):
         raise NotImplementedError
@@ -389,44 +395,83 @@ class Text(CitationStylesElement, Formatted, Affixed, TextCased,
 
 
 class Date(CitationStylesElement, Parent, Formatted, Affixed, Delimited):
-    def render(self, reference, context=None):
-        variable = self.get('variable')
+    def is_locale_date(self):
+        expr = './ancestor::cs:locale[1]'
+        try:
+            self.xpath_search(expr)[0]
+            return True
+        except IndexError:
+            return False
+
+    def render(self, reference, variable=None, show_parts=None, context=None):
+        if variable is None:
+            variable = self.get('variable')
+        if show_parts is None:
+            show_parts = ('year', 'month', 'day')
+        if context is None:
+            context = self
+        form = self.get('form')
+        date_parts = self.get('date-parts')
+
+        if not self.is_locale_date() and form is not None:
+            # use localized date format
+            localized_date = self.get_date(form)
+            if date_parts is not None:
+                show_parts = date_parts.split('-')
+            return localized_date.render(reference, variable,
+                                         show_parts=show_parts, context=self)
+        else:
+            parts = self.parts(reference, variable, show_parts)
+            return context.wrap(context.join(parts))
+
+    def parts(self, reference, variable, show_parts):
         output = []
         for part in self.iterchildren():
-            output.append(part.render(reference, variable))
-        return self.wrap(self.join(output))
+            if part.get('name') in show_parts:
+                output.append(part.render(reference, variable))
+        return output
 
 
 class Date_Part(CitationStylesElement, Formatted, Affixed):
     def render(self, reference, variable):
+        date = reference[variable.replace('-', '_')]
         name = self.get('name')
+        if name not in date:
+            return ''
+
         if name == 'day':
             form = self.get('form', 'numeric')
             if form == 'numeric':
-                raise NotImplementedError
+                text = date.day
             elif form == 'numeric-leading-zeros':
-                raise NotImplementedError
+                text = '{:02}'.format(date.day)
             elif form == 'ordinal':
-                raise NotImplementedError
+                number = min(date.day, 4)
+                text = self.get_term('ordinal-{:02}'.format(number)).single
         elif name == 'month':
             form = self.get('form', 'long')
             strip_periods = self.get('form', False)
             if form == 'long':
-                raise NotImplementedError
+                text = self.get_term('month-{:02}'.format(date.month)).single
             elif form == 'short':
-                raise NotImplementedError
+                term = self.get_term('month-{:02}'.format(date.month), 'short')
+                text = term.single
             elif form == 'numeric':
-                raise NotImplementedError
+                text = '{}'.format(date.month)
             elif form == 'numeric-leading-zeros':
-                raise NotImplementedError
+                text = '{:02}'.format(date.month)
         elif name == 'year':
             form = self.get('form', 'long')
             if form == 'long':
-                text = reference[variable.replace('-', '_')].year
+                text = str(abs(date.year))
+                if date.year < 0:
+                    text += self.get_term('bc').single
+                elif date.year < 1000:
+                    text += self.get_term('ad').single
             elif form == 'short':
-                raise NotImplementedError
+                text = str(date.year)[-2:]
 
-        return self.wrap(str(text))
+        return self.wrap(self.format(text))
 
 
 class Number(CitationStylesElement, Formatted, Affixed, Displayed, TextCased):
