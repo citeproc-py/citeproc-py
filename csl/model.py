@@ -403,13 +403,8 @@ class Date(CitationStylesElement, Parent, Formatted, Affixed, Delimited):
         except IndexError:
             return False
 
-    def render(self, reference, variable=None, show_parts=None, context=None):
-        if variable is None:
-            variable = self.get('variable')
-        if show_parts is None:
-            show_parts = ('year', 'month', 'day')
-        if context is None:
-            context = self
+    def render_single_date(self, reference, variable, show_parts=None,
+                           context=None):
         form = self.get('form')
         date_parts = self.get('date-parts')
 
@@ -426,6 +421,22 @@ class Date(CitationStylesElement, Parent, Formatted, Affixed, Delimited):
             else:
                 parts = self.parts(reference, variable, show_parts)
             return context.wrap(context.join(parts))
+
+    def render(self, reference, variable=None, show_parts=None, context=None):
+        if variable is None:
+            variable = self.get('variable')
+        if show_parts is None:
+            show_parts = ('year', 'month', 'day')
+        if context is None:
+            context = self
+
+        from ...bibliography import DateRange
+        date_or_range = reference[variable.replace('-', '_')]
+        if isinstance(date_or_range, DateRange):
+            raise NotImplementedError
+        else:
+            return self.render_single_date(reference, variable, show_parts,
+                                           context)
 
     def parts(self, reference, variable, show_parts, context=None):
         output = []
@@ -445,6 +456,8 @@ class Date_Part(CitationStylesElement, Formatted, Affixed, TextCased):
         attrib = self.attrib
         if style_attrib is not None:
             attrib.update(dict(style_attrib))
+        range_delimiter = self.get('range-delimiter', '-')
+
         date = reference[variable.replace('-', '_')]
         name = self.get('name')
         if name not in date:
