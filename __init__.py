@@ -84,6 +84,7 @@ class Date(DateBase):
         if 'day' in args and 'month' not in args:
             raise TypeError('When specifying the day, you should also specify '
                             'the month')
+        args = {key: int(value) for key, value in args.items()}
         super().__init__(args, required, optional)
 
     def __eq__(self, other):
