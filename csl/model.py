@@ -421,19 +421,30 @@ class Date(CitationStylesElement, Parent, Formatted, Affixed, Delimited):
             return localized_date.render(reference, variable,
                                          show_parts=show_parts, context=self)
         else:
-            parts = self.parts(reference, variable, show_parts)
+            if context != self:
+                parts = self.parts(reference, variable, show_parts, context)
+            else:
+                parts = self.parts(reference, variable, show_parts)
             return context.wrap(context.join(parts))
 
-    def parts(self, reference, variable, show_parts):
+    def parts(self, reference, variable, show_parts, context=None):
         output = []
         for part in self.iterchildren():
             if part.get('name') in show_parts:
-                output.append(part.render(reference, variable))
+                try:
+                    expr = './cs:date-part[@name="{}"]'.format(part.get('name'))
+                    style_attrib = context.xpath_search(expr)[0].attrib
+                except (AttributeError, IndexError):
+                    style_attrib = None
+                output.append(part.render(reference, variable, style_attrib))
         return output
 
 
-class Date_Part(CitationStylesElement, Formatted, Affixed):
-    def render(self, reference, variable):
+class Date_Part(CitationStylesElement, Formatted, Affixed, TextCased):
+    def render(self, reference, variable, style_attrib=None):
+        attrib = self.attrib
+        if style_attrib is not None:
+            attrib.update(dict(style_attrib))
         date = reference[variable.replace('-', '_')]
         name = self.get('name')
         if name not in date:
@@ -471,7 +482,7 @@ class Date_Part(CitationStylesElement, Formatted, Affixed):
             elif form == 'short':
                 text = str(date.year)[-2:]
 
-        return self.wrap(self.format(text))
+        return self.wrap(self.format(self.case(text)))
 
 
 class Number(CitationStylesElement, Formatted, Affixed, Displayed, TextCased):
