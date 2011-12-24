@@ -1,7 +1,7 @@
 
 import re
 
-from html.entities import codepoint2name
+from html.entities import codepoint2name, name2codepoint
 
 from lxml import etree
 
@@ -403,42 +403,75 @@ class Date(CitationStylesElement, Parent, Formatted, Affixed, Delimited):
         except IndexError:
             return False
 
-    def render_single_date(self, reference, variable, show_parts=None,
-                           context=None):
+    def render_single_date(self, date, show_parts=None, context=None):
         form = self.get('form')
         date_parts = self.get('date-parts')
 
+        if context != self:
+            parts = self.parts(date, show_parts, context)
+        else:
+            parts = self.parts(date, show_parts)
+        return context.join(parts)
+
+    def render_date_range(self, date_range, show_parts=None, context=None):
+        same_show_parts = []
+
+        if date_range.begin.year == date_range.end.year:
+            show_parts.remove('year')
+            same_show_parts.append('year')
+            try:
+                if ('month' in show_parts and
+                    date_range.begin.month == date_range.end.month):
+                    show_parts.remove('month')
+                    same_show_parts.append('month')
+                    try:
+                        if ('day' in show_parts and
+                            date_range.begin.day == date_range.end.day):
+                            show_parts.remove('day')
+                            same_show_parts.append('day')
+                    except AttributeError:
+                        show_parts.remove('day')
+            except AttributeError:
+                show_parts.remove('month')
+
+        same = self.render_single_date(date_range.end, same_show_parts, context)
+        diff_begin = self.render_single_date(date_range.begin, show_parts,
+                                             context)
+        diff_end = self.render_single_date(date_range.end, show_parts, context)
+
+        diff = chr(name2codepoint['ndash']).join([diff_begin.rstrip(),
+                                                  diff_end])
+
+        return context.join([diff, same.rstrip()])
+
+    def render(self, reference, variable=None, show_parts=None, context=None):
+        if variable is None:
+            variable = self.get('variable')
+        if show_parts is None:
+            show_parts = ['year', 'month', 'day']
+        if context is None:
+            context = self
+
+        form = self.get('form')
+        date_parts = self.get('date-parts')
         if not self.is_locale_date() and form is not None:
-            # use localized date format
             localized_date = self.get_date(form)
             if date_parts is not None:
                 show_parts = date_parts.split('-')
             return localized_date.render(reference, variable,
                                          show_parts=show_parts, context=self)
         else:
-            if context != self:
-                parts = self.parts(reference, variable, show_parts, context)
+            from ...bibliography import DateRange
+            date_or_range = reference[variable.replace('-', '_')]
+            if isinstance(date_or_range, DateRange):
+                text = self.render_date_range(date_or_range, show_parts,
+                                              context)
             else:
-                parts = self.parts(reference, variable, show_parts)
-            return context.wrap(context.join(parts))
+                text = self.render_single_date(date_or_range, show_parts,
+                                               context)
+            return context.wrap(text)
 
-    def render(self, reference, variable=None, show_parts=None, context=None):
-        if variable is None:
-            variable = self.get('variable')
-        if show_parts is None:
-            show_parts = ('year', 'month', 'day')
-        if context is None:
-            context = self
-
-        from ...bibliography import DateRange
-        date_or_range = reference[variable.replace('-', '_')]
-        if isinstance(date_or_range, DateRange):
-            raise NotImplementedError
-        else:
-            return self.render_single_date(reference, variable, show_parts,
-                                           context)
-
-    def parts(self, reference, variable, show_parts, context=None):
+    def parts(self, date, show_parts, context=None):
         output = []
         for part in self.iterchildren():
             if part.get('name') in show_parts:
@@ -447,18 +480,17 @@ class Date(CitationStylesElement, Parent, Formatted, Affixed, Delimited):
                     style_attrib = context.xpath_search(expr)[0].attrib
                 except (AttributeError, IndexError):
                     style_attrib = None
-                output.append(part.render(reference, variable, style_attrib))
+                output.append(part.render(date, style_attrib))
         return output
 
 
 class Date_Part(CitationStylesElement, Formatted, Affixed, TextCased):
-    def render(self, reference, variable, style_attrib=None):
+    def render(self, date, style_attrib=None):
         attrib = self.attrib
         if style_attrib is not None:
             attrib.update(dict(style_attrib))
         range_delimiter = self.get('range-delimiter', '-')
 
-        date = reference[variable.replace('-', '_')]
         name = self.get('name')
         if name not in date:
             return ''
