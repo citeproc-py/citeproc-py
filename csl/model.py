@@ -806,8 +806,8 @@ class Label(CitationStylesElement, Formatted, Affixed, StrippedPeriods,
 
 
 class Group(CitationStylesElement, Parent, Formatted, Affixed, Delimited):
-    # Note that cs:group implicitly acts as a conditional: cs:group and its
-    # child elements are suppressed if
+    # TODO: Note that cs:group implicitly acts as a conditional: cs:group and
+    # its child elements are suppressed if
     #  a) at least one rendering element in cs:group calls a variable (either
     #     directly or via a macro), and
     #  b) all variables that are called are empty. This behavior exists to
@@ -833,12 +833,12 @@ class Choose(CitationStylesElement):
                     return else_if.render(reference)
                 except ConditionFailed:
                     continue
-        except AttributeError:
+        except TypeError:
             pass
 
         try:
             return self.find('cs:else', self.nsmap).render(reference)
-        except AttributeError or ConditionFailed:
+        except (AttributeError, ConditionFailed):
             return ''
 
 
@@ -847,44 +847,45 @@ class If(CitationStylesElement, Parent):
         # TODO self.get('disambiguate')
         results = []
         if 'type' in self.attrib:
-            results.append(self._type(reference))
+            results += self._type(reference)
         if 'variable' in self.attrib:
-            results.append(self._variable(reference))
+            results += self._variable(reference)
         if 'is-numeric' in self.attrib:
-            results.append(self._is_numeric(reference))
+            results += self._is_numeric(reference)
         if 'is-uncertain-date' in self.attrib:
-            results.append(self._is_uncertain_date(reference))
+            results += self._is_uncertain_date(reference)
         if 'locator' in self.attrib:
-            results.append(self._locator(reference))
+            results += self._locator(reference)
         if 'position' in self.attrib:
-            results.append(self._position(reference))
+            results += self._position(reference)
 
         # TODO: 'match' also applies to individual tests above!
         if self.get('match') == 'any':
             result = any(results)
         elif self.get('match') == 'none':
-            result = not all(results)
+            result = not any(results)
         else:
             result = all(results)
 
         if not result:
             raise ConditionFailed
 
-        return self.render_children(reference)
+        return ''.join(self.render_children(reference))
 
     def _type(self, reference):
-        return reference.type in self.get('type').split(' ')
+        return reference.type in self.get('type').split()
 
     def _variable(self, reference):
-        return set(self.get('variable').split(' ')) <= set(reference.keys())
+        return [var in reference for var in self.get('variable').split()]
 
     def _is_numeric(self, reference):
-        variable = self.get('is-numeric')
-        return Number.re_numeric.match() is not None
+        return [var in reference and
+                Number.re_numeric.match(str(reference[var]))
+                for var in self.get('is-numeric').split()]
 
     def _is_uncertain_date(self, reference):
-        date_variable = self.get('is-uncertain-date')
-        return reference[date_variable].get('circa', False)
+        dates = self.get('is-uncertain-date').split()
+        return [date.get('circa', False) for date in dates]
 
     def _locator(self, reference):
         raise NotImplementedError
@@ -899,4 +900,4 @@ class Else_If(If):
 
 class Else(CitationStylesElement, Parent):
     def render(self, reference, context=None):
-        return self.render_children(reference)
+        return ''.join(self.render_children(reference))
