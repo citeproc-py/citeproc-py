@@ -411,7 +411,10 @@ class Date(CitationStylesElement, Parent, Formatted, Affixed, Delimited):
             parts = self.parts(date, show_parts, context)
         else:
             parts = self.parts(date, show_parts)
-        return context.join(parts)
+        if self.is_locale_date():
+            return context.join(parts)
+        else:
+            return self.join(parts)
 
     def render_date_range(self, date_range, show_parts=None, context=None):
         same_show_parts = []
@@ -469,7 +472,10 @@ class Date(CitationStylesElement, Parent, Formatted, Affixed, Delimited):
             else:
                 text = self.render_single_date(date_or_range, show_parts,
                                                context)
-            return context.wrap(text)
+            if self.is_locale_date():
+                return context.wrap(text)
+            else:
+                return self.wrap(text)
 
     def parts(self, date, show_parts, context=None):
         output = []
@@ -592,7 +598,7 @@ class Names(CitationStylesElement, Parent, Formatted, Affixed, Delimited):
                 total = sum(output)
                 text = str(total) if total > 0 else ''
             else:
-                text = context.join(output, self.get_parent_delimiter(context))
+                text = self.join(output, self.get_parent_delimiter(context))
         else:
             substitute = self.substitute()
             if substitute is not None:
