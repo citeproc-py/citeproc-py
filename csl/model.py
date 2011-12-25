@@ -536,15 +536,15 @@ class Number(CitationStylesElement, Formatted, Affixed, Displayed, TextCased):
         variable = self.get('variable')
         form = self.get('form', 'numeric')
         try:
-            number = self.re_numeric.match(reference[variable]).group(1)
+            number = int(self.re_numeric.match(reference[variable]).group(1))
             if form == 'numeric':
                 text = str(number)
-            elif form == 'ordinal':
-                raise NotImplementedError
+            elif form == 'ordinal' or form == 'long-ordinal' and number > 10:
+                text = to_ordinal(number, self)
             elif form == 'long-ordinal':
-                raise NotImplementedError
+                text = self.get_term('long-ordinal-{:02}'.format(number)).single
             elif form == 'roman':
-                raise NotImplementedError
+                text = romanize(number).lower()
         except AttributeError:
             text = reference[variable]
 
@@ -915,3 +915,15 @@ def to_ordinal(number, context):
     else:
         ordinal_term = 'ordinal-04'
     return number + context.get_term(ordinal_term).single
+
+
+def romanize(n):
+    # by Kay Schluehr - from http://billmill.org/python_roman.html
+    numerals = (('M', 1000), ('CM', 900), ('D', 500), ('CD', 400),
+                ('C', 100),('XC', 90),('L', 50),('XL', 40), ('X', 10),
+                ('IX', 9), ('V', 5), ('IV', 4), ('I', 1))
+    roman = []
+    for ltr, num in numerals:
+        (k, n) = divmod(n, num)
+        roman.append(ltr * k)
+    return ''.join(roman)
