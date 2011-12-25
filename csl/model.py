@@ -480,15 +480,17 @@ class Date(CitationStylesElement, Parent, Formatted, Affixed, Delimited):
                     style_attrib = context.xpath_search(expr)[0].attrib
                 except (AttributeError, IndexError):
                     style_attrib = None
-                output.append(part.render(date, style_attrib))
+                output.append(part.render(date, style_attrib, context))
         return output
 
 
 class Date_Part(CitationStylesElement, Formatted, Affixed, TextCased):
-    def render(self, date, style_attrib=None):
+    def render(self, date, style_attrib=None, context=None):
         attrib = self.attrib
         if style_attrib is not None:
             attrib.update(dict(style_attrib))
+        if context is None:
+            context = self
         range_delimiter = self.get('range-delimiter', '-')
 
         name = self.get('name')
@@ -502,15 +504,14 @@ class Date_Part(CitationStylesElement, Formatted, Affixed, TextCased):
             elif form == 'numeric-leading-zeros':
                 text = '{:02}'.format(date.day)
             elif form == 'ordinal':
-                number = min(date.day, 4)
-                text = self.get_term('ordinal-{:02}'.format(number)).single
+                text = to_ordinal(number, context)
         elif name == 'month':
             form = self.get('form', 'long')
             strip_periods = self.get('form', False)
             if form == 'long':
-                text = self.get_term('month-{:02}'.format(date.month)).single
+                text = context.get_term('month-{:02}'.format(date.month)).single
             elif form == 'short':
-                term = self.get_term('month-{:02}'.format(date.month), 'short')
+                term = context.get_term('month-{:02}'.format(date.month), 'short')
                 text = term.single
             elif form == 'numeric':
                 text = '{}'.format(date.month)
@@ -521,9 +522,9 @@ class Date_Part(CitationStylesElement, Formatted, Affixed, TextCased):
             if form == 'long':
                 text = str(abs(date.year))
                 if date.year < 0:
-                    text += self.get_term('bc').single
+                    text += context.get_term('bc').single
                 elif date.year < 1000:
-                    text += self.get_term('ad').single
+                    text += context.get_term('ad').single
             elif form == 'short':
                 text = str(date.year)[-2:]
 
@@ -901,3 +902,18 @@ class Else_If(If):
 class Else(CitationStylesElement, Parent):
     def render(self, reference, context=None):
         return ''.join(self.render_children(reference))
+
+
+# utility functions
+
+def to_ordinal(number, context):
+    number = str(number)
+    if number.endswith('1') and not number.endswith('11'):
+        ordinal_term = 'ordinal-01'
+    elif number.endswith('2') and not number.endswith('12'):
+        ordinal_term = 'ordinal-02'
+    elif number.endswith('3') and not number.endswith('13'):
+        ordinal_term = 'ordinal-03'
+    else:
+        ordinal_term = 'ordinal-04'
+    return number + context.get_term(ordinal_term).single
