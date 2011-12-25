@@ -475,27 +475,25 @@ class Date(CitationStylesElement, Parent, Formatted, Affixed, Delimited):
         output = []
         for part in self.iterchildren():
             if part.get('name') in show_parts:
-                try:
-                    expr = './cs:date-part[@name="{}"]'.format(part.get('name'))
-                    style_attrib = context.xpath_search(expr)[0].attrib
-                except (AttributeError, IndexError):
-                    style_attrib = None
-                output.append(part.render(date, style_attrib, context))
+                output.append(part.render(date, context))
         return output
 
 
 class Date_Part(CitationStylesElement, Formatted, Affixed, TextCased):
-    def render(self, date, style_attrib=None, context=None):
-        attrib = self.attrib
-        if style_attrib is not None:
-            attrib.update(dict(style_attrib))
-        if context is None:
-            context = self
-        range_delimiter = self.get('range-delimiter', '-')
-
+    def render(self, date, context=None):
         name = self.get('name')
+        range_delimiter = self.get('range-delimiter', '-')
+        attrib = self.attrib
         if name not in date:
             return ''
+
+        if context is None:
+            context = self
+        try:
+            expr = './cs:date-part[@name="{}"]'.format(name)
+            attrib.update(dict(context.xpath_search(expr)[0].attrib))
+        except (AttributeError, IndexError):
+            pass
 
         if name == 'day':
             form = self.get('form', 'numeric')
