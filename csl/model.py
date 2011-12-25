@@ -336,11 +336,11 @@ class Sort(CitationStylesElement):
             sort_keys.append((key.variable, descending))
 
 
-class Macro(CitationStylesElement, Parent, Delimited):
+class Macro(CitationStylesElement, Parent):
     def render(self, reference, context):
         # TODO: replace explicit context passing with xpath search for macro
         #       ancestor
-        return self.join(self.render_children(reference, context=context))
+        return ''.join(self.render_children(reference, context=context))
 
 
 class Layout(CitationStylesElement, Parent, Formatted, Affixed, Delimited):
