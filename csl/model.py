@@ -916,7 +916,7 @@ class If(CitationStylesElement, Parent):
         if 'is-numeric' in self.attrib:
             results += self._is_numeric(item)
         if 'is-uncertain-date' in self.attrib:
-            results += self._is_uncertain_date()
+            results += self._is_uncertain_date(item)
         if 'locator' in self.attrib:
             results += self._locator(item)
         if 'position' in self.attrib:
@@ -947,9 +947,9 @@ class If(CitationStylesElement, Parent):
                 Number.re_numeric.match(str(item.reference[var]))
                 for var in self.get('is-numeric').split()]
 
-    def _is_uncertain_date(self):
+    def _is_uncertain_date(self, item):
         dates = self.get('is-uncertain-date').split()
-        return [date.get('circa', False) for date in dates]
+        return [item.reference[date].get('circa', False) for date in dates]
 
     def _locator(self, item):
         raise NotImplementedError
