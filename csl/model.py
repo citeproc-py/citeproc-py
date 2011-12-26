@@ -271,7 +271,8 @@ class Quoted(object):
 
 class StrippedPeriods(object):
     def strip_periods(self, string):
-        if self.get('strip-periods', False):
+        strip_periods = self.get('strip-periods', 'false').lower() == 'true'
+        if strip_periods:
             string = string.replace('.', '')
         return string
 
