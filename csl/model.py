@@ -288,7 +288,7 @@ class TextCased(object):
             elif text_case == 'uppercase':
                 text = text.upper()
             elif text_case == 'capitalize-first':
-                text = text[0].capitalize() + text[1:]
+                text = text.capitalize()
             elif text_case == 'capitalize-all':
                 text = text.title()
             elif text_case == 'title':
