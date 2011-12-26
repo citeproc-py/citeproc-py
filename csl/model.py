@@ -377,7 +377,11 @@ class Text(CitationStylesElement, Formatted, Affixed, TextCased,
             try:
                 text = item.reference[variable.replace('-', '_')]
             except KeyError:
-                return ''
+                if variable == 'page-first' and 'page' in item.reference:
+                    page = item.reference['page']
+                    text = Number.re_range.match(page).group(1)
+                else:
+                    return None
         elif 'macro' in self.attrib:
             text = self.get_macro(self.get('macro')).render(item, self)
         elif 'term' in self.attrib:
