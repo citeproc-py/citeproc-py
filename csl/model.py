@@ -952,7 +952,8 @@ class If(CitationStylesElement, Parent):
         return ''.join([item for item in output if item is not None])
 
     def _type(self, item):
-        return item.reference.type in self.get('type').split()
+        return [typ.lower() == item.reference.type
+                for typ in self.get('type').split()]
 
     def _variable(self, item):
         return [var in item.reference for var in self.get('variable').split()]
