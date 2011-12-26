@@ -489,7 +489,11 @@ class Date(CitationStylesElement, Parent, Formatted, Affixed, Delimited):
                                          show_parts=show_parts, context=self)
         else:
             from ...bibliography import DateRange
-            date_or_range = item.reference[variable.replace('-', '_')]
+            try:
+                date_or_range = item.reference[variable.replace('-', '_')]
+            except KeyError:
+                return None
+
             if isinstance(date_or_range, DateRange):
                 text = self.render_date_range(date_or_range, show_parts,
                                               context)
