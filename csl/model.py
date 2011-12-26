@@ -256,7 +256,7 @@ class Affixed(object):
 class Delimited(object):
     def join(self, strings, default_delimiter=''):
         delimiter = self.get('delimiter', default_delimiter)
-        return delimiter.join(strings)
+        return delimiter.join([item for item in strings if item is not None])
 
 
 class Displayed(object):
