@@ -399,7 +399,7 @@ class Text(CitationStylesElement, Formatted, Affixed, TextCased,
                 else:
                     return None
         elif 'macro' in self.attrib:
-            text = self.get_macro(self.get('macro')).render(item, self)
+            text = self.get_macro(self.get('macro')).render(item, context)
         elif 'term' in self.attrib:
             form = self.get('form', 'long')
             plural = self.get('plural', 'false').lower() == 'true'
@@ -662,7 +662,7 @@ class Names(CitationStylesElement, Parent, Formatted, Affixed, Delimited):
         else:
             substitute = self.substitute()
             if substitute is not None:
-                text = substitute.render(item)
+                text = substitute.render(item, context)
         try:
             return self.wrap(self.format(text))
         except NameError:
@@ -833,7 +833,7 @@ class Substitute(CitationStylesElement):
                 names = self.xpath_search('./parent::cs:names[1]')[0]
                 text = child.render(item, context=names)
             else:
-                text = child.render(item)
+                text = child.render(item, context=context)
             if text:
                 self.add_to_repressed_list(child, context)
                 break
