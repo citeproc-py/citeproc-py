@@ -103,6 +103,27 @@ class DateRange(DateBase):
         raise NotImplementedError
 
 
+class Citation(CustomDict):
+    def __init__(self, items, **kwargs):
+        for item in items:
+            item.citation = self
+        self.items = items
+        super().__init__(kwargs)
+
+
+class CitationItem(CustomDict):
+    def __init__(self, reference, **args):
+        self.reference = reference
+        optional = {'locator', 'prefix', 'suffix'}
+        super().__init__(args, optional=optional)
+
+
+class Locator(object):
+    def __init__(self, label, identifier):
+        self.label = label
+        self.identifier = identifier
+
+
 class Bibliography(list):
     def __init__(self, source, formatter):
         self.source = source

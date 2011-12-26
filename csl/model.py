@@ -170,8 +170,8 @@ class Citation(FormattingInstructions, CitationStylesElement):
                         # note distance
                         'near-note-distance': 5}
 
-    def render(self, reference):
-        return self.layout.render_citation(reference)
+    def render(self, citation):
+        return self.layout.render_citation(citation)
 
 
 class Bibliography(FormattingInstructions, CitationStylesElement):
@@ -316,15 +316,15 @@ class Term(CitationStylesElement):
 # Rendering elements
 
 class Parent(object):
-    def render_children(self, reference, *args, **kwargs):
+    def render_children(self, item, *args, **kwargs):
         output = []
         for child in self.iterchildren():
-            output.append(child.render(reference, *args, **kwargs))
+            output.append(child.render(item, *args, **kwargs))
         return output
 
 
 class Sort(CitationStylesElement):
-    def sort(self, references):
+    def sort(self, items):
         raise NotImplementedError
         sort_keys = []
         for key in self.key:
@@ -337,29 +337,32 @@ class Sort(CitationStylesElement):
 
 
 class Macro(CitationStylesElement, Parent):
-    def render(self, reference, context):
+    def render(self, item, context):
         # TODO: replace explicit context passing with xpath search for macro
         #       ancestor
-        return ''.join(self.render_children(reference, context=context))
+        return ''.join(self.render_children(item, context=context))
 
 
 class Layout(CitationStylesElement, Parent, Formatted, Affixed, Delimited):
-    def render_citation(self, references):
+    def render_citation(self, citation):
         # TODO: formatting
         self.repressed = {}
         out = []
-        for ref in references:
-            out.append(''.join(self.render_children(ref)))
+        for item in citation.items:
+            prefix = item.get('prefix', '')
+            suffix = item.get('suffix', '')
+            text = prefix + ''.join(self.render_children(item)) + suffix
+            out.append(text)
             self.repressed = {}
         return self.format(self.wrap(self.join(out)))
 
-    def render_bibliography(self, reference):
-        return self.wrap(self.render_children(reference))
+    def render_bibliography(self, item):
+        return self.wrap(self.render_children(item))
 
 
 class Text(CitationStylesElement, Formatted, Affixed, TextCased,
            StrippedPeriods):
-    def render(self, reference, context=None):
+    def render(self, item, context=None):
         if context is None:
             context = context or self
 
@@ -371,11 +374,11 @@ class Text(CitationStylesElement, Formatted, Affixed, TextCased,
 
             short = self.get('form') == 'short' # TODO: do something with this
             try:
-                text = reference[variable.replace('-', '_')]
+                text = item.reference[variable.replace('-', '_')]
             except KeyError:
                 return ''
         elif 'macro' in self.attrib:
-            text = self.get_macro(self.get('macro')).render(reference, self)
+            text = self.get_macro(self.get('macro')).render(item, self)
         elif 'term' in self.attrib:
             form = self.get('form', 'long')
             plural = self.get('plural', 'false').lower() == 'true'
@@ -447,7 +450,7 @@ class Date(CitationStylesElement, Parent, Formatted, Affixed, Delimited):
 
         return context.join([diff, same.rstrip()])
 
-    def render(self, reference, variable=None, show_parts=None, context=None):
+    def render(self, item, variable=None, show_parts=None, context=None):
         if variable is None:
             variable = self.get('variable')
         if show_parts is None:
@@ -461,11 +464,11 @@ class Date(CitationStylesElement, Parent, Formatted, Affixed, Delimited):
             localized_date = self.get_date(form)
             if date_parts is not None:
                 show_parts = date_parts.split('-')
-            return localized_date.render(reference, variable,
+            return localized_date.render(item, variable,
                                          show_parts=show_parts, context=self)
         else:
             from ...bibliography import DateRange
-            date_or_range = reference[variable.replace('-', '_')]
+            date_or_range = item.reference[variable.replace('-', '_')]
             if isinstance(date_or_range, DateRange):
                 text = self.render_date_range(date_or_range, show_parts,
                                               context)
@@ -535,26 +538,57 @@ class Date_Part(CitationStylesElement, Formatted, Affixed, TextCased):
         return self.wrap(self.format(self.case(text)))
 
 
-class Number(CitationStylesElement, Formatted, Affixed, Displayed, TextCased):
+class Number(CitationStylesElement, Formatted, Affixed, Displayed, TextCased,
+             StrippedPeriods):
     re_numeric = re.compile(r'^(\d+).*')
+    re_range = re.compile(r'^(\d+)\s*-\s*(\d+)$')
 
-    def render(self, reference):
+    def is_plural(self, item):
         variable = self.get('variable')
+        if variable.startswith('number-of') and int(item[variable]) > 1:
+            return True
+        elif (variable == 'locator'
+              and self.re_range.match(item.locator.identifier)):
+            return True
+        else:
+            return False
+
+    def render(self, item):
         form = self.get('form', 'numeric')
         try:
-            number = int(self.re_numeric.match(reference[variable]).group(1))
-            if form == 'numeric':
-                text = str(number)
-            elif form == 'ordinal' or form == 'long-ordinal' and number > 10:
-                text = to_ordinal(number, self)
-            elif form == 'long-ordinal':
-                text = self.get_term('long-ordinal-{:02}'.format(number)).single
-            elif form == 'roman':
-                text = romanize(number).lower()
-        except AttributeError:
-            text = reference[variable]
+            variable = self.get('variable')
+            if variable == 'locator':
+                variable = item.locator.identifier
+            else:
+                variable = item.reference[variable]
+        except KeyError:
+            return None
 
-        return self.wrap(self.format(self.case(text)))
+        try:
+            first, last = map(int, self.re_range.match(variable).groups())
+            first = self.format_number(first, form)
+            last = self.format_number(last, form)
+            text = first + chr(name2codepoint['ndash']) + last
+        except AttributeError:
+            try:
+                number = int(self.re_numeric.match(variable).group(1))
+                text = self.format_number(number, form)
+            except AttributeError:
+                text = variable
+
+        return self.wrap(self.format(self.case(self.strip_periods(text))))
+
+    def format_number(self, number, form):
+        if form == 'numeric':
+            text = str(number)
+        elif form == 'ordinal' or form == 'long-ordinal' and number > 10:
+            text = to_ordinal(number, self)
+        elif form == 'long-ordinal':
+            text = self.get_term('long-ordinal-{:02}'.format(number)).single
+        elif form == 'roman':
+            text = romanize(number).lower()
+
+        return text
 
 
 class Names(CitationStylesElement, Parent, Formatted, Affixed, Delimited):
@@ -573,22 +607,22 @@ class Names(CitationStylesElement, Parent, Formatted, Affixed, Delimited):
             result = None
         return result
 
-    def render(self, reference, context=None):
+    def render(self, item, context=None):
         # if this instance substitutes another
         if context is None:
             context = self
 
         output = []
         for role in self.get('variable').split(' '):
-            if role in reference:
+            if role in item.reference:
                 name_elem = context.name
                 if name_elem is None:
                     name_elem = Name()
                     context.insert(0, name_elem)
-                text = name_elem.render(reference, role, context=context)
-                plural = len(reference[role]) > 1
+                text = name_elem.render(item, role, context=context)
+                plural = len(item.reference[role]) > 1
                 try:
-                    text += context.label.render(reference, role, plural)
+                    text += context.label.render(item, role, plural)
                 except AttributeError:
                     pass
                 output.append(text)
@@ -602,7 +636,7 @@ class Names(CitationStylesElement, Parent, Formatted, Affixed, Delimited):
         else:
             substitute = self.substitute()
             if substitute is not None:
-                text = substitute.render(reference)
+                text = substitute.render(item)
         try:
             return self.wrap(self.format(text))
         except NameError:
@@ -633,7 +667,7 @@ class Name(CitationStylesElement, Formatted, Affixed, Delimited):
             result = self.get_term('et-al').single
         return result
 
-    def render(self, reference, variable, context=None):
+    def render(self, item, variable, context=None):
         and_ = self.get_option('and', context)
         delimiter_precedes_last = self.get_option('delimiter-precedes-last',
                                                   context)
@@ -656,7 +690,7 @@ class Name(CitationStylesElement, Formatted, Affixed, Delimited):
                 given, family = part.format_part(given, family)
             return given, family
 
-        names = reference.get(variable, [])
+        names = item.reference.get(variable, [])
 
         if and_ == 'text':
             and_term = self.get_term('and').single
@@ -767,13 +801,13 @@ class Et_Al(CitationStylesElement, Formatted, Affixed):
 
 
 class Substitute(CitationStylesElement):
-    def render(self, reference):
+    def render(self, item):
         for child in self.getchildren():
             if isinstance(child, Names) and child.name is None:
                 names = self.xpath_search('./parent::cs:names[1]')[0]
-                text = child.render(reference, context=names)
+                text = child.render(item, context=names)
             else:
-                text = child.render(reference)
+                text = child.render(item)
             if text:
                 self.add_to_repressed_list(child)
                 break
@@ -788,13 +822,21 @@ class Substitute(CitationStylesElement):
 
 class Label(CitationStylesElement, Formatted, Affixed, StrippedPeriods,
             TextCased):
-    def render(self, reference, variable=None, plural=None):
+    def render(self, item, variable=None, plural=None):
         if variable is None:
             variable = self.get('variable')
         if plural is None:
-            plural = variable.endswith('s')
+            number = self.xpath_search('./parent::*/cs:number[1]')[0]
+            plural = number.is_plural(item)
         form = self.get('form', 'long')
         plural_option = self.get('plural', 'contextual')
+
+        if variable == 'locator':
+            try:
+                variable = item.locator.label
+            except KeyError:
+                return None
+
         if form == 'long':
             term = self.get_term(variable)
         else:
@@ -819,8 +861,8 @@ class Group(CitationStylesElement, Parent, Formatted, Affixed, Delimited):
     #     directly or via a macro), and
     #  b) all variables that are called are empty. This behavior exists to
     #     accommodate descriptive cs:text elements.
-    def render(self, reference, context=None):
-        return self.wrap(self.join(self.render_children(reference)))
+    def render(self, item, context=None):
+        return self.wrap(self.join(self.render_children(item)))
 
 
 class ConditionFailed(Exception):
@@ -828,43 +870,43 @@ class ConditionFailed(Exception):
 
 
 class Choose(CitationStylesElement):
-    def render(self, reference, context=None):
+    def render(self, item, context=None):
         try:
-            return self.find('cs:if', self.nsmap).render(reference)
+            return self.find('cs:if', self.nsmap).render(item, context)
         except ConditionFailed:
             pass
 
         try:
             for else_if in self.find('cs:else-if', self.nsmap):
                 try:
-                    return else_if.render(reference)
+                    return else_if.render(item, context)
                 except ConditionFailed:
                     continue
         except TypeError:
             pass
 
         try:
-            return self.find('cs:else', self.nsmap).render(reference)
+            return self.find('cs:else', self.nsmap).render(item, context)
         except (AttributeError, ConditionFailed):
             return ''
 
 
 class If(CitationStylesElement, Parent):
-    def render(self, reference, context=None):
+    def render(self, item, context=None):
         # TODO self.get('disambiguate')
         results = []
         if 'type' in self.attrib:
-            results += self._type(reference)
+            results += self._type(item)
         if 'variable' in self.attrib:
-            results += self._variable(reference)
+            results += self._variable(item)
         if 'is-numeric' in self.attrib:
-            results += self._is_numeric(reference)
+            results += self._is_numeric(item)
         if 'is-uncertain-date' in self.attrib:
-            results += self._is_uncertain_date(reference)
+            results += self._is_uncertain_date()
         if 'locator' in self.attrib:
-            results += self._locator(reference)
+            results += self._locator(item)
         if 'position' in self.attrib:
-            results += self._position(reference)
+            results += self._position(item)
 
         # TODO: 'match' also applies to individual tests above!
         if self.get('match') == 'any':
@@ -877,27 +919,27 @@ class If(CitationStylesElement, Parent):
         if not result:
             raise ConditionFailed
 
-        return ''.join(self.render_children(reference))
+        return ''.join(self.render_children(item))
 
-    def _type(self, reference):
-        return reference.type in self.get('type').split()
+    def _type(self, item):
+        return item.reference.type in self.get('type').split()
 
-    def _variable(self, reference):
-        return [var in reference for var in self.get('variable').split()]
+    def _variable(self, item):
+        return [var in item.reference for var in self.get('variable').split()]
 
-    def _is_numeric(self, reference):
-        return [var in reference and
-                Number.re_numeric.match(str(reference[var]))
+    def _is_numeric(self, item):
+        return [var in item.reference and
+                Number.re_numeric.match(str(item.reference[var]))
                 for var in self.get('is-numeric').split()]
 
-    def _is_uncertain_date(self, reference):
+    def _is_uncertain_date(self):
         dates = self.get('is-uncertain-date').split()
         return [date.get('circa', False) for date in dates]
 
-    def _locator(self, reference):
+    def _locator(self, item):
         raise NotImplementedError
 
-    def _position(self, reference):
+    def _position(self, item):
         raise NotImplementedError
 
 
@@ -906,8 +948,8 @@ class Else_If(If):
 
 
 class Else(CitationStylesElement, Parent):
-    def render(self, reference, context=None):
-        return ''.join(self.render_children(reference))
+    def render(self, item, context=None):
+        return ''.join(self.render_children(item))
 
 
 # utility functions

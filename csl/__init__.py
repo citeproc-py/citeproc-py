@@ -84,8 +84,8 @@ class CitationStylesStyle(CitationStylesXML):
             raise ValueError("'{}' is not a known style".format(style))
         self.root.set_locale_list(locale)
 
-    def render_citation(self, reference, **options):
-        return self.root.citation.render(reference)
+    def render_citation(self, citation, **options):
+        return self.root.citation.render(citation)
 
     def render_bibliography(self, references, **options):
         return self.root.bibliography.render(references)
