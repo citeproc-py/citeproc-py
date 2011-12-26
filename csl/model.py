@@ -57,8 +57,10 @@ class CitationStylesElement(SomewhatObjectifiedElement):
         expression = "cs:macro[@name='{}'][1]".format(name)
         return self.get_root().xpath_search(expression)[0]
 
-    def get_layout(self):
-        return self.xpath_search('./ancestor::cs:layout[1]')[0]
+    def get_layout(self, context=None):
+        if context is None:
+            context = self
+        return context.xpath_search('./ancestor::cs:layout[1]')[0]
 
     # TODO: Locale methods
     def get_term(self, name, form=None):
@@ -353,7 +355,9 @@ class Layout(CitationStylesElement, Parent, Formatted, Affixed, Delimited):
         for item in citation.items:
             prefix = item.get('prefix', '')
             suffix = item.get('suffix', '')
-            text = prefix + ''.join(self.render_children(item)) + suffix
+            output = [item for item in self.render_children(item)
+                      if item is not None]
+            text = prefix + ''.join(output) + suffix
             out.append(text)
             self.repressed = {}
         return self.format(self.wrap(self.join(out)))
@@ -370,9 +374,9 @@ class Text(CitationStylesElement, Formatted, Affixed, TextCased,
 
         if 'variable' in self.attrib:
             variable = self.get('variable')
-            repressed = context.get_layout().repressed
+            repressed = context.get_layout(context).repressed
             if self.tag in repressed and variable in repressed[self.tag]:
-                return ''
+                return None
 
             short = self.get('form') == 'short' # TODO: do something with this
             try:
@@ -494,13 +498,14 @@ class Date(CitationStylesElement, Parent, Formatted, Affixed, Delimited):
         return output
 
 
-class Date_Part(CitationStylesElement, Formatted, Affixed, TextCased):
+class Date_Part(CitationStylesElement, Formatted, Affixed, TextCased,
+                StrippedPeriods):
     def render(self, date, context=None):
         name = self.get('name')
         range_delimiter = self.get('range-delimiter', '-')
         attrib = self.attrib
         if name not in date:
-            return ''
+            return None
 
         if context is None:
             context = self
@@ -541,7 +546,7 @@ class Date_Part(CitationStylesElement, Formatted, Affixed, TextCased):
             elif form == 'short':
                 text = str(date.year)[-2:]
 
-        return self.wrap(self.format(self.case(text)))
+        return self.wrap(self.format(self.case(self.strip_periods(text))))
 
 
 class Number(CitationStylesElement, Formatted, Affixed, Displayed, TextCased,
@@ -646,7 +651,7 @@ class Names(CitationStylesElement, Parent, Formatted, Affixed, Delimited):
         try:
             return self.wrap(self.format(text))
         except NameError:
-            return ''
+            return None
 
 
 class Name(CitationStylesElement, Formatted, Affixed, Delimited):
@@ -807,7 +812,7 @@ class Et_Al(CitationStylesElement, Formatted, Affixed):
 
 
 class Substitute(CitationStylesElement):
-    def render(self, item):
+    def render(self, item, context=None):
         for child in self.getchildren():
             if isinstance(child, Names) and child.name is None:
                 names = self.xpath_search('./parent::cs:names[1]')[0]
@@ -815,11 +820,11 @@ class Substitute(CitationStylesElement):
             else:
                 text = child.render(item)
             if text:
-                self.add_to_repressed_list(child)
+                self.add_to_repressed_list(child, context)
                 break
         return text
 
-    def add_to_repressed_list(self, child):
+    def add_to_repressed_list(self, child, context):
         layout = self.get_layout()
         tag_list = layout.repressed.get(child.tag, [])
         tag_list.append(child.get('variable'))
@@ -858,7 +863,7 @@ class Label(CitationStylesElement, Formatted, Affixed, StrippedPeriods,
             text = term.single
 
         if text is None:
-            return ''
+            return None
         else:
             return self.wrap(self.format(self.case(self.strip_periods(text))))
 
@@ -897,7 +902,7 @@ class Choose(CitationStylesElement):
         try:
             return self.find('cs:else', self.nsmap).render(item, context)
         except (AttributeError, ConditionFailed):
-            return ''
+            return None
 
 
 class If(CitationStylesElement, Parent):
@@ -928,7 +933,8 @@ class If(CitationStylesElement, Parent):
         if not result:
             raise ConditionFailed
 
-        return ''.join(self.render_children(item))
+        output = self.render_children(item, context=context)
+        return ''.join([item for item in output if item is not None])
 
     def _type(self, item):
         return item.reference.type in self.get('type').split()
@@ -958,7 +964,8 @@ class Else_If(If):
 
 class Else(CitationStylesElement, Parent):
     def render(self, item, context=None):
-        return ''.join(self.render_children(item))
+        output = self.render_children(item, context=context)
+        return ''.join([item for item in output if item is not None])
 
 
 # utility functions
