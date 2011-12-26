@@ -554,7 +554,7 @@ class Number(CitationStylesElement, Formatted, Affixed, Displayed, TextCased,
         else:
             return False
 
-    def render(self, item):
+    def render(self, item, context=None):
         form = self.get('form', 'numeric')
         try:
             variable = self.get('variable')
@@ -823,7 +823,7 @@ class Substitute(CitationStylesElement):
 
 class Label(CitationStylesElement, Formatted, Affixed, StrippedPeriods,
             TextCased):
-    def render(self, item, variable=None, plural=None):
+    def render(self, item, variable=None, plural=None, context=None):
         if variable is None:
             variable = self.get('variable')
         if plural is None:
@@ -866,7 +866,7 @@ class Group(CitationStylesElement, Parent, Formatted, Affixed, Delimited):
     #  b) all variables that are called are empty. This behavior exists to
     #     accommodate descriptive cs:text elements.
     def render(self, item, context=None):
-        return self.wrap(self.join(self.render_children(item)))
+        return self.wrap(self.join(self.render_children(item, context=context)))
 
 
 class ConditionFailed(Exception):
