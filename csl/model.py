@@ -57,10 +57,8 @@ class CitationStylesElement(SomewhatObjectifiedElement):
         expression = "cs:macro[@name='{}'][1]".format(name)
         return self.get_root().xpath_search(expression)[0]
 
-    def get_layout(self, context=None):
-        if context is None:
-            context = self
-        return context.xpath_search('./ancestor::cs:layout[1]')[0]
+    def get_layout(self):
+        return self.xpath_search('./ancestor::cs:layout[1]')[0]
 
     # TODO: Locale methods
     def get_term(self, name, form=None):
@@ -381,11 +379,11 @@ class Text(CitationStylesElement, Formatted, Affixed, TextCased,
            StrippedPeriods):
     def render(self, item, context=None):
         if context is None:
-            context = context or self
+            context = self
 
         if 'variable' in self.attrib:
             variable = self.get('variable')
-            repressed = context.get_layout(context).repressed
+            repressed = context.get_layout().repressed
             if self.tag in repressed and variable in repressed[self.tag]:
                 return None
 
@@ -840,7 +838,7 @@ class Substitute(CitationStylesElement):
         return text
 
     def add_to_repressed_list(self, child, context):
-        layout = self.get_layout()
+        layout = context.get_layout()
         tag_list = layout.repressed.get(child.tag, [])
         tag_list.append(child.get('variable'))
         layout.repressed[child.tag] = tag_list
