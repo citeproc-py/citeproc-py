@@ -910,7 +910,7 @@ class Choose(CitationStylesElement):
             pass
 
         try:
-            for else_if in self.find('cs:else-if', self.nsmap):
+            for else_if in self.findall('cs:else-if', self.nsmap):
                 try:
                     return else_if.render(item, context)
                 except ConditionFailed:
