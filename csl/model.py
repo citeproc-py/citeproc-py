@@ -588,7 +588,7 @@ class Names(CitationStylesElement, Parent, Formatted, Affixed, Delimited):
                 text = name_elem.render(reference, role, context=context)
                 plural = len(reference[role]) > 1
                 try:
-                    text += context.label.render(reference, plural, role)
+                    text += context.label.render(reference, role, plural)
                 except AttributeError:
                     pass
                 output.append(text)
@@ -788,9 +788,11 @@ class Substitute(CitationStylesElement):
 
 class Label(CitationStylesElement, Formatted, Affixed, StrippedPeriods,
             TextCased):
-    def render(self, reference, plural, variable=None):
+    def render(self, reference, variable=None, plural=None):
         if variable is None:
             variable = self.get('variable')
+        if plural is None:
+            plural = variable.endswith('s')
         form = self.get('form', 'long')
         plural_option = self.get('plural', 'contextual')
         if form == 'long':
