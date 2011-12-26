@@ -362,6 +362,7 @@ class Layout(CitationStylesElement, Parent, Formatted, Affixed, Delimited):
 
     def render_bibliography(self, references):
         from ...bibliography import CitationItem
+        self.repressed = {}
         output = ['<div class="csl-bib-body">']
         items = [CitationItem(reference) for reference in references]
         for item in items:
@@ -371,6 +372,7 @@ class Layout(CitationStylesElement, Parent, Formatted, Affixed, Delimited):
             text += self.wrap(''.join(out))
             text += '</div>'
             output.append(text)
+            self.repressed = {}
         output.append('</div>')
         return '\n'.join(output)
 
