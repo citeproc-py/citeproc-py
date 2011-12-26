@@ -341,7 +341,8 @@ class Macro(CitationStylesElement, Parent):
     def render(self, item, context):
         # TODO: replace explicit context passing with xpath search for macro
         #       ancestor
-        return ''.join(self.render_children(item, context=context))
+        output = self.render_children(item, context=context)
+        return ''.join([item for item in output if item is not None])
 
 
 class Layout(CitationStylesElement, Parent, Formatted, Affixed, Delimited):
