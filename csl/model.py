@@ -632,19 +632,23 @@ class Names(CitationStylesElement, Parent, Formatted, Affixed, Delimited):
     def render(self, item, context=None):
         # if this instance substitutes another
         if context is None:
-            context = self
+            names_context = context = self
+        elif isinstance(context, Names):
+            names_context = context
+        else:
+            names_context = self
 
         output = []
         for role in self.get('variable').split(' '):
             if role in item.reference:
-                name_elem = context.name
+                name_elem = names_context.name
                 if name_elem is None:
                     name_elem = Name()
-                    context.insert(0, name_elem)
+                    names_context.insert(0, name_elem)
                 text = name_elem.render(item, role, context=context)
                 plural = len(item.reference[role]) > 1
                 try:
-                    text += context.label.render(item, role, plural)
+                    text += names_context.label.render(item, role, plural)
                 except AttributeError:
                     pass
                 output.append(text)
@@ -705,7 +709,7 @@ class Name(CitationStylesElement, Formatted, Affixed, Delimited):
         sort_separator = self.get_option('sort-separator', context)
 
         form = self.get('form', 'long')
-        demote_ndp = self.get_option('demote-non-dropping-particle')
+        demote_ndp = self.get_option('demote-non-dropping-particle', context)
 
         def format_name_parts(given, family):
             for part in self.findall('cs:name-part', self.nsmap):
