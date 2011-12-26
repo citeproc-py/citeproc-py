@@ -827,8 +827,11 @@ class Label(CitationStylesElement, Formatted, Affixed, StrippedPeriods,
         if variable is None:
             variable = self.get('variable')
         if plural is None:
-            number = self.xpath_search('./parent::*/cs:number[1]')[0]
-            plural = number.is_plural(item)
+            try:
+                number = self.xpath_search('./parent::*/cs:number[1]')[0]
+                plural = number.is_plural(item)
+            except IndexError:
+                plural = False
         form = self.get('form', 'long')
         plural_option = self.get('plural', 'contextual')
 
