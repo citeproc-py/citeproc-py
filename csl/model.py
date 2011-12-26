@@ -362,8 +362,19 @@ class Layout(CitationStylesElement, Parent, Formatted, Affixed, Delimited):
             self.repressed = {}
         return self.format(self.wrap(self.join(out)))
 
-    def render_bibliography(self, item):
-        return self.wrap(self.render_children(item))
+    def render_bibliography(self, references):
+        from ...bibliography import CitationItem
+        output = ['<div class="csl-bib-body">']
+        items = [CitationItem(reference) for reference in references]
+        for item in items:
+            out = [item for item in self.render_children(item)
+                   if item is not None]
+            text = '  <div class="csl-entry">'
+            text += self.wrap(''.join(out))
+            text += '</div>'
+            output.append(text)
+        output.append('</div>')
+        return '\n'.join(output)
 
 
 class Text(CitationStylesElement, Formatted, Affixed, TextCased,
