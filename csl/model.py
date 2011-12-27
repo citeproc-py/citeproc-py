@@ -317,11 +317,23 @@ class Term(CitationStylesElement):
 # Rendering elements
 
 class Parent(object):
+    def calls_variable(self):
+        return any([child.calls_variable() for child in self.getchildren()])
+
     def render_children(self, item, *args, **kwargs):
+        from ...bibliography import VariableError
         output = []
         for child in self.iterchildren():
-            output.append(child.render(item, *args, **kwargs))
-        return output
+            try:
+                text = child.render(item, *args, **kwargs)
+                if text is not None:
+                    output.append(text)
+            except VariableError:
+                pass
+        if output:
+            return ''.join(output)
+        else:
+            return None
 
 
 class Sort(CitationStylesElement):
@@ -339,24 +351,25 @@ class Sort(CitationStylesElement):
 
 class Macro(CitationStylesElement, Parent):
     def render(self, item, context):
-        # TODO: replace explicit context passing with xpath search for macro
-        #       ancestor
-        output = self.render_children(item, context=context)
-        return ''.join([item for item in output if item is not None])
+        return self.render_children(item, context=context)
 
 
 class Layout(CitationStylesElement, Parent, Formatted, Affixed, Delimited):
     def render_citation(self, citation):
+        from ...bibliography import VariableError
         # TODO: formatting
         self.repressed = {}
         out = []
         for item in citation.items:
             prefix = item.get('prefix', '')
             suffix = item.get('suffix', '')
-            output = [item for item in self.render_children(item)
-                      if item is not None]
-            text = prefix + ''.join(output) + suffix
-            out.append(text)
+            try:
+                output = self.render_children(item)
+                if output is not None:
+                    text = prefix + output + suffix
+                    out.append(text)
+            except VariableError:
+                pass
             self.repressed = {}
         return self.format(self.wrap(self.join(out)))
 
@@ -366,12 +379,10 @@ class Layout(CitationStylesElement, Parent, Formatted, Affixed, Delimited):
         output = ['<div class="csl-bib-body">']
         items = [CitationItem(reference) for reference in references]
         for item in items:
-            out = [item for item in self.render_children(item)
-                   if item is not None]
-            text = '  <div class="csl-entry">'
-            text += self.wrap(''.join(out))
-            text += '</div>'
-            output.append(text)
+            text = self.render_children(item)
+            if text is not None:
+                text = '  <div class="csl-entry">' + text + '</div>'
+                output.append(text)
             self.repressed = {}
         output.append('</div>')
         return '\n'.join(output)
@@ -379,6 +390,9 @@ class Layout(CitationStylesElement, Parent, Formatted, Affixed, Delimited):
 
 class Text(CitationStylesElement, Formatted, Affixed, TextCased,
            StrippedPeriods):
+    def calls_variable(self):
+        return 'variable' in self.attrib
+
     def render(self, item, context=None):
         if context is None:
             context = self
@@ -390,14 +404,11 @@ class Text(CitationStylesElement, Formatted, Affixed, TextCased,
                 return None
 
             short = self.get('form') == 'short' # TODO: do something with this
-            try:
+            if variable == 'page-first' and variable not in item.reference:
+                page = item.reference.page
+                text = Number.re_range.match(page).group(1)
+            else:
                 text = item.reference[variable.replace('-', '_')]
-            except KeyError:
-                if variable == 'page-first' and 'page' in item.reference:
-                    page = item.reference['page']
-                    text = Number.re_range.match(page).group(1)
-                else:
-                    return None
         elif 'macro' in self.attrib:
             text = self.get_macro(self.get('macro')).render(item, context)
         elif 'term' in self.attrib:
@@ -415,10 +426,16 @@ class Text(CitationStylesElement, Formatted, Affixed, TextCased,
             text = self.get('value')
 
         # TODO: display, formatting, quotes, strip-periods, text-case
-        return self.wrap(self.format(self.case(self.strip_periods(text))))
+        if text:
+            return self.wrap(self.format(self.case(self.strip_periods(text))))
+        else:
+            return None
 
 
 class Date(CitationStylesElement, Parent, Formatted, Affixed, Delimited):
+    def calls_variable(self):
+        return True
+
     def is_locale_date(self):
         expr = './ancestor::cs:locale[1]'
         try:
@@ -489,11 +506,7 @@ class Date(CitationStylesElement, Parent, Formatted, Affixed, Delimited):
                                          show_parts=show_parts, context=self)
         else:
             from ...bibliography import DateRange
-            try:
-                date_or_range = item.reference[variable.replace('-', '_')]
-            except KeyError:
-                return None
-
+            date_or_range = item.reference[variable.replace('-', '_')]
             if isinstance(date_or_range, DateRange):
                 text = self.render_date_range(date_or_range, show_parts,
                                               context)
@@ -569,6 +582,9 @@ class Number(CitationStylesElement, Formatted, Affixed, Displayed, TextCased,
     re_numeric = re.compile(r'^(\d+).*')
     re_range = re.compile(r'^(\d+)\s*-\s*(\d+)$')
 
+    def calls_variable(self):
+        return True
+
     def is_plural(self, item):
         variable = self.get('variable')
         if variable.startswith('number-of') and int(item[variable]) > 1:
@@ -581,14 +597,14 @@ class Number(CitationStylesElement, Formatted, Affixed, Displayed, TextCased,
 
     def render(self, item, context=None):
         form = self.get('form', 'numeric')
-        try:
-            variable = self.get('variable')
-            if variable == 'locator':
+        variable = self.get('variable')
+        if variable == 'locator':
+            try:
                 variable = item.locator.identifier
-            else:
-                variable = item.reference[variable]
-        except KeyError:
-            return None
+            except KeyError:
+                return None
+        else:
+            variable = item.reference[variable]
 
         try:
             first, last = map(int, self.re_range.match(variable).groups())
@@ -618,6 +634,9 @@ class Number(CitationStylesElement, Formatted, Affixed, Displayed, TextCased,
 
 
 class Names(CitationStylesElement, Parent, Formatted, Affixed, Delimited):
+    def calls_variable(self):
+        return True
+
     def get_parent_delimiter(self, context=None):
         expr = './ancestor::*[self::cs:citation or self::cs:bibliography][1]'
         if context is None:
@@ -668,6 +687,8 @@ class Names(CitationStylesElement, Parent, Formatted, Affixed, Delimited):
             if substitute is not None:
                 text = substitute.render(item, context)
         try:
+            if text is None:
+                raise NameError
             return self.wrap(self.format(text))
         except NameError:
             return None
@@ -784,6 +805,7 @@ class Name(CitationStylesElement, Formatted, Affixed, Delimited):
                 text += '{} '.format(and_term) + output[-1]
             else:
                 text = self.join(output, ', ')
+
             return self.wrap(self.format(text))
 
     def initialize(self, given, mark, context):
@@ -830,7 +852,7 @@ class Et_Al(CitationStylesElement, Formatted, Affixed):
             return None
 
 
-class Substitute(CitationStylesElement):
+class Substitute(CitationStylesElement, Parent):
     def render(self, item, context=None):
         for child in self.getchildren():
             if isinstance(child, Names) and child.name is None:
@@ -852,6 +874,9 @@ class Substitute(CitationStylesElement):
 
 class Label(CitationStylesElement, Formatted, Affixed, StrippedPeriods,
             TextCased):
+    def calls_variable(self):
+        return self.get('variable') == 'locator'
+
     def render(self, item, variable=None, plural=None, context=None):
         if variable is None:
             variable = self.get('variable')
@@ -888,21 +913,34 @@ class Label(CitationStylesElement, Formatted, Affixed, StrippedPeriods,
 
 
 class Group(CitationStylesElement, Parent, Formatted, Affixed, Delimited):
-    # TODO: Note that cs:group implicitly acts as a conditional: cs:group and
-    # its child elements are suppressed if
-    #  a) at least one rendering element in cs:group calls a variable (either
-    #     directly or via a macro), and
-    #  b) all variables that are called are empty. This behavior exists to
-    #     accommodate descriptive cs:text elements.
     def render(self, item, context=None):
-        return self.wrap(self.join(self.render_children(item, context=context)))
+        from ...bibliography import VariableError
+        output = []
+        variable_called = False
+        variable_rendered = False
+        for child in self.iterchildren():
+            variable_called = variable_called or child.calls_variable()
+            try:
+                child_text = child.render(item, context=context)
+                if child_text is not None:
+                    output.append(child_text)
+                variable_rendered = variable_rendered or child.calls_variable()
+            except VariableError:
+                pass
+        output = [item for item in output if item is not None]
+        if (output and
+            (not variable_called or (variable_called and variable_rendered))):
+            text = self.wrap(self.join(output))
+        else:
+            text = None
+        return text
 
 
 class ConditionFailed(Exception):
     pass
 
 
-class Choose(CitationStylesElement):
+class Choose(CitationStylesElement, Parent):
     def render(self, item, context=None):
         try:
             return self.find('cs:if', self.nsmap).render(item, context)
@@ -952,8 +990,7 @@ class If(CitationStylesElement, Parent):
         if not result:
             raise ConditionFailed
 
-        output = self.render_children(item, context=context)
-        return ''.join([item for item in output if item is not None])
+        return self.render_children(item, context=context)
 
     def _type(self, item):
         return [typ.lower() == item.reference.type
@@ -978,14 +1015,13 @@ class If(CitationStylesElement, Parent):
         raise NotImplementedError
 
 
-class Else_If(If):
+class Else_If(If, CitationStylesElement):
     pass
 
 
 class Else(CitationStylesElement, Parent):
     def render(self, item, context=None):
-        output = self.render_children(item, context=context)
-        return ''.join([item for item in output if item is not None])
+        return self.render_children(item, context=context)
 
 
 # utility functions

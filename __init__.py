@@ -47,6 +47,16 @@ class Reference(CustomDict):
                     set(csl.VARIABLES))
         super().__init__(args, optional=optional)
 
+    def __getitem__(self, key):
+        try:
+            return super().__getitem__(key)
+        except KeyError:
+            raise VariableError
+
+
+class VariableError(Exception):
+    pass
+
 
 class Name(CustomDict):
     def __init__(self, **args):
