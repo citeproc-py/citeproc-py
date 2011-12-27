@@ -403,7 +403,11 @@ class Text(CitationStylesElement, Formatted, Affixed, TextCased,
             if self.tag in repressed and variable in repressed[self.tag]:
                 return None
 
-            short = self.get('form') == 'short' # TODO: do something with this
+            if self.get('form') == 'short':
+                short_variable = variable + '-short'
+                if short_variable.replace('-', '_') in item.reference:
+                    variable = short_variable
+
             if variable == 'page-first' and variable not in item.reference:
                 page = item.reference.page
                 text = Number.re_range.match(page).group(1)
