@@ -141,6 +141,8 @@ class Locale(CitationStylesElement):
 
     def get_option(self, name):
         options = self.find('cs:style-options', self.nsmap)
+        if options is None:
+            raise IndexError
         return options.get(name, __class__._default_options[name])
 
 
