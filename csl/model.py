@@ -415,7 +415,7 @@ class Text(CitationStylesElement, Formatted, Affixed, TextCased,
             text = self.get('value')
 
         # TODO: display, formatting, quotes, strip-periods, text-case
-        return self.wrap(self.case(self.strip_periods(text)))
+        return self.wrap(self.format(self.case(self.strip_periods(text))))
 
 
 class Date(CitationStylesElement, Parent, Formatted, Affixed, Delimited):
