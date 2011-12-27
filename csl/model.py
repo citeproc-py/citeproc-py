@@ -304,14 +304,14 @@ class Term(CitationStylesElement):
         try:
             return self.find('cs:single', self.nsmap).text
         except AttributeError:
-            return self.text
+            return self.text or ''
 
     @property
     def multiple(self):
         try:
             return self.find('cs:multiple', self.nsmap).text
         except AttributeError:
-            return self.text
+            return self.text or ''
 
 
 # Rendering elements
