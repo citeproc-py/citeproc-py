@@ -267,8 +267,13 @@ class Displayed(object):
 
 class Quoted(object):
     def quote(self, string):
-        if self.get('quotes', False):
-            return string
+        piq = self.get_locale_option('punctuation-in-quote').lower() == 'true'
+        if self.get('quotes', 'false').lower() == 'true':
+            open_quote = self.get_term('open-quote').single
+            close_quote = self.get_term('close-quote').single
+            string = string + close_quote
+##            quoted_string = QuotedString(string, open_quote, close_quote, piq)
+        return string
 
 
 class StrippedPeriods(object):
@@ -390,7 +395,7 @@ class Layout(CitationStylesElement, Parent, Formatted, Affixed, Delimited):
         return '\n'.join(output)
 
 
-class Text(CitationStylesElement, Formatted, Affixed, TextCased,
+class Text(CitationStylesElement, Formatted, Affixed, Quoted, TextCased,
            StrippedPeriods):
     def calls_variable(self):
         return 'variable' in self.attrib
@@ -431,9 +436,9 @@ class Text(CitationStylesElement, Formatted, Affixed, TextCased,
         elif 'value' in self.attrib:
             text = self.get('value')
 
-        # TODO: display, formatting, quotes, strip-periods, text-case
         if text:
-            return self.wrap(self.format(self.case(self.strip_periods(text))))
+            tmp = self.format(self.case(self.strip_periods(text)))
+            return self.wrap(self.quote(tmp))
         else:
             return None
 
