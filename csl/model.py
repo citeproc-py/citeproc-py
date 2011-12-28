@@ -27,7 +27,7 @@ class CitationStylesElement(SomewhatObjectifiedElement):
                         'and': None,
                         'delimiter-precedes-last': 'contextual',
                         'et-al-min': 0,
-                        'et-al-use-first': 0,
+                        'et-al-use-first': 1,
                         'et-al-subsequent-min': 0,
                         'et-al-subsequent-use-first': 0,
                         'initialize-with': None,
@@ -36,7 +36,7 @@ class CitationStylesElement(SomewhatObjectifiedElement):
 
                         'name-form': 'long',
                         'name-delimiter': ', ',
-                        'names-delimiter': ', '}
+                        'names-delimiter': ''}
 
     def get_root(self):
         return self.getroottree().getroot()
@@ -745,6 +745,7 @@ class Name(CitationStylesElement, Formatted, Affixed, Delimited):
 
     def render(self, item, variable, context=None):
         and_ = self.get_option('and', context)
+        delimiter = self.get_option('delimiter', context)
         delimiter_precedes_last = self.get_option('delimiter-precedes-last',
                                                   context)
 
@@ -758,7 +759,7 @@ class Name(CitationStylesElement, Formatted, Affixed, Delimited):
         name_as_sort_order = self.get_option('name-as-sort-order', context)
         sort_separator = self.get_option('sort-separator', context)
 
-        form = self.get('form', 'long')
+        form = self.get_option('form', context)
         demote_ndp = self.get_option('demote-non-dropping-particle', context)
 
         def format_name_parts(given, family):
@@ -816,9 +817,9 @@ class Name(CitationStylesElement, Formatted, Affixed, Delimited):
                     (delimiter_precedes_last == 'contextual' and
                      len(output) >= 2)):
                     output.append(et_al)
-                    text = self.join(output, ', ')
+                    text = self.join(output, delimiter)
                 else:
-                    text = self.join(output, ', ') + ' ' + et_al
+                    text = self.join(output, delimiter) + ' ' + et_al
             elif and_ is not None and len(output) > 1:
                 text = self.join(output[:-1], ', ')
                 if (delimiter_precedes_last == 'always' or
@@ -829,7 +830,7 @@ class Name(CitationStylesElement, Formatted, Affixed, Delimited):
                     text += ' '
                 text += '{} '.format(and_term) + output[-1]
             else:
-                text = self.join(output, ', ')
+                text = self.join(output, delimiter)
 
             return self.wrap(self.format(text))
 
