@@ -404,13 +404,15 @@ class Layout(CitationStylesElement, Parent, Formatted, Affixed, Delimited):
 
     def render_bibliography(self, references):
         from ...bibliography import CitationItem
+        item_prefix = '  <div class="csl-entry">'
+        item_suffix = '</div>'
         self.repressed = {}
         output = ['<div class="csl-bib-body">']
         items = [CitationItem(reference) for reference in references]
         for item in items:
             text = self.render_children(item)
             if text is not None:
-                text = '  <div class="csl-entry">' + text + '</div>'
+                text = item_prefix + self.wrap(self.format(text)) + item_suffix
                 output.append(text)
             self.repressed = {}
         output.append('</div>')
