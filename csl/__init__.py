@@ -72,7 +72,7 @@ class CitationStylesLocale(CitationStylesXML):
 
 
 class CitationStylesStyle(CitationStylesXML):
-    def __init__(self, style, locale='en-US'):
+    def __init__(self, style, locale=None):
         try:
             if not os.path.exists(style):
                 style = os.path.join(STYLES_PATH, '{}.csl'.format(style))
@@ -82,6 +82,8 @@ class CitationStylesStyle(CitationStylesXML):
             super().__init__(style)
         except IOError:
             raise ValueError("'{}' is not a known style".format(style))
+        if locale is None:
+            locale = self.root.get('default-locale', 'en-US')
         self.root.set_locale_list(locale)
 
     def render_citation(self, citation, **options):
