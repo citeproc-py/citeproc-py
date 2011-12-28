@@ -463,10 +463,11 @@ class Date(CitationStylesElement, Parent, Formatted, Affixed, Delimited):
             parts = self.parts(date, show_parts, context)
         else:
             parts = self.parts(date, show_parts)
-        if self.is_locale_date():
-            return context.join(parts)
+        if parts:
+            style_context = context if self.is_locale_date() else self
+            return style_context.join(parts)
         else:
-            return self.join(parts)
+            return None
 
     def render_date_range(self, date_range, show_parts=None, context=None):
         same_show_parts = []
@@ -524,16 +525,23 @@ class Date(CitationStylesElement, Parent, Formatted, Affixed, Delimited):
             else:
                 text = self.render_single_date(date_or_range, show_parts,
                                                context)
-            if self.is_locale_date():
-                return context.wrap(text)
+            if text is not None:
+                style_context = context if self.is_locale_date() else self
+                return style_context.wrap(text)
             else:
-                return self.wrap(text)
+                return None
 
     def parts(self, date, show_parts, context=None):
+        from ...bibliography import VariableError
         output = []
         for part in self.iterchildren():
             if part.get('name') in show_parts:
-                output.append(part.render(date, context))
+                try:
+                    part_text = part.render(date, context)
+                    if part_text is not None:
+                        output.append(part_text)
+                except VariableError:
+                    pass
         return output
 
 
@@ -543,8 +551,6 @@ class Date_Part(CitationStylesElement, Formatted, Affixed, TextCased,
         name = self.get('name')
         range_delimiter = self.get('range-delimiter', '-')
         attrib = self.attrib
-        if name not in date:
-            return None
 
         if context is None:
             context = self
@@ -935,7 +941,8 @@ class Group(CitationStylesElement, Parent, Formatted, Affixed, Delimited):
                 child_text = child.render(item, context=context)
                 if child_text is not None:
                     output.append(child_text)
-                variable_rendered = variable_rendered or child.calls_variable()
+                    variable_rendered = (variable_rendered or
+                                         child.calls_variable())
             except VariableError:
                 pass
         output = [item for item in output if item is not None]

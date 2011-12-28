@@ -37,6 +37,12 @@ class CustomDict(dict):
     def __getattr__(self, name):
         return self[name]
 
+    def __getitem__(self, key):
+        try:
+            return super().__getitem__(key)
+        except KeyError:
+            raise VariableError
+
 
 class Reference(CustomDict):
     def __init__(self, key, type, **args):
@@ -46,12 +52,6 @@ class Reference(CustomDict):
         optional = ({'uri', 'container_uri', 'contributor', 'date'} |
                     set(csl.VARIABLES))
         super().__init__(args, optional=optional)
-
-    def __getitem__(self, key):
-        try:
-            return super().__getitem__(key)
-        except KeyError:
-            raise VariableError
 
 
 class VariableError(Exception):
