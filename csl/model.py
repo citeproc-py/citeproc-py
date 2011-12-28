@@ -495,10 +495,18 @@ class Date(CitationStylesElement, Parent, Formatted, Affixed, Delimited):
                                              context)
         diff_end = self.render_single_date(date_range.end, show_parts, context)
 
+        if not (diff_begin and diff_begin):
+            return None
+
         diff = chr(name2codepoint['ndash']).join([diff_begin.rstrip(),
                                                   diff_end])
+        if same:
+            text = context.join([diff, same.rstrip()])
+        else:
+            text = diff
 
-        return context.join([diff, same.rstrip()])
+        return text
+
 
     def render(self, item, variable=None, show_parts=None, context=None):
         if variable is None:
