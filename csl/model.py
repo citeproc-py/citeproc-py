@@ -1042,12 +1042,9 @@ class Else(CitationStylesElement, Parent):
 
 def to_ordinal(number, context):
     number = str(number)
-    if number.endswith('1') and not number.endswith('11'):
-        ordinal_term = 'ordinal-01'
-    elif number.endswith('2') and not number.endswith('12'):
-        ordinal_term = 'ordinal-02'
-    elif number.endswith('3') and not number.endswith('13'):
-        ordinal_term = 'ordinal-03'
+    last_digit = int(number[-1])
+    if last_digit in (1, 2, 3) and not (len(number) > 1 and number[-2] == '1'):
+        ordinal_term = 'ordinal-{:02}'.format(last_digit)
     else:
         ordinal_term = 'ordinal-04'
     return number + context.get_term(ordinal_term).single
