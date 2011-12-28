@@ -698,7 +698,13 @@ class Names(CitationStylesElement, Parent, Formatted, Affixed, Delimited):
                 text = name_elem.render(item, role, context=context)
                 plural = len(item.reference[role]) > 1
                 try:
-                    text += names_context.label.render(item, role, plural)
+                    label_element = names_context.label
+                    label = label_element.render(item, role, plural)
+                    if label is not None:
+                        if label_element is names_context.getchildren()[0]:
+                            text = label + text
+                        else:
+                            text = text + label
                 except AttributeError:
                     pass
                 output.append(text)
