@@ -940,12 +940,10 @@ class Group(CitationStylesElement, Parent, Formatted, Affixed, Delimited):
                 pass
         output = [item for item in output if item is not None]
         success = not variable_called or (variable_called and variable_rendered)
-        if not success:
-            raise VariableError
-        if output:
+        if output and success:
             return self.wrap(self.format(self.join(output)))
         else:
-            return None
+            raise VariableError
 
 
 class ConditionFailed(Exception):
