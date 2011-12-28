@@ -688,8 +688,18 @@ class Names(CitationStylesElement, Parent, Formatted, Affixed, Delimited):
         if names_context is None:
             names_context = self
 
+        roles = self.get('variable').split()
+        try:
+            ed_trans = (set(roles) == set(['editor', 'translator']) and
+                        item.reference.editor == item.reference.translator and
+                        self.get_term('editortranslator').getchildren())
+            if ed_trans:
+                roles = ['editor']
+        except VariableError:
+            ed_trans = False
+
         output = []
-        for role in self.get('variable').split(' '):
+        for role in roles:
             if role in item.reference:
                 name_elem = names_context.name
                 if name_elem is None:
@@ -698,6 +708,8 @@ class Names(CitationStylesElement, Parent, Formatted, Affixed, Delimited):
                 text = name_elem.render(item, role, context=context)
                 plural = len(item.reference[role]) > 1
                 try:
+                    if ed_trans:
+                        role = 'editortranslator'
                     label_element = names_context.label
                     label = label_element.render(item, role, plural)
                     if label is not None:
