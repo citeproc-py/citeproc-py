@@ -642,6 +642,8 @@ class Number(CitationStylesElement, Formatted, Affixed, Displayed, TextCased,
                 text = self.format_number(number, form)
             except AttributeError:
                 text = variable
+        except TypeError:
+            text = str(variable)
 
         return self.wrap(self.format(self.case(self.strip_periods(text))))
 
