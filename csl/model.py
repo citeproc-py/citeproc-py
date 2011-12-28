@@ -305,6 +305,26 @@ class TextCased(object):
         return text
 
 
+# Tests
+
+class PluralTest(object):
+    def is_plural(self, item):
+        from ...bibliography import VariableError
+        variable = self.get('variable')
+        if variable == 'locator':
+            value = item.locator.identifier
+        else:
+            try:
+                value = item.reference[variable.replace('-', '_')]
+            except VariableError:
+                return False
+
+        if variable.startswith('number-of') and int(item[variable]) > 1:
+            return True
+        else:
+            return Number.re_range.match(str(value))
+
+
 # Locale
 
 class Term(CitationStylesElement):
@@ -398,7 +418,7 @@ class Layout(CitationStylesElement, Parent, Formatted, Affixed, Delimited):
 
 
 class Text(CitationStylesElement, Formatted, Affixed, Quoted, TextCased,
-           StrippedPeriods):
+           StrippedPeriods, PluralTest):
     def calls_variable(self):
         if 'variable' in self.attrib:
             return True
@@ -610,22 +630,12 @@ class Date_Part(CitationStylesElement, Formatted, Affixed, TextCased,
 
 
 class Number(CitationStylesElement, Formatted, Affixed, Displayed, TextCased,
-             StrippedPeriods):
+             StrippedPeriods, PluralTest):
     re_numeric = re.compile(r'^(\d+).*')
     re_range = re.compile(r'^(\d+)\s*-\s*(\d+)$')
 
     def calls_variable(self):
         return True
-
-    def is_plural(self, item):
-        variable = self.get('variable')
-        if variable.startswith('number-of') and int(item[variable]) > 1:
-            return True
-        elif (variable == 'locator'
-              and self.re_range.match(item.locator.identifier)):
-            return True
-        else:
-            return False
 
     def render(self, item, context=None):
         form = self.get('form', 'numeric')
@@ -947,15 +957,19 @@ class Label(CitationStylesElement, Formatted, Affixed, StrippedPeriods,
     def calls_variable(self):
         return self.get('variable') == 'locator'
 
+    def plural(self, item):
+        expr = './parent::*/*[self::cs:text or self::cs:number]'
+        try:
+            element = self.xpath_search(expr)[0]
+            return element.is_plural(item)
+        except IndexError:
+            return False
+
     def render(self, item, variable=None, plural=None, context=None):
         if variable is None:
             variable = self.get('variable')
         if plural is None:
-            try:
-                number = self.xpath_search('./parent::*/cs:number[1]')[0]
-                plural = number.is_plural(item)
-            except IndexError:
-                plural = False
+            plural = self.plural(item)
         form = self.get('form', 'long')
         plural_option = self.get('plural', 'contextual')
 
