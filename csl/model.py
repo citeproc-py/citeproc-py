@@ -1056,16 +1056,19 @@ class If(CitationStylesElement, Parent):
                 for typ in self.get('type').split()]
 
     def _variable(self, item):
-        return [var in item.reference for var in self.get('variable').split()]
+        return [var.replace('-', '_') in item.reference
+                for var in self.get('variable').split()]
 
     def _is_numeric(self, item):
-        return [var in item.reference and
-                Number.re_numeric.match(str(item.reference[var]))
+        numeric_match = Number.re_numeric.match
+        return [var.replace('-', '_') in item.reference and
+                numeric_match(str(item.reference[var.replace('-', '_')]))
                 for var in self.get('is-numeric').split()]
 
     def _is_uncertain_date(self, item):
         dates = self.get('is-uncertain-date').split()
-        return [item.reference[date].get('circa', False) for date in dates]
+        return [item.reference[date.replace('-', '_')].get('circa', False)
+                for date in dates]
 
     def _locator(self, item):
         raise NotImplementedError
