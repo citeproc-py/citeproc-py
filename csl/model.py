@@ -271,7 +271,7 @@ class Quoted(object):
         if self.get('quotes', 'false').lower() == 'true':
             open_quote = self.get_term('open-quote').single
             close_quote = self.get_term('close-quote').single
-            string = string + close_quote
+            string = open_quote + string + close_quote
 ##            quoted_string = QuotedString(string, open_quote, close_quote, piq)
         return string
 
