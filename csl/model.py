@@ -25,11 +25,13 @@ class CitationStylesElement(SomewhatObjectifiedElement):
 
                         # inheritable name(s) options
                         'and': None,
+                        'delimiter-precedes-et-al': 'contextual',
                         'delimiter-precedes-last': 'contextual',
                         'et-al-min': 0,
                         'et-al-use-first': 1,
                         'et-al-subsequent-min': 0,
-                        'et-al-subsequent-use-first': 0,
+                        'et-al-subsequent-use-first': 1,
+                        'et-al-use-last': 'false',
                         'initialize-with': None,
                         'name-as-sort-order': None,
                         'sort-separator': ', ',
@@ -729,10 +731,10 @@ class Name(CitationStylesElement, Formatted, Affixed, Delimited):
             value = self.get(name, parent.get_option('name-' + name))
         else:
             value = self.get(name, parent.get_option(name))
-            if name.startswith('et-al'):
-                value = int(value)
-            elif name in ('initialize-with-hyphen', ):
+            if name in ('initialize-with-hyphen', 'et-al-use-last'):
                 value = value.lower() == 'true'
+            elif name.startswith('et-al'):
+                value = int(value)
         return value
 
     def et_al(self):
@@ -746,6 +748,8 @@ class Name(CitationStylesElement, Formatted, Affixed, Delimited):
     def render(self, item, variable, context=None):
         and_ = self.get_option('and', context)
         delimiter = self.get_option('delimiter', context)
+        delimiter_precedes_et_al = self.get_option('delimiter-precedes-et-al',
+                                                   context)
         delimiter_precedes_last = self.get_option('delimiter-precedes-last',
                                                   context)
 
@@ -754,6 +758,7 @@ class Name(CitationStylesElement, Formatted, Affixed, Delimited):
         et_al_subseq_min = self.get_option('et-al-subsequent-min', context)
         et_al_subseq_use_first = self.get_option('et-al-subsequent-use-first',
                                                  context)
+        et_al_use_last = self.get_option('et-al-use-last', context)
 
         initialize_with = self.get_option('initialize-with', context)
         name_as_sort_order = self.get_option('name-as-sort-order', context)
@@ -782,8 +787,12 @@ class Name(CitationStylesElement, Formatted, Affixed, Delimited):
             return sum(output)
         else:
             et_al_truncate = et_al_min and len(names) >= et_al_min
+            et_al_last = et_al_use_last and et_al_use_first <= et_al_min - 2
             if et_al_truncate:
-                names = names[:et_al_use_first]
+                if et_al_last:
+                    names = names[:et_al_use_first] + [names[-1]]
+                else:
+                    names = names[:et_al_use_first]
             for i, name in enumerate(names):
                 given, family, dp, ndp, suffix = name.parts()
 
@@ -812,9 +821,14 @@ class Name(CitationStylesElement, Formatted, Affixed, Delimited):
                     text = family
 
                 output.append(text)
+
             if et_al_truncate and et_al:
-                if (delimiter_precedes_last == 'always' or
-                    (delimiter_precedes_last == 'contextual' and
+                if et_al_last:
+                    ellipsis = chr(name2codepoint['hellip'])
+                    output[-1] = ellipsis + ' ' + output[-1]
+                    text = self.join(output, delimiter)
+                elif (delimiter_precedes_et_al == 'always' or
+                      (delimiter_precedes_et_al == 'contextual' and
                      len(output) >= 2)):
                     output.append(et_al)
                     text = self.join(output, delimiter)
