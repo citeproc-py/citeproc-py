@@ -400,7 +400,12 @@ class Layout(CitationStylesElement, Parent, Formatted, Affixed, Delimited):
 class Text(CitationStylesElement, Formatted, Affixed, Quoted, TextCased,
            StrippedPeriods):
     def calls_variable(self):
-        return 'variable' in self.attrib
+        if 'variable' in self.attrib:
+            return True
+        elif 'macro' in self.attrib:
+            return self.get_macro(self.get('macro')).calls_variable()
+        else:
+            return False
 
     def render(self, item, context=None):
         if context is None:
