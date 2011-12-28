@@ -669,13 +669,11 @@ class Names(CitationStylesElement, Parent, Formatted, Affixed, Delimited):
             result = None
         return result
 
-    def render(self, item, context=None):
+    def render(self, item, names_context=None, context=None):
         # if this instance substitutes another
         if context is None:
-            names_context = context = self
-        elif isinstance(context, Names):
-            names_context = context
-        else:
+            context = self
+        if names_context is None:
             names_context = self
 
         output = []
@@ -874,7 +872,7 @@ class Substitute(CitationStylesElement, Parent):
         for child in self.getchildren():
             if isinstance(child, Names) and child.name is None:
                 names = self.xpath_search('./parent::cs:names[1]')[0]
-                text = child.render(item, context=names)
+                text = child.render(item, names_context=names, context=context)
             else:
                 text = child.render(item, context=context)
             if text:
