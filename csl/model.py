@@ -954,24 +954,13 @@ class ConditionFailed(Exception):
 
 class Choose(CitationStylesElement, Parent):
     def render(self, item, context=None):
-        try:
-            return self.find('cs:if', self.nsmap).render(item, context)
-        except ConditionFailed:
-            pass
+        for child in self.getchildren():
+            try:
+                return child.render(item, context=context)
+            except ConditionFailed:
+                continue
 
-        try:
-            for else_if in self.findall('cs:else-if', self.nsmap):
-                try:
-                    return else_if.render(item, context)
-                except ConditionFailed:
-                    continue
-        except TypeError:
-            pass
-
-        try:
-            return self.find('cs:else', self.nsmap).render(item, context)
-        except (AttributeError, ConditionFailed):
-            return None
+        return None
 
 
 class If(CitationStylesElement, Parent):
