@@ -682,7 +682,7 @@ class Names(CitationStylesElement, Parent, Formatted, Affixed, Delimited):
         return result
 
     def render(self, item, names_context=None, context=None):
-        # if this instance substitutes another
+        from ...bibliography import VariableError
         if context is None:
             context = self
         if names_context is None:
@@ -719,12 +719,15 @@ class Names(CitationStylesElement, Parent, Formatted, Affixed, Delimited):
             substitute = self.substitute()
             if substitute is not None:
                 text = substitute.render(item, context)
+
         try:
-            if text is None:
-                raise NameError
-            return self.wrap(self.format(text))
+            if text is not None:
+                return self.wrap(self.format(text))
+            else:
+                return None
         except NameError:
-            return None
+            from ...bibliography import VariableError
+            raise VariableError
 
 
 class Name(CitationStylesElement, Formatted, Affixed, Delimited):
@@ -900,12 +903,16 @@ class Et_Al(CitationStylesElement, Formatted, Affixed):
 
 class Substitute(CitationStylesElement, Parent):
     def render(self, item, context=None):
+        from ...bibliography import VariableError
         for child in self.getchildren():
-            if isinstance(child, Names) and child.name is None:
-                names = self.xpath_search('./parent::cs:names[1]')[0]
-                text = child.render(item, names_context=names, context=context)
-            else:
-                text = child.render(item, context=context)
+            try:
+                if isinstance(child, Names) and child.name is None:
+                    names = self.xpath_search('./parent::cs:names[1]')[0]
+                    text = child.render(item, names_context=names, context=context)
+                else:
+                    text = child.render(item, context=context)
+            except VariableError:
+                continue
             if text:
                 self.add_to_repressed_list(child, context)
                 break
