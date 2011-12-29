@@ -937,7 +937,8 @@ class Substitute(CitationStylesElement, Parent):
             try:
                 if isinstance(child, Names) and child.name is None:
                     names = self.xpath_search('./parent::cs:names[1]')[0]
-                    text = child.render(item, names_context=names, context=context)
+                    text = child.render(item, names_context=names,
+                                        context=context)
                 else:
                     text = child.render(item, context=context)
             except VariableError:
@@ -945,7 +946,10 @@ class Substitute(CitationStylesElement, Parent):
             if text:
                 self.add_to_repressed_list(child, context)
                 break
-        return text
+        try:
+            return text
+        except NameError:
+            return None
 
     def add_to_repressed_list(self, child, context):
         layout = context.get_layout()
