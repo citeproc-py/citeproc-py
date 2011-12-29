@@ -1,5 +1,6 @@
 
 import os
+
 from glob import glob
 from warnings import warn
 
@@ -68,7 +69,7 @@ class CitationStylesLocale(CitationStylesXML):
         try:
             super().__init__(locale_path)
         except IOError:
-            raise ValueError("'{}' is not a known locale".format(style))
+            raise ValueError("'{}' is not a known locale".format(locale))
 
 
 class CitationStylesStyle(CitationStylesXML):
@@ -89,38 +90,28 @@ class CitationStylesStyle(CitationStylesXML):
     def render_citation(self, citation, **options):
         return self.root.citation.render(citation)
 
-    def render_bibliography(self, references, **options):
-        return self.root.bibliography.render(references)
+    def render_bibliography(self, citation_items, **options):
+        return self.root.bibliography.render(citation_items)
 
 
-##class CitationStylesBibliographyFormatter(BibliographyFormatter):
-##    def __init__(self, style, locale='en-US'):
-##        self.style = Style(style).root
-##        self.locale = Locale(locale)
-##    READ "Locale Prioritization"
-##    def format_citation(self, references):
-##        try:
-##            references = self.style.citation.sort(references)
-##        except AttributeError:
-##            pass
-##
-####        try:
-####            index = self.bibliography.index(reference)
-####            return StyledText('[{}]'.format(index + 1))
-####        except:
-####            return StyledText('[ERROR]')
-##
-##    def format_bibliography(self, target):
-##        items = []
-##        heading = Heading('References', style=acknowledgement_heading_style)
-##        target.add_flowable(heading)
-##        for i, ref in enumerate(self.bibliography):
-##            authors = ['{} {}'.format(name.given_initials(), name.family)
-##                       for name in ref.author]
-##            authors = ', '.join(authors)
-##            item = '[{}]&nbsp;{}, "{}", '.format(i + 1, authors, ref.title)
-##            item += Emphasized(ref['container_title'])
-##            item += ', {}'.format(ref.issued.year)
-##            items.append(item)
-##            paragraph = Paragraph(item, style=bibliographyStyle)
-##            target.add_flowable(paragraph)
+class CitationStylesBibliography(object):
+    def __init__(self, style, source):
+        self.style = style
+        self.source = source
+        self.keys = []
+        self.references = []
+
+    def register(self, citation):
+        for item in citation.items:
+            item._bibliography = self
+            self.keys.append(item.key)
+            self.references.append(self.source[item.key])
+
+    def cite(self, citation):
+        self.register(citation)
+        return self.style.render_citation(citation)
+
+    def bibliography(self):
+        from ...bibliography import CitationItem
+        items = [CitationItem(key, bibliography=self) for key in self.keys]
+        return self.style.render_bibliography(items)

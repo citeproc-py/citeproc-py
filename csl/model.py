@@ -188,8 +188,8 @@ class Bibliography(FormattingInstructions, CitationStylesElement):
                         # reference grouping
                         'subsequent-author-substitute': None}
 
-    def render(self, reference):
-        return self.layout.render_bibliography(reference)
+    def render(self, citation_items):
+        return self.layout.render_bibliography(citation_items)
 
 
 # Style behavior
@@ -402,14 +402,12 @@ class Layout(CitationStylesElement, Parent, Formatted, Affixed, Delimited):
             self.repressed = {}
         return self.format(self.wrap(self.join(out)))
 
-    def render_bibliography(self, references):
-        from ...bibliography import CitationItem
+    def render_bibliography(self, citation_items):
         item_prefix = '  <div class="csl-entry">'
         item_suffix = '</div>'
         self.repressed = {}
         output = ['<div class="csl-bib-body">']
-        items = [CitationItem(reference) for reference in references]
-        for item in items:
+        for item in citation_items:
             text = self.render_children(item)
             if text is not None:
                 text = item_prefix + self.wrap(self.format(text)) + item_suffix
@@ -421,9 +419,11 @@ class Layout(CitationStylesElement, Parent, Formatted, Affixed, Delimited):
 
 class Text(CitationStylesElement, Formatted, Affixed, Quoted, TextCased,
            StrippedPeriods, PluralTest):
+    generated_variables = ('year-suffix', 'citation-number')
+
     def calls_variable(self):
         if 'variable' in self.attrib:
-            return True
+            return self.get('variable') not in self.generated_variables
         elif 'macro' in self.attrib:
             return self.get_macro(self.get('macro')).calls_variable()
         else:
@@ -434,34 +434,11 @@ class Text(CitationStylesElement, Formatted, Affixed, Quoted, TextCased,
             context = self
 
         if 'variable' in self.attrib:
-            variable = self.get('variable')
-            repressed = context.get_layout().repressed
-            if self.tag in repressed and variable in repressed[self.tag]:
-                return None
-
-            if self.get('form') == 'short':
-                short_variable = variable + '-short'
-                if short_variable.replace('-', '_') in item.reference:
-                    variable = short_variable
-
-            if variable == 'page-first' and variable not in item.reference:
-                page = item.reference.page
-                text = Number.re_range.match(page).group(1)
-            else:
-                text = item.reference[variable.replace('-', '_')]
+            text = self._variable(item, context)
         elif 'macro' in self.attrib:
             text = self.get_macro(self.get('macro')).render(item, context)
         elif 'term' in self.attrib:
-            form = self.get('form', 'long')
-            plural = self.get('plural', 'false').lower() == 'true'
-            if form == 'long':
-                form = None
-            term = self.get_term(self.get('term'), form)
-
-            if plural:
-                text = term.multiple
-            else:
-                text = term.single
+            text = self._term(item)
         elif 'value' in self.attrib:
             text = self.get('value')
 
@@ -470,6 +447,41 @@ class Text(CitationStylesElement, Formatted, Affixed, Quoted, TextCased,
             return self.wrap(self.quote(tmp))
         else:
             return None
+
+    def _variable(self, item, context):
+        variable = self.get('variable')
+        repressed = context.get_layout().repressed
+        if self.tag in repressed and variable in repressed[self.tag]:
+            return None
+
+        if self.get('form') == 'short':
+            short_variable = variable + '-short'
+            if short_variable.replace('-', '_') in item.reference:
+                variable = short_variable
+
+        if variable == 'citation-number':
+            text = item.number
+        elif variable == 'page-first' and variable not in item.reference:
+            page = item.reference.page
+            text = Number.re_range.match(page).group(1)
+        else:
+            text = item.reference[variable.replace('-', '_')]
+
+        return text
+
+    def _term(self, item):
+        form = self.get('form', 'long')
+        plural = self.get('plural', 'false').lower() == 'true'
+        if form == 'long':
+            form = None
+        term = self.get_term(self.get('term'), form)
+
+        if plural:
+            text = term.multiple
+        else:
+            text = term.single
+
+        return text
 
 
 class Date(CitationStylesElement, Parent, Formatted, Affixed, Delimited):
