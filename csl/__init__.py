@@ -108,7 +108,6 @@ class CitationStylesBibliography(object):
             self.references.append(self.source[item.key])
 
     def cite(self, citation):
-        self.register(citation)
         return self.style.render_citation(citation)
 
     def bibliography(self):

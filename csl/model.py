@@ -60,7 +60,7 @@ class CitationStylesElement(SomewhatObjectifiedElement):
         return self.get_root().xpath_search(expression)[0]
 
     def get_layout(self):
-        return self.xpath_search('./ancestor::cs:layout[1]')[0]
+        return self.xpath_search('./ancestor-or-self::cs:layout[1]')[0]
 
     # TODO: Locale methods
     def get_term(self, name, form=None):
@@ -325,7 +325,7 @@ class PluralTest(object):
             return Number.re_range.match(str(value))
 
 
-# Locale
+# Locale elements
 
 class Term(CitationStylesElement):
     @property
@@ -341,6 +341,63 @@ class Term(CitationStylesElement):
             return self.find('cs:multiple', self.nsmap).text
         except AttributeError:
             return self.text or ''
+
+
+# Sorting elements
+
+class Sort(CitationStylesElement):
+    def sort(self, items, context):
+        return self.key.sort(items, context)
+
+        sort_keys = []
+        for key in self.key:
+            try:
+                descending = key.attrib['sort'] == 'descending'
+            except KeyError:
+                descending = False
+            # names-min, names-use-first
+            sort_keys.append((key.variable, descending))
+
+
+class Key(CitationStylesElement):
+    def sort(self, items, context):
+        from ..csl import NAMES, DATES, NUMBERS
+
+        sort = self.get('sort', 'ascending')
+        names_min = self.get('names-min')
+        names_use_first = self.get('names-use-first')
+        names_use_last = self.get('names-use-last')
+
+        if 'variable' in self.attrib:
+            variable = self.get('variable').replace('-', '_')
+            if variable in NAMES:
+                sort_keys = [item.reference.get(variable, '') for item in items]
+            elif variable in DATES:
+                sort_keys = [self.format_date(item, variable) for item in items]
+            elif variable in NUMBERS:
+                sort_keys = [item.reference.get(variable, '') for item in items]
+            else:
+                sort_keys = [item.reference.get(variable, '') for item in items]
+        elif 'macro' in self.attrib:
+            macro = self.get_macro(self.get('macro'))
+            sort_keys = [macro.render(item, context) for item in items]
+
+        items_keys = list(zip(items, sort_keys))
+        items_keys.sort(key=lambda x: x[1])
+        sorted_items = [item for item, sort_key in items_keys]
+        if sort == 'ascending':
+            sorted_items.reverse()
+        return sorted_items
+
+    def format_date(self, item, variable):
+        date = item.reference.get(variable)
+        try:
+            year = date.year
+            month = date.get('month', 0)
+            day = date.get('day', 0)
+            return '{:04}{:02}{:02}'.format(year, month, day)
+        except AttributeError:
+            return '00000000'
 
 
 # Rendering elements
@@ -365,19 +422,6 @@ class Parent(object):
             return None
 
 
-class Sort(CitationStylesElement):
-    def sort(self, items):
-        raise NotImplementedError
-        sort_keys = []
-        for key in self.key:
-            try:
-                descending = key.attrib['sort'] == 'descending'
-            except KeyError:
-                descending = False
-            # names-min, names-use-first
-            sort_keys.append((key.variable, descending))
-
-
 class Macro(CitationStylesElement, Parent):
     def render(self, item, context):
         return self.render_children(item, context=context)
@@ -386,8 +430,9 @@ class Macro(CitationStylesElement, Parent):
 class Layout(CitationStylesElement, Parent, Formatted, Affixed, Delimited):
     def render_citation(self, citation):
         from ...bibliography import VariableError
-        # TODO: formatting
         self.repressed = {}
+        if self.getparent().sort:
+            citation.items = self.getparent().sort.sort(citation.items, self)
         out = []
         for item in citation.items:
             prefix = item.get('prefix', '')
@@ -406,6 +451,8 @@ class Layout(CitationStylesElement, Parent, Formatted, Affixed, Delimited):
         item_prefix = '  <div class="csl-entry">'
         item_suffix = '</div>'
         self.repressed = {}
+        if self.getparent().sort:
+            citation_items = self.getparent().sort.sort(citation_items, self)
         output = ['<div class="csl-bib-body">']
         for item in citation_items:
             text = self.render_children(item)
