@@ -508,6 +508,8 @@ class Text(CitationStylesElement, Formatted, Affixed, Quoted, TextCased,
 
         if variable == 'citation-number':
             text = item.number
+        elif variable == 'locator':
+            text = str(item.locator.identifier)
         elif variable == 'page-first' and variable not in item.reference:
             page = item.reference.page
             text = Number.re_range.match(page).group(1)
@@ -1150,7 +1152,8 @@ class If(CitationStylesElement, Parent):
                 for date in dates]
 
     def _locator(self, item):
-        raise NotImplementedError
+        return [var.replace('-', ' ') == item.locator.label
+                for var in self.get('locator').split()]
 
     def _position(self, item):
         raise NotImplementedError
