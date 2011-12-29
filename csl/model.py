@@ -431,7 +431,7 @@ class Layout(CitationStylesElement, Parent, Formatted, Affixed, Delimited):
     def render_citation(self, citation):
         from ...bibliography import VariableError
         self.repressed = {}
-        if self.getparent().sort:
+        if self.getparent().sort is not None:
             citation.items = self.getparent().sort.sort(citation.items, self)
         out = []
         for item in citation.items:
@@ -451,7 +451,7 @@ class Layout(CitationStylesElement, Parent, Formatted, Affixed, Delimited):
         item_prefix = '  <div class="csl-entry">'
         item_suffix = '</div>'
         self.repressed = {}
-        if self.getparent().sort:
+        if self.getparent().sort is not None:
             citation_items = self.getparent().sort.sort(citation_items, self)
         output = ['<div class="csl-bib-body">']
         for item in citation_items:
