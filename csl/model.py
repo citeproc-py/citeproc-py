@@ -2,6 +2,7 @@
 import re
 
 from html.entities import codepoint2name, name2codepoint
+from operator import itemgetter
 
 from lxml import etree
 
@@ -347,58 +348,100 @@ class Term(CitationStylesElement):
 
 class Sort(CitationStylesElement):
     def sort(self, items, context):
-        return self.key.sort(items, context)
+        # custom sort function to push items with None keys to bottom
+        def multi_key_sort(items, keys, descending):
+            lst = zip(items, *keys)
+            comparers = [(itemgetter(i + 1), descending[i]) for i in range(len(keys))]
+            def mycmp(left, right):
+                for getter, desc in comparers:
+                    left_key, right_key = getter(left), getter(right)
+                    if left_key is not None and right_key is not None:
+                        result = (left_key > right_key) - (left_key < right_key)
+                        if result:
+                            return -1 * result if desc else result
+                    elif left_key is not None:
+                        return -1
+                    elif right_key is not None:
+                        return 1
+                    else:
+                        continue
+                else:
+                    return 0
 
+            sorted_lst = sorted(lst, key=cmp_to_key(mycmp))
+            return [item[0] for item in sorted_lst]
+
+        sort_descending = []
         sort_keys = []
-        for key in self.key:
-            try:
-                descending = key.attrib['sort'] == 'descending'
-            except KeyError:
-                descending = False
-            # names-min, names-use-first
-            sort_keys.append((key.variable, descending))
+        for key in self.findall('cs:key', self.nsmap):
+            descending = key.get('sort', 'ascending').lower() == 'descending'
+            sort_descending.append(descending)
+            sort_keys.append(key.sort_keys(items, context))
+
+        return multi_key_sort(items, sort_keys, sort_descending)
 
 
 class Key(CitationStylesElement):
-    def sort(self, items, context):
+    def sort_keys(self, items, context):
         from ..csl import NAMES, DATES, NUMBERS
-
-        sort = self.get('sort', 'ascending')
-        names_min = self.get('names-min')
-        names_use_first = self.get('names-use-first')
-        names_use_last = self.get('names-use-last')
-
         if 'variable' in self.attrib:
             variable = self.get('variable').replace('-', '_')
             if variable in NAMES:
-                sort_keys = [item.reference.get(variable, '') for item in items]
+                sort_keys = [self._format_name(item, variable)
+                             for item in items]
             elif variable in DATES:
-                sort_keys = [self.format_date(item, variable) for item in items]
+                sort_keys = [item.reference.get(variable).sort_key()
+                             for item in items]
             elif variable in NUMBERS:
-                sort_keys = [item.reference.get(variable, '') for item in items]
+                sort_keys = [self._format_number(item, variable)
+                             for item in items]
+            elif variable == 'citation-number':
+                sort_keys = [item.number for item in items]
             else:
-                sort_keys = [item.reference.get(variable, '') for item in items]
+                sort_keys = [item.reference.get(variable) for item in items]
         elif 'macro' in self.attrib:
+            names_min = self.get('names-min')
+            names_use_first = self.get('names-use-first')
+            names_use_last = self.get('names-use-last')
+            names_options = names_min, names_use_first, names_use_last
+            # TODO: pass names_options all the way to a names element
             macro = self.get_macro(self.get('macro'))
             sort_keys = [macro.render(item, context) for item in items]
 
-        items_keys = list(zip(items, sort_keys))
-        items_keys.sort(key=lambda x: x[1])
-        sorted_items = [item for item, sort_key in items_keys]
-        if sort == 'ascending':
-            sorted_items.reverse()
-        return sorted_items
+        return sort_keys
 
-    def format_date(self, item, variable):
+    def _format_name(self, item, variable):
+        names = item.reference.get(variable)
+        if names is not None:
+            output = []
+            for name in names:
+                demote_ndp = self.get_root().get('demote-non-dropping-particle',
+                                                 'display-and-sort').lower()
+                sort_separator = self._default_options['sort-separator']
+
+                # TODO: encapsulate in function (to share with Name)
+                given, family, dp, ndp, suffix = name.parts()
+                if demote_ndp in ('sort-only', 'display-and-sort'):
+                    given = ' '.join([n for n in (given, dp, ndp) if n])
+                else:
+                    family = ' '.join([n for n in (ndp, family) if n])
+                    given = ' '.join([n for n in (given, dp) if n])
+
+                order = family, given, suffix
+                output.append(sort_separator.join([n for n in order if n]))
+            return ';'.join(output)
+        else:
+            return None
+
+    def _format_number(self, item, variable):
         date = item.reference.get(variable)
-        try:
-            year = date.year
-            month = date.get('month', 0)
-            day = date.get('day', 0)
-            return '{:04}{:02}{:02}'.format(year, month, day)
-        except AttributeError:
-            return '00000000'
-
+        if date is not None:
+            try:
+                return str(Number.re_numeric.match(date).group(1))
+            except AttributeError:
+                return date
+        else:
+            return None
 
 # Rendering elements
 
@@ -1190,3 +1233,23 @@ def romanize(n):
         (k, n) = divmod(n, num)
         roman.append(ltr * k)
     return ''.join(roman)
+
+
+def cmp_to_key(mycmp):
+    'Convert a cmp= function into a key= function'
+    class K(object):
+        def __init__(self, obj, *args):
+            self.obj = obj
+        def __lt__(self, other):
+            return mycmp(self.obj, other.obj) < 0
+        def __gt__(self, other):
+            return mycmp(self.obj, other.obj) > 0
+        def __eq__(self, other):
+            return mycmp(self.obj, other.obj) == 0
+        def __le__(self, other):
+            return mycmp(self.obj, other.obj) <= 0
+        def __ge__(self, other):
+            return mycmp(self.obj, other.obj) >= 0
+        def __ne__(self, other):
+            return mycmp(self.obj, other.obj) != 0
+    return K
