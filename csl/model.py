@@ -966,6 +966,7 @@ class Name(CitationStylesElement, Formatted, Affixed, Delimited):
                         order = given, family, suffix
                         text = ' '.join([n for n in order if n])
                 elif form == 'short':
+                    family = ' '.join([n for n in (ndp, family) if n])
                     given, family = format_name_parts(given, family)
                     text = family
 
