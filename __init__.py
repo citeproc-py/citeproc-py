@@ -73,10 +73,6 @@ class Name(CustomDict):
                 self.get('dropping-particle'),
                 self.get('non-dropping-particle'), self.get('suffix'))
 
-    def given_initials(self):
-        names = re.split(r'[- ]', self.given)
-        return ' '.join('{}.'.format(name[0]) for name in names)
-
 
 class DateBase(CustomDict):
     def __init__(self, args, required=set(), optional=set()):
