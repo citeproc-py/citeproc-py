@@ -53,6 +53,9 @@ class Reference(CustomDict):
                     set(csl.VARIABLES))
         super().__init__(args, optional=optional)
 
+    def __repr__(self):
+        return '{}({})'.format(self.__class__.__name__, self.key)
+
 
 class VariableError(Exception):
     pass
@@ -123,6 +126,10 @@ class Citation(CustomDict):
         self.items = items
         super().__init__(kwargs)
 
+    def __repr__(self):
+        items = ', '.join([item.key for item in self.items])
+        return '{}({})'.format(self.__class__.__name__, items)
+
 
 class CitationItem(CustomDict):
     def __init__(self, key, bibliography=None, **args):
@@ -131,6 +138,9 @@ class CitationItem(CustomDict):
             self._bibliography = bibliography
         optional = {'locator', 'prefix', 'suffix'}
         super().__init__(args, optional=optional)
+
+    def __repr__(self):
+        return '{}({})'.format(self.__class__.__name__, self.key)
 
     @property
     def reference(self):
