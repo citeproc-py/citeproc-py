@@ -93,9 +93,11 @@ class Date(DateBase):
         args = {key: int(value) for key, value in args.items()}
         super().__init__(args, required, optional)
 
-    def __eq__(self, other):
-        # TODO: for sorting
-        raise NotImplementedError
+    def sort_key(self):
+        year = self.year
+        month = self.get('month', 0)
+        day = self.get('day', 0)
+        return '{:05}{:02}{:02}'.format(year + 10000, month, day)
 
 
 class DateRange(DateBase):
@@ -103,6 +105,11 @@ class DateRange(DateBase):
         required = {'begin'}
         optional = {'end'}
         super().__init__(args, required, optional)
+
+    def sort_key(self):
+        begin = self.begin.sort_key()
+        end = self.get('end', Date(year=0)).sort_key()
+        return begin + '-' + end
 
     def __eq__(self, other):
         # TODO: for sorting
