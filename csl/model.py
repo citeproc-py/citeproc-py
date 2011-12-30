@@ -189,6 +189,9 @@ class Bibliography(FormattingInstructions, CitationStylesElement):
                         # reference grouping
                         'subsequent-author-substitute': None}
 
+    def sort(self, citation_items):
+        return self.layout.sort_bibliography(citation_items)
+
     def render(self, citation_items):
         return self.layout.render_bibliography(citation_items)
 
@@ -490,12 +493,16 @@ class Layout(CitationStylesElement, Parent, Formatted, Affixed, Delimited):
             self.repressed = {}
         return self.format(self.wrap(self.join(out)))
 
+    def sort_bibliography(self, citation_items):
+        sort = self.getparent().find('cs:sort', self.nsmap)
+        if sort is not None:
+            citation_items = sort.sort(citation_items, self)
+        return citation_items
+
     def render_bibliography(self, citation_items):
         item_prefix = '  <div class="csl-entry">'
         item_suffix = '</div>'
         self.repressed = {}
-        if self.getparent().sort is not None:
-            citation_items = self.getparent().sort.sort(citation_items, self)
         output = ['<div class="csl-bib-body">']
         for item in citation_items:
             text = self.render_children(item)

@@ -90,6 +90,9 @@ class CitationStylesStyle(CitationStylesXML):
     def render_citation(self, citation, **options):
         return self.root.citation.render(citation)
 
+    def sort_bibliography(self, citation_items):
+        return self.root.bibliography.sort(citation_items)
+
     def render_bibliography(self, citation_items, **options):
         return self.root.bibliography.render(citation_items)
 
@@ -106,6 +109,15 @@ class CitationStylesBibliography(object):
             item._bibliography = self
             self.keys.append(item.key)
             self.references.append(self.source[item.key])
+
+    def sort(self):
+        from ...bibliography import CitationItem
+        items = [CitationItem(key, bibliography=self) for key in self.keys]
+        sorted_items = self.style.sort_bibliography(items)
+        sorted_keys = [item.key for item in sorted_items]
+        sorted_references = [item.reference for item in sorted_items]
+        self.keys = sorted_keys
+        self.references = sorted_references
 
     def cite(self, citation):
         return self.style.render_citation(citation)
