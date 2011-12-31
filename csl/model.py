@@ -359,6 +359,8 @@ class Sort(CitationStylesElement):
                 for getter, desc in comparers:
                     left_key, right_key = getter(left), getter(right)
                     if left_key is not None and right_key is not None:
+                        left_key = left_key.lower()
+                        right_key = right_key.lower()
                         result = (left_key > right_key) - (left_key < right_key)
                         if result:
                             return -1 * result if desc else result
