@@ -611,29 +611,36 @@ class Date(CitationStylesElement, Parent, Formatted, Affixed, Delimited):
 
     def render_date_range(self, date_range, show_parts=None, context=None):
         same_show_parts = []
-
-        if date_range.begin.year == date_range.end.year:
-            show_parts.remove('year')
-            same_show_parts.append('year')
-            try:
-                if ('month' in show_parts and
-                    date_range.begin.month == date_range.end.month):
-                    show_parts.remove('month')
-                    same_show_parts.append('month')
-                    try:
-                        if ('day' in show_parts and
-                            date_range.begin.day == date_range.end.day):
+        if date_range.end.is_nil():
+            same = None
+            diff_begin = self.render_single_date(date_range.begin, show_parts,
+                                                 context)
+            diff_end = ''
+        else:
+            if date_range.begin.year == date_range.end.year:
+                show_parts.remove('year')
+                same_show_parts.append('year')
+                try:
+                    if ('month' in show_parts and
+                        date_range.begin.month == date_range.end.month):
+                        show_parts.remove('month')
+                        same_show_parts.append('month')
+                        try:
+                            if ('day' in show_parts and
+                                date_range.begin.day == date_range.end.day):
+                                show_parts.remove('day')
+                                same_show_parts.append('day')
+                        except AttributeError:
                             show_parts.remove('day')
-                            same_show_parts.append('day')
-                    except AttributeError:
-                        show_parts.remove('day')
-            except AttributeError:
-                show_parts.remove('month')
+                except AttributeError:
+                    show_parts.remove('month')
 
-        same = self.render_single_date(date_range.end, same_show_parts, context)
-        diff_begin = self.render_single_date(date_range.begin, show_parts,
-                                             context)
-        diff_end = self.render_single_date(date_range.end, show_parts, context)
+            same = self.render_single_date(date_range.end, same_show_parts,
+                                           context)
+            diff_begin = self.render_single_date(date_range.begin, show_parts,
+                                                 context)
+            diff_end = self.render_single_date(date_range.end, show_parts,
+                                               context)
 
         if not (diff_begin and diff_begin):
             return None

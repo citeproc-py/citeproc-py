@@ -102,6 +102,10 @@ class Date(DateBase):
         day = self.get('day', 0)
         return '{:05}{:02}{:02}'.format(year + 10000, month, day)
 
+    def is_nil(self):
+        return (self.year == 0 and self.get('month', 0) == 0 and
+                self.get('day', 0) == 0)
+
 
 class DateRange(DateBase):
     def __init__(self, **args):
