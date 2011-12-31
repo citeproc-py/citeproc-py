@@ -405,6 +405,7 @@ class Key(CitationStylesElement):
             else:
                 sort_keys = [item.reference.get(variable) for item in items]
         elif 'macro' in self.attrib:
+            layout = context.get_layout()
             # override name options
             sort_options = {'name-as-sort-order': 'all'}
             for option in ('names-min', 'names-use-first', 'names-use-last'):
@@ -412,9 +413,12 @@ class Key(CitationStylesElement):
                     name = option.replace('names', 'et-al')
                     sort_options[name] = self.get(option)
             macro = self.get_macro(self.get('macro'))
-            sort_keys = [macro.render(item, context=context,
-                                      sort_options=sort_options)
-                         for item in items]
+            sort_keys = []
+            for item in items:
+                layout.repressed = {}
+                sort_key = macro.render(item, context=context,
+                                        sort_options=sort_options)
+                sort_keys.append(sort_key)
 
         return sort_keys
 
