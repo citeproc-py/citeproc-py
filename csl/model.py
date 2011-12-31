@@ -403,13 +403,16 @@ class Key(CitationStylesElement):
             else:
                 sort_keys = [item.reference.get(variable) for item in items]
         elif 'macro' in self.attrib:
-            names_min = self.get('names-min')
-            names_use_first = self.get('names-use-first')
-            names_use_last = self.get('names-use-last')
-            names_options = names_min, names_use_first, names_use_last
-            # TODO: pass names_options all the way to a names element
+            # override name options
+            sort_options = {'name-as-sort-order': 'all'}
+            for option in ('names-min', 'names-use-first', 'names-use-last'):
+                if option in self.attrib:
+                    name = option.replace('names', 'et-al')
+                    sort_options[name] = self.get(option)
             macro = self.get_macro(self.get('macro'))
-            sort_keys = [macro.render(item, context) for item in items]
+            sort_keys = [macro.render(item, context=context,
+                                      sort_options=sort_options)
+                         for item in items]
 
         return sort_keys
 
@@ -452,12 +455,12 @@ class Parent(object):
     def calls_variable(self):
         return any([child.calls_variable() for child in self.getchildren()])
 
-    def render_children(self, item, *args, **kwargs):
+    def render_children(self, item, **kwargs):
         from ...bibliography import VariableError
         output = []
         for child in self.iterchildren():
             try:
-                text = child.render(item, *args, **kwargs)
+                text = child.render(item, **kwargs)
                 if text is not None:
                     output.append(text)
             except VariableError:
@@ -469,8 +472,9 @@ class Parent(object):
 
 
 class Macro(CitationStylesElement, Parent):
-    def render(self, item, context):
-        return self.render_children(item, context=context)
+    def render(self, item, context=None, sort_options=None):
+        return self.render_children(item, context=context,
+                                    sort_options=sort_options)
 
 
 class Layout(CitationStylesElement, Parent, Formatted, Affixed, Delimited):
@@ -526,7 +530,7 @@ class Text(CitationStylesElement, Formatted, Affixed, Quoted, TextCased,
         else:
             return False
 
-    def render(self, item, context=None):
+    def render(self, item, context=None, **kwargs):
         if context is None:
             context = self
 
@@ -655,7 +659,8 @@ class Date(CitationStylesElement, Parent, Formatted, Affixed, Delimited):
         return text
 
 
-    def render(self, item, variable=None, show_parts=None, context=None):
+    def render(self, item, variable=None, show_parts=None, context=None,
+               **kwargs):
         if variable is None:
             variable = self.get('variable')
         if show_parts is None:
@@ -757,7 +762,7 @@ class Number(CitationStylesElement, Formatted, Affixed, Displayed, TextCased,
     def calls_variable(self):
         return True
 
-    def render(self, item, context=None):
+    def render(self, item, context=None, **kwargs):
         form = self.get('form', 'numeric')
         variable = self.get('variable')
         if variable == 'locator':
@@ -816,7 +821,7 @@ class Names(CitationStylesElement, Parent, Formatted, Affixed, Delimited):
             result = None
         return result
 
-    def render(self, item, names_context=None, context=None):
+    def render(self, item, names_context=None, context=None, **kwargs):
         from ...bibliography import VariableError
         if context is None:
             context = self
@@ -840,13 +845,13 @@ class Names(CitationStylesElement, Parent, Formatted, Affixed, Delimited):
                 if name_elem is None:
                     name_elem = Name()
                     names_context.insert(0, name_elem)
-                text = name_elem.render(item, role, context=context)
+                text = name_elem.render(item, role, context=context, **kwargs)
                 plural = len(item.reference[role]) > 1
                 try:
                     if ed_trans:
                         role = 'editortranslator'
                     label_element = names_context.label
-                    label = label_element.render(item, role, plural)
+                    label = label_element.render(item, role, plural, **kwargs)
                     if label is not None:
                         if label_element is names_context.getchildren()[0]:
                             text = label + text
@@ -878,7 +883,12 @@ class Names(CitationStylesElement, Parent, Formatted, Affixed, Delimited):
 
 
 class Name(CitationStylesElement, Formatted, Affixed, Delimited):
-    def get_option(self, name, context=None):
+    def get_option(self, name, context=None, sort_options=None):
+        try:
+            return sort_options[name]
+        except (TypeError, KeyError):
+            pass
+
         expr = './ancestor::*[self::cs:citation or self::cs:bibliography][1]'
         if context is None:
             context = self
@@ -901,27 +911,27 @@ class Name(CitationStylesElement, Formatted, Affixed, Delimited):
             result = self.get_term('et-al').single
         return result
 
-    def render(self, item, variable, context=None):
-        and_ = self.get_option('and', context)
-        delimiter = self.get_option('delimiter', context)
-        delimiter_precedes_et_al = self.get_option('delimiter-precedes-et-al',
-                                                   context)
-        delimiter_precedes_last = self.get_option('delimiter-precedes-last',
-                                                  context)
+    def render(self, item, variable, context=None, sort_options=None, **kwargs):
+        def get_option(name):
+            return self.get_option(name, context, sort_options)
 
-        et_al_min = self.get_option('et-al-min', context)
-        et_al_use_first = self.get_option('et-al-use-first', context)
-        et_al_subseq_min = self.get_option('et-al-subsequent-min', context)
-        et_al_subseq_use_first = self.get_option('et-al-subsequent-use-first',
-                                                 context)
-        et_al_use_last = self.get_option('et-al-use-last', context)
+        and_ = get_option('and')
+        delimiter = get_option('delimiter')
+        delimiter_precedes_et_al = get_option('delimiter-precedes-et-al')
+        delimiter_precedes_last = get_option('delimiter-precedes-last')
 
-        initialize_with = self.get_option('initialize-with', context)
-        name_as_sort_order = self.get_option('name-as-sort-order', context)
-        sort_separator = self.get_option('sort-separator', context)
+        et_al_min = get_option('et-al-min')
+        et_al_use_first = get_option('et-al-use-first')
+        et_al_subseq_min = get_option('et-al-subsequent-min')
+        et_al_subseq_use_first = get_option('et-al-subsequent-use-first')
+        et_al_use_last = get_option('et-al-use-last')
 
-        form = self.get_option('form', context)
-        demote_ndp = self.get_option('demote-non-dropping-particle', context)
+        initialize_with = get_option('initialize-with')
+        name_as_sort_order = get_option('name-as-sort-order')
+        sort_separator = get_option('sort-separator')
+
+        form = get_option('form')
+        demote_ndp = get_option('demote-non-dropping-particle')
 
         def format_name_parts(given, family):
             for part in self.findall('cs:name-part', self.nsmap):
@@ -1050,7 +1060,7 @@ class Et_Al(CitationStylesElement, Formatted, Affixed):
 
 
 class Substitute(CitationStylesElement, Parent):
-    def render(self, item, context=None):
+    def render(self, item, context=None, **kwargs):
         from ...bibliography import VariableError
         for child in self.getchildren():
             try:
@@ -1090,7 +1100,7 @@ class Label(CitationStylesElement, Formatted, Affixed, StrippedPeriods,
         except IndexError:
             return False
 
-    def render(self, item, variable=None, plural=None, context=None):
+    def render(self, item, variable=None, plural=None, context=None, **kwargs):
         if variable is None:
             variable = self.get('variable')
         if plural is None:
@@ -1122,7 +1132,7 @@ class Label(CitationStylesElement, Formatted, Affixed, StrippedPeriods,
 
 
 class Group(CitationStylesElement, Parent, Formatted, Affixed, Delimited):
-    def render(self, item, context=None):
+    def render(self, item, context=None, **kwargs):
         from ...bibliography import VariableError
         output = []
         variable_called = False
@@ -1130,7 +1140,7 @@ class Group(CitationStylesElement, Parent, Formatted, Affixed, Delimited):
         for child in self.iterchildren():
             variable_called = variable_called or child.calls_variable()
             try:
-                child_text = child.render(item, context=context)
+                child_text = child.render(item, context=context, **kwargs)
                 if child_text is not None:
                     output.append(child_text)
                     variable_rendered = (variable_rendered or
@@ -1150,10 +1160,10 @@ class ConditionFailed(Exception):
 
 
 class Choose(CitationStylesElement, Parent):
-    def render(self, item, context=None):
+    def render(self, item, context=None, **kwargs):
         for child in self.getchildren():
             try:
-                return child.render(item, context=context)
+                return child.render(item, context=context, **kwargs)
             except ConditionFailed:
                 continue
 
@@ -1161,7 +1171,7 @@ class Choose(CitationStylesElement, Parent):
 
 
 class If(CitationStylesElement, Parent):
-    def render(self, item, context=None):
+    def render(self, item, context=None, **kwargs):
         # TODO self.get('disambiguate')
         results = []
         if 'type' in self.attrib:
@@ -1188,7 +1198,7 @@ class If(CitationStylesElement, Parent):
         if not result:
             raise ConditionFailed
 
-        return self.render_children(item, context=context)
+        return self.render_children(item, context=context, **kwargs)
 
     def _type(self, item):
         return [typ.lower() == item.reference.type
@@ -1222,8 +1232,8 @@ class Else_If(If, CitationStylesElement):
 
 
 class Else(CitationStylesElement, Parent):
-    def render(self, item, context=None):
-        return self.render_children(item, context=context)
+    def render(self, item, context=None, **kwargs):
+        return self.render_children(item, context=context, **kwargs)
 
 
 # utility functions
