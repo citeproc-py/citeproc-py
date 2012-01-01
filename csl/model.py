@@ -359,8 +359,11 @@ class Sort(CitationStylesElement):
                 for getter, desc in comparers:
                     left_key, right_key = getter(left), getter(right)
                     if left_key is not None and right_key is not None:
-                        left_key = left_key.lower()
-                        right_key = right_key.lower()
+                        try:
+                            left_key = left_key.lower()
+                            right_key = right_key.lower()
+                        except AttributeError:
+                            pass
                         result = (left_key > right_key) - (left_key < right_key)
                         if result:
                             return -1 * result if desc else result
@@ -405,7 +408,7 @@ class Key(CitationStylesElement):
             elif variable in NUMBERS:
                 sort_keys = [self._format_number(item, variable)
                              for item in items]
-            elif variable == 'citation-number':
+            elif variable == 'citation_number':
                 sort_keys = [item.number for item in items]
             else:
                 sort_keys = [item.reference.get(variable) for item in items]
