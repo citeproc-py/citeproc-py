@@ -896,22 +896,23 @@ class Names(CitationStylesElement, Parent, Formatted, Affixed, Delimited):
 class Name(CitationStylesElement, Formatted, Affixed, Delimited):
     def get_option(self, name, context=None, sort_options=None):
         try:
-            return sort_options[name]
+            value = sort_options[name]
         except (TypeError, KeyError):
-            pass
+            expr = ('./ancestor::*[self::cs:citation or '
+                                  'self::cs:bibliography][1]')
+            if context is None:
+                context = self
+            parent = context.xpath_search(expr)[0]
+            if name in ('form', 'delimiter'):
+                value = self.get(name, parent.get_option('name-' + name))
+            else:
+                value = self.get(name, parent.get_option(name))
 
-        expr = './ancestor::*[self::cs:citation or self::cs:bibliography][1]'
-        if context is None:
-            context = self
-        parent = context.xpath_search(expr)[0]
-        if name in ('form', 'delimiter'):
-            value = self.get(name, parent.get_option('name-' + name))
-        else:
-            value = self.get(name, parent.get_option(name))
-            if name in ('initialize-with-hyphen', 'et-al-use-last'):
-                value = value.lower() == 'true'
-            elif name.startswith('et-al'):
-                value = int(value)
+        if name in ('initialize-with-hyphen', 'et-al-use-last'):
+            value = value.lower() == 'true'
+        elif name.startswith('et-al'):
+            value = int(value)
+
         return value
 
     def et_al(self):
