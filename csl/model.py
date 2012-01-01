@@ -1211,8 +1211,15 @@ class If(CitationStylesElement, Parent):
                 for typ in self.get('type').split()]
 
     def _variable(self, item):
-        return [var.replace('-', '_') in item.reference
-                for var in self.get('variable').split()]
+        variables = [var.replace('-', '_')
+                     for var in self.get('variable').split()]
+        output = []
+        for variable in variables:
+            if variable == 'locator':
+                output.append('locator' in item)
+            else:
+                output.append(variable in item.reference)
+        return output
 
     def _is_numeric(self, item):
         numeric_match = Number.re_numeric.match
