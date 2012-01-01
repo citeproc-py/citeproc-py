@@ -395,8 +395,13 @@ class Key(CitationStylesElement):
                 sort_keys = [self._format_name(item, variable)
                              for item in items]
             elif variable in DATES:
-                sort_keys = [item.reference.get(variable).sort_key()
-                             for item in items]
+                sort_keys = []
+                for item in items:
+                    date = item.reference.get(variable)
+                    if date is not None:
+                        sort_keys.append(date.sort_key())
+                    else:
+                        sort_keys.append(None)
             elif variable in NUMBERS:
                 sort_keys = [self._format_number(item, variable)
                              for item in items]
