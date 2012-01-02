@@ -105,27 +105,23 @@ class CitationStylesBibliography(object):
         self.style = style
         self.source = source
         self.keys = []
-        self.references = []
+        self.items = []
 
     def register(self, citation):
-        for item in citation.items:
+        for item in citation.cites:
             item._bibliography = self
-            self.keys.append(item.key)
-            self.references.append(self.source[item.key])
+            if item.key not in self.keys:
+                self.keys.append(item.key)
+                self.items.append(item)
 
     def sort(self):
-        from ...bibliography import CitationItem
-        items = [CitationItem(key, bibliography=self) for key in self.keys]
-        sorted_items = self.style.sort_bibliography(items)
+        sorted_items = self.style.sort_bibliography(self.items)
         sorted_keys = [item.key for item in sorted_items]
-        sorted_references = [item.reference for item in sorted_items]
         self.keys = sorted_keys
-        self.references = sorted_references
+        self.items = sorted_items
 
     def cite(self, citation):
         return self.style.render_citation(citation)
 
     def bibliography(self):
-        from ...bibliography import CitationItem
-        items = [CitationItem(key, bibliography=self) for key in self.keys]
-        return self.style.render_bibliography(items)
+        return self.style.render_bibliography(self.items)

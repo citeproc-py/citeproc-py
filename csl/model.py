@@ -354,7 +354,8 @@ class Sort(CitationStylesElement):
         # custom sort function to push items with None keys to bottom
         def multi_key_sort(items, keys, descending):
             lst = zip(items, *keys)
-            comparers = [(itemgetter(i + 1), descending[i]) for i in range(len(keys))]
+            comparers = [(itemgetter(i + 1), descending[i])
+                         for i in range(len(keys))]
             def mycmp(left, right):
                 for getter, desc in comparers:
                     left_key, right_key = getter(left), getter(right)
@@ -496,9 +497,9 @@ class Layout(CitationStylesElement, Parent, Formatted, Affixed, Delimited):
         from ...bibliography import VariableError
         self.repressed = {}
         if self.getparent().sort is not None:
-            citation.items = self.getparent().sort.sort(citation.items, self)
+            citation.cites = self.getparent().sort.sort(citation.cites, self)
         out = []
-        for item in citation.items:
+        for item in citation.cites:
             prefix = item.get('prefix', '')
             suffix = item.get('suffix', '')
             try:

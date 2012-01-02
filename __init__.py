@@ -34,6 +34,9 @@ class CustomDict(dict):
                  'unsupported: ' + ', '.join(unsupported))
         self.update(args)
 
+    def __setattr__(self, name, value):
+        self[name] = value
+
     def __getattr__(self, name):
         return self[name]
 
@@ -124,15 +127,15 @@ class DateRange(DateBase):
 
 
 class Citation(CustomDict):
-    def __init__(self, items, **kwargs):
-        for item in items:
-            item.citation = self
-        self.items = items
+    def __init__(self, cites, **kwargs):
+        for cite in cites:
+            cite.citation = self
+        self.cites = cites
         super().__init__(kwargs)
 
     def __repr__(self):
-        items = ', '.join([item.key for item in self.items])
-        return '{}({})'.format(self.__class__.__name__, items)
+        cites = ', '.join([cite.key for cite in self.cites])
+        return '{}({})'.format(self.__class__.__name__, cites)
 
 
 class CitationItem(CustomDict):
@@ -148,11 +151,11 @@ class CitationItem(CustomDict):
 
     @property
     def reference(self):
-        return self._bibliography.references[self.number - 1]
+        return self._bibliography.source[self.key]
 
     @property
     def number(self):
-        return self._bibliography.keys.index(self.key) + 1
+        return self._bibliography.items.index(self) + 1
 
 
 class Locator(object):
