@@ -495,11 +495,15 @@ class Macro(CitationStylesElement, Parent):
 class Layout(CitationStylesElement, Parent, Formatted, Affixed, Delimited):
     def render_citation(self, citation):
         from ...bibliography import VariableError
-        self.repressed = {}
+        # first sort citation items according to bibliography order
+        bibliography = citation.cites[0]._bibliography
+        citation.cites.sort(key=lambda x: bibliography.keys.index(x.key))
+        # sort using citation/sort element
         if self.getparent().sort is not None:
             citation.cites = self.getparent().sort.sort(citation.cites, self)
         out = []
         for item in citation.cites:
+            self.repressed = {}
             prefix = item.get('prefix', '')
             suffix = item.get('suffix', '')
             try:
@@ -509,7 +513,6 @@ class Layout(CitationStylesElement, Parent, Formatted, Affixed, Delimited):
                     out.append(text)
             except VariableError:
                 pass
-            self.repressed = {}
         return self.format(self.wrap(self.join(out)))
 
     def sort_bibliography(self, citation_items):
@@ -521,14 +524,13 @@ class Layout(CitationStylesElement, Parent, Formatted, Affixed, Delimited):
     def render_bibliography(self, citation_items):
         item_prefix = '  <div class="csl-entry">'
         item_suffix = '</div>'
-        self.repressed = {}
         output = ['<div class="csl-bib-body">']
         for item in citation_items:
+            self.repressed = {}
             text = self.render_children(item)
             if text is not None:
                 text = item_prefix + self.wrap(self.format(text)) + item_suffix
                 output.append(text)
-            self.repressed = {}
         output.append('</div>')
         return '\n'.join(output)
 
