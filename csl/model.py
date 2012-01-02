@@ -970,7 +970,8 @@ class Name(CitationStylesElement, Formatted, Affixed, Delimited):
             output.append(count)
             return sum(output)
         else:
-            et_al_truncate = et_al_min and len(names) >= et_al_min
+            et_al_truncate = (len(names) > 1 and et_al_min and
+                              len(names) >= et_al_min)
             et_al_last = et_al_use_last and et_al_use_first <= et_al_min - 2
             if et_al_truncate:
                 if et_al_last:
