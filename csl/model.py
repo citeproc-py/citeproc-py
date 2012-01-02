@@ -887,7 +887,7 @@ class Names(CitationStylesElement, Parent, Formatted, Affixed, Delimited):
         else:
             substitute = self.substitute()
             if substitute is not None:
-                text = substitute.render(item, context)
+                text = substitute.render(item, context=context, **kwargs)
 
         try:
             if text is not None:
@@ -1085,9 +1085,9 @@ class Substitute(CitationStylesElement, Parent):
                 if isinstance(child, Names) and child.name is None:
                     names = self.xpath_search('./parent::cs:names[1]')[0]
                     text = child.render(item, names_context=names,
-                                        context=context)
+                                        context=context, **kwargs)
                 else:
-                    text = child.render(item, context=context)
+                    text = child.render(item, context=context, **kwargs)
             except VariableError:
                 continue
             if text:
