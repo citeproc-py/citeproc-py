@@ -50,18 +50,15 @@ class CitationStylesElement(SomewhatObjectifiedElement):
     def get_option(self, name):
         return self.get(name, __class__._default_options[name])
 
-    def get_citation(self):
-        return self.get_root().citation
-
-    def get_bibliography(self):
-        return self.get_root().bibliography
-
     def get_macro(self, name):
         expression = "cs:macro[@name='{}'][1]".format(name)
         return self.get_root().xpath_search(expression)[0]
 
     def get_layout(self):
         return self.xpath_search('./ancestor-or-self::cs:layout[1]')[0]
+
+    def render(self, *args, **kwargs):
+        return self.markup(self.process(*args, **kwargs))
 
     # TODO: Locale methods
     def get_term(self, name, form=None):
@@ -468,11 +465,27 @@ class Key(CitationStylesElement):
         else:
             return None
 
+
 # Rendering elements
 
 class Parent(object):
     def calls_variable(self):
         return any([child.calls_variable() for child in self.getchildren()])
+
+    def process_children(self, item, **kwargs):
+        from ...bibliography import VariableError
+        output = []
+        for child in self.iterchildren():
+            try:
+                text = child.process(item, **kwargs)
+                if text is not None:
+                    output.append(text)
+            except VariableError:
+                pass
+        if output:
+            return ''.join(output)
+        else:
+            return None
 
     def render_children(self, item, **kwargs):
         from ...bibliography import VariableError
@@ -491,6 +504,10 @@ class Parent(object):
 
 
 class Macro(CitationStylesElement, Parent):
+    def process(self, item, context=None, sort_options=None):
+        return self.process_children(item, context=context,
+                                    sort_options=sort_options)
+
     def render(self, item, context=None, sort_options=None):
         return self.render_children(item, context=context,
                                     sort_options=sort_options)
@@ -551,7 +568,7 @@ class Text(CitationStylesElement, Formatted, Affixed, Quoted, TextCased,
         else:
             return False
 
-    def render(self, item, context=None, **kwargs):
+    def process(self, item, context=None, **kwargs):
         if context is None:
             context = self
 
@@ -564,11 +581,7 @@ class Text(CitationStylesElement, Formatted, Affixed, Quoted, TextCased,
         elif 'value' in self.attrib:
             text = self.get('value')
 
-        if text:
-            tmp = self.format(self.case(self.strip_periods(text)))
-            return self.wrap(self.quote(tmp))
-        else:
-            return None
+        return text
 
     def _variable(self, item, context):
         variable = self.get('variable')
@@ -606,6 +619,13 @@ class Text(CitationStylesElement, Formatted, Affixed, Quoted, TextCased,
             text = term.single
 
         return text
+
+    def markup(self, text):
+        if text:
+            tmp = self.format(self.case(self.strip_periods(text)))
+            return self.wrap(self.quote(tmp))
+        else:
+            return None
 
 
 class Date(CitationStylesElement, Parent, Formatted, Affixed, Delimited):
@@ -679,9 +699,8 @@ class Date(CitationStylesElement, Parent, Formatted, Affixed, Delimited):
 
         return text
 
-
-    def render(self, item, variable=None, show_parts=None, context=None,
-               **kwargs):
+    def process(self, item, variable=None, show_parts=None, context=None,
+                **kwargs):
         if variable is None:
             variable = self.get('variable')
         if show_parts is None:
@@ -725,10 +744,14 @@ class Date(CitationStylesElement, Parent, Formatted, Affixed, Delimited):
                     pass
         return output
 
+    def markup(self, text):
+        # TODO: fix
+        return text
+
 
 class Date_Part(CitationStylesElement, Formatted, Affixed, TextCased,
                 StrippedPeriods):
-    def render(self, date, context=None):
+    def process(self, date, context=None):
         name = self.get('name')
         range_delimiter = self.get('range-delimiter', '-')
         attrib = self.attrib
@@ -772,7 +795,13 @@ class Date_Part(CitationStylesElement, Formatted, Affixed, TextCased,
             elif form == 'short':
                 text = str(date.year)[-2:]
 
-        return self.wrap(self.format(self.case(self.strip_periods(text))))
+        return text
+
+    def markup(self, text):
+        if text:
+            return self.wrap(self.format(self.case(self.strip_periods(text))))
+        else:
+            return None
 
 
 class Number(CitationStylesElement, Formatted, Affixed, Displayed, TextCased,
@@ -783,7 +812,7 @@ class Number(CitationStylesElement, Formatted, Affixed, Displayed, TextCased,
     def calls_variable(self):
         return True
 
-    def render(self, item, context=None, **kwargs):
+    def process(self, item, context=None, **kwargs):
         form = self.get('form', 'numeric')
         variable = self.get('variable')
         if variable == 'locator':
@@ -808,7 +837,7 @@ class Number(CitationStylesElement, Formatted, Affixed, Displayed, TextCased,
         except TypeError:
             text = str(variable)
 
-        return self.wrap(self.format(self.case(self.strip_periods(text))))
+        return text
 
     def format_number(self, number, form):
         if form == 'numeric':
@@ -821,6 +850,12 @@ class Number(CitationStylesElement, Formatted, Affixed, Displayed, TextCased,
             text = romanize(number).lower()
 
         return text
+
+    def markup(self, text):
+        if text:
+            return self.wrap(self.format(self.case(self.strip_periods(text))))
+        else:
+            return None
 
 
 class Names(CitationStylesElement, Parent, Formatted, Affixed, Delimited):
@@ -842,7 +877,7 @@ class Names(CitationStylesElement, Parent, Formatted, Affixed, Delimited):
             result = None
         return result
 
-    def render(self, item, names_context=None, context=None, **kwargs):
+    def process(self, item, names_context=None, context=None, **kwargs):
         from ...bibliography import VariableError
         if context is None:
             context = self
@@ -883,10 +918,10 @@ class Names(CitationStylesElement, Parent, Formatted, Affixed, Delimited):
                 output.append(text)
 
         if output:
-            if isinstance(output[0], int):
+            try:
                 total = sum(output)
-                text = str(total) if total > 0 else ''
-            else:
+                text = str(total) if total > 0 else None
+            except TypeError:
                 text = self.join(output, self.get_parent_delimiter(context))
         else:
             substitute = self.substitute()
@@ -894,13 +929,16 @@ class Names(CitationStylesElement, Parent, Formatted, Affixed, Delimited):
                 text = substitute.render(item, context=context, **kwargs)
 
         try:
-            if text is not None:
-                return self.wrap(self.format(text))
-            else:
-                return None
+            return text
         except NameError:
             from ...bibliography import VariableError
             raise VariableError
+
+    def markup(self, text):
+        if text:
+            return self.wrap(self.format(text))
+        else:
+            return None
 
 
 class Name(CitationStylesElement, Formatted, Affixed, Delimited):
@@ -933,7 +971,7 @@ class Name(CitationStylesElement, Formatted, Affixed, Delimited):
             result = self.get_term('et-al').single
         return result
 
-    def render(self, item, variable, context=None, sort_options=None, **kwargs):
+    def process(self, item, variable, context=None, sort_options=None, **kwargs):
         def get_option(name):
             return self.get_option(name, context, sort_options)
 
@@ -1036,7 +1074,7 @@ class Name(CitationStylesElement, Formatted, Affixed, Delimited):
             else:
                 text = self.join(output, delimiter)
 
-            return self.wrap(self.format(text))
+            return text
 
     def initialize(self, given, mark, context):
         if self.get_option('initialize-with-hyphen', context):
@@ -1062,6 +1100,12 @@ class Name(CitationStylesElement, Formatted, Affixed, Delimited):
             result_parts.append(hyphen_result)
         return '-'.join(result_parts)
 
+    def markup(self, text):
+        if text:
+            return self.wrap(self.format(text))
+        else:
+            return None
+
 
 class Name_Part(CitationStylesElement, Formatted, Affixed, TextCased):
     def format_part(self, given, family):
@@ -1073,10 +1117,13 @@ class Name_Part(CitationStylesElement, Formatted, Affixed, TextCased):
 
 
 class Et_Al(CitationStylesElement, Formatted, Affixed):
-    def render(self):
+    def process(self):
         variable = self.get('term', 'et-al')
         term = self.get_term('variable')
-        if term:
+        return term
+
+    def markup(self, text):
+        if text:
             return self.wrap(self.format(text))
         else:
             return None
@@ -1123,7 +1170,7 @@ class Label(CitationStylesElement, Formatted, Affixed, StrippedPeriods,
         except IndexError:
             return False
 
-    def render(self, item, variable=None, plural=None, context=None, **kwargs):
+    def process(self, item, variable=None, plural=None, context=None, **kwargs):
         if variable is None:
             variable = self.get('variable')
         if plural is None:
@@ -1148,14 +1195,17 @@ class Label(CitationStylesElement, Formatted, Affixed, StrippedPeriods,
         else:
             text = term.single
 
-        if text is None:
-            return None
-        else:
+        return text
+
+    def markup(self, text):
+        if text:
             return self.wrap(self.format(self.case(self.strip_periods(text))))
+        else:
+            return None
 
 
 class Group(CitationStylesElement, Parent, Formatted, Affixed, Delimited):
-    def render(self, item, context=None, **kwargs):
+    def process(self, item, context=None, **kwargs):
         from ...bibliography import VariableError
         output = []
         variable_called = False
@@ -1173,9 +1223,15 @@ class Group(CitationStylesElement, Parent, Formatted, Affixed, Delimited):
         output = [item for item in output if item is not None]
         success = not variable_called or (variable_called and variable_rendered)
         if output and success:
-            return self.wrap(self.format(self.join(output)))
+            return self.join(output)
         else:
             raise VariableError
+
+    def markup(self, text):
+        if text:
+            return self.wrap(self.format(text))
+        else:
+            return None
 
 
 class ConditionFailed(Exception):
