@@ -365,6 +365,10 @@ class Sort(CitationStylesElement):
                             right_key = right_key.lower()
                         except AttributeError:
                             pass
+                        try:
+                            left_key, right_key = int(left_key), int(right_key)
+                        except ValueError:
+                            pass
                         result = (left_key > right_key) - (left_key < right_key)
                         if result:
                             return -1 * result if desc else result
