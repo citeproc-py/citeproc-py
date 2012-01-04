@@ -3,15 +3,11 @@
 
 # http://dret.net/bibconvert/tex2unicode
 
-#from citeproc import
-
-import re
-from lxml import objectify
 from warnings import warn
 
-from . import csl
-from ..util import set_xml_catalog
-from ..warnings import PyteWarning
+from lxml import objectify
+
+from . import VARIABLES
 
 
 class CustomDict(dict):
@@ -53,7 +49,7 @@ class Reference(CustomDict):
         self.type = type
         #required_or = [set(csl.VARIABLES)]
         optional = ({'uri', 'container_uri', 'contributor', 'date'} |
-                    set(csl.VARIABLES))
+                    set(VARIABLES))
         super().__init__(args, optional=optional)
 
     def __repr__(self):
@@ -180,7 +176,7 @@ class Bibliography(object):
             reference = self.source[key]
         except KeyError:
             warning = "Unknown reference ID '{}'".format(id)
-            warn(warning, PyteWarning)
+            warn(warning)
             return '[{}]'.format(warning)
         self.register(reference)
         return self.formatter.format_citation(reference)
@@ -189,61 +185,6 @@ class Bibliography(object):
         return self.formatter.format_bibliography(target)
 
 
-class BibliographyFormatter(object):
-    def __init__(self):
-        pass
-
-    def format_citation(self, reference):
-        raise NotImplementedError
-
-    def format_bibliography(self, target):
-        raise NotImplementedError
-
-
 class BibliographySource(dict):
     def add(self, entry):
         self[entry.key] = entry
-
-
-class PseudoCSLDataXML(BibliographySource):
-    def __init__(self, filename):
-        set_xml_catalog()
-        self.parser = objectify.makeparser(remove_comments=True,
-                                           no_network=True)
-        self.xml = objectify.parse(filename, self.parser)
-        self.root = self.xml.getroot()
-        for ref in self.root.ref:
-            self.add(self.parse_reference(ref))
-
-    def parse_reference(self, ref):
-        key = str(ref.attrib['id'])
-        authors = self.parse_authors(ref.author)
-        issued = self.parse_date(ref.issued)
-        if ref.type.text == 'article-journal':
-            return Reference(key, type=csl.type.ARTICLE, author=authors,
-                             title=ref.title.text,
-                             container_title=ref.find('container-title').text,
-                             issued=issued)
-        elif ref.type.text == 'paper-conference':
-            return Reference(key, type=csl.type.PAPER_CONFERENCE,
-                             author=authors, title=ref.title.text,
-                             container_title=ref.find('container-title').text,
-                             issued=issued)
-        else:
-            raise NotImplementedError
-
-    def parse_authors(self, author):
-        authors = []
-        for name in author.name:
-            authors.append(self.parse_name(name))
-        return authors
-
-    def parse_name(self, name):
-        return Name(given=name.given.text, family=name.family.text)
-
-    def parse_date(self, date):
-        return Date(year=date.year.text, month=date.month.text)
-
-
-class MODS(BibliographySource):
-    pass
