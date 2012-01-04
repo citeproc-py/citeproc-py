@@ -10,64 +10,15 @@ import traceback
 from codecs import utf_8_encode
 from functools import reduce
 
-from pyte.bibliography.csl import CitationStylesStyle, NAMES, DATES, NUMBERS
-from pyte.bibliography import Reference, Name, Date, DateRange
-from pyte.bibliography import Citation, CitationItem, Locator
-from pyte.bibliography.csl import CitationStylesBibliography
+from citeproc import CitationStylesStyle, CitationStylesBibliography
+from citeproc import NAMES, DATES, NUMBERS
+from citeproc.source import Reference, Name, Date, DateRange
+from citeproc.source import Citation, CitationItem, Locator
 
 
-TESTS_VERSION = '71dfc1c91b3e'
-#TESTS_VERSION = 'c26e5808a0f1'
-
-TESTS_PATH = ('C:/Documents and Settings/Veerle/My Documents/code/bdarcus-cite'
-              'proc-test-{}/processor-tests/machines'.format(TESTS_VERSION))
-
-
+TESTS_PATH = 'citeproc-test/processor-tests/machines'
 
 CATEGORY = ''
-#CATEGORY = 'name_Parsed'
-CATEGORY = 'disambiguate'
-CATEGORY = 'sort_'
-CATEGORY = 'textcase_'
-CATEGORY = 'date_'
-#CATEGORY = 'date_*Sort*'
-#CATEGORY = 'locator_'
-#CATEGORY = 'fullstyles_APA'
-#CATEGORY = 'bugreports_AuthorYear'
-#CATEGORY = 'locator_'
-#CATEGORY = 'sort_'
-#CATEGORY = 'bugreports_DemoPageFullCiteCruftOnSubsequent'
-
-#CATEGORY = 'group_ComplexNesting'
-#CATEGORY = 'sort_EtAlUseLast'
-
-#CATEGORY = 'bugreports_NoEventInNestedMacroWithOldProcessor'
-CATEGORY = 'condition_'
-#CATEGORY = 'sort_'
-CATEGORY = 'sort_AguStyle'
-#CATEGORY = 'sort_AguStyleReverseGroups'
-#CATEGORY = 'sort_AuthorDateWithYearSuffix'
-
-CATEGORY = ''
-
-
-# quotes
-#CATEGORY = 'quotes_Punctuation'
-
-# double dots
-#CATEGORY = 'name_SubstituteInheritLabel'
-#CATEGORY = 'bugreports_AllCapsLeakage'
-#CATEGORY = 'punctuation_DelimiterWithStripPeriodsAndSubstitute2'
-#CATEGORY = 'punctuation_SemicolonDelimiter'
-
-# citations
-#CATEGORY = 'bugreports_AutomaticallyDeleteItemsFails'
-#CATEGORY = 'punctuation_DefaultYearSuffixDelimiter'
-#CATEGORY = 'punctuation_SuppressPrefixPeriodForDelimiterSemicolon'
-
-# position
-#CATEGORY = 'bugreports_FourAndFour'
-#CATEGORY = 'bugreports_MovePunctuationInsideQuotesForLocator'
 
 
 class ProcessorTest(object):
