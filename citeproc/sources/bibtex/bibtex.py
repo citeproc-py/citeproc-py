@@ -1,6 +1,6 @@
 
-from . import csl
-from . import BibliographySource, Reference, Name, Date
+from ... import types
+from ... import BibliographySource, Reference, Name, Date
 from .bibparse import parse_bib
 
 
@@ -79,7 +79,7 @@ class BibTeX(BibliographySource):
             authors = []
             for name in self._parse_author(bibtex_entry.data['author']):
                 authors.append(name)
-            return Reference(key, csl.type.ARTICLE_JOURNAL, issued=date,
+            return Reference(key, types.ARTICLE_JOURNAL, issued=date,
                              author=authors, **csl_keys)
         elif bibtex_entry.btype == 'book':
             csl_keys = self._bibtex_to_csl(bibtex_entry)
@@ -93,7 +93,7 @@ class BibTeX(BibliographySource):
                 for name in self._parse_author(bibtex_entry.data['editor']):
                     editors.append(name)
                 csl_keys['editor'] = editors
-            return Reference(key, csl.type.BOOK, issued=date, author=authors,
+            return Reference(key, types.BOOK, issued=date, author=authors,
                              **csl_keys)
         elif bibtex_entry.btype == 'inproceedings':
             csl_keys = self._bibtex_to_csl(bibtex_entry)
@@ -107,7 +107,7 @@ class BibTeX(BibliographySource):
                 for name in self._parse_author(bibtex_entry.data['editor']):
                     editors.append(name)
                 csl_keys['editor'] = editors
-            return Reference(key, csl.type.ARTICLE_JOURNAL, issued=date,
+            return Reference(key, types.ARTICLE_JOURNAL, issued=date,
                              author=authors, **csl_keys)
         else:
             raise NotImplementedError
