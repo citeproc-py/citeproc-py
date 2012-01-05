@@ -4,10 +4,7 @@ import os
 from glob import glob
 from warnings import warn
 
-from lxml import etree
-
 from . import types
-from frontend import CitationStylesStyle, CitationStylesBibliography
 
 
 DATA_PATH = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'data')
@@ -43,3 +40,4 @@ LOCALES = [os.path.basename(path)[8:-4]
            for path in glob(os.path.join(LOCALES_PATH, 'locales-*.xml'))]
 
 
+from .frontend import CitationStylesStyle, CitationStylesBibliography

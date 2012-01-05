@@ -1,4 +1,11 @@
 
+import os
+
+from warnings import warn
+
+from lxml import etree
+
+from . import SCHEMA_PATH, LOCALES_PATH
 from .model import CitationStylesElement
 
 

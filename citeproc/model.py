@@ -6,6 +6,9 @@ from operator import itemgetter
 
 from lxml import etree
 
+from . import NAMES, DATES, NUMBERS
+from .source import VariableError, DateRange
+
 
 # Base class
 
@@ -90,7 +93,7 @@ class CitationStylesElement(SomewhatObjectifiedElement):
 
 class Style(CitationStylesElement):
     def set_locale_list(self, system_locale):
-        from . import CitationStylesLocale
+        from .frontend import CitationStylesLocale
 
         def search_locale(locale):
             return self.xpath_search('./cs:locale[@xml:lang="{}"]'
@@ -310,7 +313,6 @@ class TextCased(object):
 
 class PluralTest(object):
     def is_plural(self, item):
-        from ...bibliography import VariableError
         variable = self.get('variable')
         if variable == 'locator':
             value = item.locator.identifier
@@ -393,7 +395,6 @@ class Sort(CitationStylesElement):
 
 class Key(CitationStylesElement):
     def sort_keys(self, items, context):
-        from ..csl import NAMES, DATES, NUMBERS
         if 'variable' in self.attrib:
             variable = self.get('variable').replace('-', '_')
             if variable in NAMES:
@@ -473,7 +474,6 @@ class Parent(object):
         return any([child.calls_variable() for child in self.getchildren()])
 
     def process_children(self, item, **kwargs):
-        from ...bibliography import VariableError
         output = []
         for child in self.iterchildren():
             try:
@@ -488,7 +488,6 @@ class Parent(object):
             return None
 
     def render_children(self, item, **kwargs):
-        from ...bibliography import VariableError
         output = []
         for child in self.iterchildren():
             try:
@@ -515,7 +514,6 @@ class Macro(CitationStylesElement, Parent):
 
 class Layout(CitationStylesElement, Parent, Formatted, Affixed, Delimited):
     def render_citation(self, citation):
-        from ...bibliography import VariableError
         # first sort citation items according to bibliography order
         bibliography = citation.cites[0]._bibliography
         citation.cites.sort(key=lambda x: bibliography.keys.index(x.key))
@@ -717,7 +715,6 @@ class Date(CitationStylesElement, Parent, Formatted, Affixed, Delimited):
             return localized_date.render(item, variable,
                                          show_parts=show_parts, context=self)
         else:
-            from ...bibliography import DateRange
             date_or_range = item.reference[variable.replace('-', '_')]
             if isinstance(date_or_range, DateRange):
                 text = self.render_date_range(date_or_range, show_parts,
@@ -732,7 +729,6 @@ class Date(CitationStylesElement, Parent, Formatted, Affixed, Delimited):
                 return None
 
     def parts(self, date, show_parts, context=None):
-        from ...bibliography import VariableError
         output = []
         for part in self.iterchildren():
             if part.get('name') in show_parts:
@@ -878,7 +874,6 @@ class Names(CitationStylesElement, Parent, Formatted, Affixed, Delimited):
         return result
 
     def process(self, item, names_context=None, context=None, **kwargs):
-        from ...bibliography import VariableError
         if context is None:
             context = self
         if names_context is None:
@@ -931,7 +926,6 @@ class Names(CitationStylesElement, Parent, Formatted, Affixed, Delimited):
         try:
             return text
         except NameError:
-            from ...bibliography import VariableError
             raise VariableError
 
     def markup(self, text):
@@ -1131,7 +1125,6 @@ class Et_Al(CitationStylesElement, Formatted, Affixed):
 
 class Substitute(CitationStylesElement, Parent):
     def render(self, item, context=None, **kwargs):
-        from ...bibliography import VariableError
         for child in self.getchildren():
             try:
                 if isinstance(child, Names) and child.name is None:
@@ -1206,7 +1199,6 @@ class Label(CitationStylesElement, Formatted, Affixed, StrippedPeriods,
 
 class Group(CitationStylesElement, Parent, Formatted, Affixed, Delimited):
     def process(self, item, context=None, **kwargs):
-        from ...bibliography import VariableError
         output = []
         variable_called = False
         variable_rendered = False
