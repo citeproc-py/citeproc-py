@@ -54,7 +54,11 @@ class ProcessorTest(object):
                     python_key = 'title_short'
 
                 ref_data[python_key] = value
-            references.append(Reference(ref_key, ref_type, **ref_data))
+            try:
+                references.append(Reference(ref_key, ref_type, **ref_data))
+            except UnboundLocalError:
+                # some tests don't specify the reference type
+                references.append(Reference(ref_key, 'book', **ref_data))
         return references
 
     def parse_names(self, json_data):
