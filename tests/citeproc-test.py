@@ -16,7 +16,7 @@ from citeproc.source import Reference, Name, Date, DateRange
 from citeproc.source import Citation, CitationItem, Locator
 
 
-TESTS_PATH = 'citeproc-test/processor-tests/machines'
+TESTS_PATH = '../../citeproc-test/processor-tests/machines'
 
 CATEGORY = ''
 
