@@ -9,6 +9,7 @@ import traceback
 
 from codecs import utf_8_encode
 from functools import reduce
+from optparse import OptionParser
 
 from citeproc import CitationStylesStyle, CitationStylesBibliography
 from citeproc import NAMES, DATES, NUMBERS
@@ -17,8 +18,6 @@ from citeproc.source import Citation, CitationItem, Locator
 
 
 TESTS_PATH = '../../citeproc-test/processor-tests/machines'
-
-CATEGORY = ''
 
 
 class ProcessorTest(object):
@@ -169,14 +168,42 @@ class ProcessorTest(object):
         return CitationItem(reference_key, **options)
 
 
-if __name__ == '__main__':
+
+def main():
+    usage = ('usage: %prog [options] glob_pattern\n\n'
+             'glob_pattern limits the tests that are executed, for example:\n'
+             '  %prog *Sort*\n'
+             'runs only test fixtures that have "Sort" in the filename')
+    parser = OptionParser(usage)
+    parser.add_option('-m', '--max', dest='max', default=-1,
+                      help='run maximally MAX tests', metavar='MAX')
+    parser.add_option('-r', '--raise', dest='catch_exceptions', default=True,
+                      action='store_false',
+                      help='exceptions are not caught (aborts program)')
+    parser.add_option('-f', '--file', dest='file', default=None,
+                      help='write output to FILE', metavar='FILE')
+    (options, args) = parser.parse_args()
+
+    try:
+        destination = open(options.file, 'w', encoding='utf-8')
+        sys.stderr = destination
+    except TypeError:
+        destination = sys.stdout
+
+    try:
+        glob_pattern = args[0]
+        filter_tests = False
+    except IndexError:
+        glob_pattern = '*'
+        filter_tests = True
+
     total = {}
     passed = {}
-    max_tests = -1
+    max_tests = int(options.max)
 
     count = 0
     for filename in glob.glob(os.path.join(TESTS_PATH,
-                                           '{}*.json'.format(CATEGORY))):
+                                           '{}.json'.format(glob_pattern))):
         category = os.path.basename(filename).split('_')[0]
         passed[category] = passed.get(category, 0)
         if count == max_tests:
@@ -184,34 +211,41 @@ if __name__ == '__main__':
 
         try:
             t = ProcessorTest(filename)
-            if (t.json_data['mode'] == 'bibliography-header' or
-                t.json_data['bibsection']):
+            if filter_tests and (t.json_data['mode'] == 'bibliography-header' or
+                                 t.json_data['bibsection']):
                 continue
             total[category] = total.get(category, 0) + 1
             count += 1
-            print('>>> Testing {}'.format(os.path.basename(filename)))
-            print('EXP: ' + '\n     '.join(t.expected))
+            print('>>> Testing {}'.format(os.path.basename(filename)),
+                  file=destination)
+            print('EXP: ' + '\n     '.join(t.expected), file=destination)
 
             results = t.execute()
             results = reduce(lambda x, y: x+y,
                              [item.split('\n') for item in results])
             results = [item.replace('&amp;', '&').replace('&', '&#38;')
                        for item in results]
-            print('RES: ' + '\n     '.join(results))
+            print('RES: ' + '\n     '.join(results), file=destination)
             if results == t.expected:
                 passed[category] += 1
-                print('<<< SUCCESS\n')
+                print('<<< SUCCESS\n', file=destination)
             else:
-                print('<<< FAILED\n')
+                print('<<< FAILED\n', file=destination)
             del t
         except Exception as e:
-            print('Exception in', os.path.basename(filename))
-            #traceback.print_exc(file=sys.stdout)
-            #raise
-            print(e)
+            print('Exception in', os.path.basename(filename), file=destination)
+            if options.catch_exceptions:
+                traceback.print_exc(file=destination)
+            else:
+                raise
 
     for category in sorted(total.keys()):
         print('{} passed {}/{}'.format(category, passed[category],
-                                       total[category]))
+                                       total[category]), file=destination)
 
-    print('total: {}/{}'.format(sum(passed.values()), sum(total.values())))
+    print('total: {}/{}'.format(sum(passed.values()), sum(total.values())),
+          file=destination)
+
+
+if __name__ == '__main__':
+    main()
