@@ -1,7 +1,10 @@
 
 import re
 
-from html.entities import codepoint2name, name2codepoint
+try:
+    from html.entities import codepoint2name, name2codepoint
+except ImportError:
+    from htmlentitydefs import codepoint2name, name2codepoint
 from operator import itemgetter
 
 from lxml import etree
