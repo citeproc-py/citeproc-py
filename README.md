@@ -34,6 +34,7 @@ probably some I forgot though):
 
 Also, some [citeproc-js](http://bitbucket.org/fbennett/citeproc-js/wiki/Home)
 functionality that is not part of the CSL spec is not (yet) supported:
+
 * raw dates
 * static-ordering
 * literal names
