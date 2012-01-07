@@ -17,7 +17,10 @@ from citeproc.source import Reference, Name, Date, DateRange
 from citeproc.source import Citation, CitationItem, Locator
 
 
-TESTS_PATH = '../../citeproc-test/processor-tests/machines'
+TESTS_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__),
+                                          os.path.pardir, os.path.pardir,
+                                          'citeproc-test', 'processor-tests',
+                                          'machines'))
 
 
 class ProcessorTest(object):
