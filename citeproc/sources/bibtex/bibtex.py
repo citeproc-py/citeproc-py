@@ -77,10 +77,14 @@ class BibTeX(BibliographySource):
         # TODO: implement proper parsing
         csl_authors = []
         for author in authors.split(' and '):
-            try:
+            if ',' in author:
                 family, given = map(str.strip, author.split(',', 1))
                 name = Name(family=family, given=given)
-            except:
+            elif ' ' in author:
+                given, family = map(str.strip, author.rsplit(' ', 1))
+                name = Name(family=family, given=given)
+            else:
+                # TODO: handle 'others'
                 name = Name(name=author)
             csl_authors.append(name)
         return csl_authors
