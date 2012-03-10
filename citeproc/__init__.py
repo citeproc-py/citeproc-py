@@ -41,3 +41,4 @@ LOCALES = [os.path.basename(path)[8:-4]
 
 
 from .frontend import CitationStylesStyle, CitationStylesBibliography
+from .source import Citation, CitationItem, Locator
