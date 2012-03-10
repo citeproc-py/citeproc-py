@@ -1,39 +1,38 @@
 
-from ... import types
+from warnings import warn
+
+from ...types import (ARTICLE, ARTICLE_JOURNAL, BOOK, PAPER_CONFERENCE, REPORT,
+                      THESIS)
 from ...source import BibliographySource, Reference, Name, Date
 from .bibparse import parse_bib
 
 
 
 class BibTeX(BibliographySource):
-    # TODO: these can probably be merged
-    # see http://feedback.mendeley.com/forums/4941-mendeley-feedback/suggestions/281656-csl-documentation
-    conversion_tables = {'article': [('title', 'title'),
-                                     ('journal', 'container_title'),
-                                     ('volume', 'volume'),
-                                     ('number', 'number'),
-                                     ('pages', 'page'),
-                                     ('note', 'note')],
-                         'book': [('title', 'title'),
-                                  ('publisher', 'publisher'),
-                                  ('volume', 'volume'),
-                                  ('number', 'number'),
-                                  ('address', 'publisher_place'),
-                                  ('edition', 'edition'),
-                                  ('note', 'note')],
-                         'inproceedings': [('title', 'title'),
-                                           ('booktitle', 'container_title'),
-                                           ('volume', 'volume'),
-                                           ('number', 'number'),
-                                           ('pages', 'page'),
-                                           ('series', 'collection_title'),
-                                           #('organization', None),
-                                           ('publisher', 'publisher'),
-                                           ('address', 'publisher_place'),
-                                           ('note', 'note')]}
+    fields = {'title': 'title',
+              'author': 'author',
+              'editor': 'editor',
+              'journal': 'container_title',
+              'volume': 'volume',
+              'number': 'number',
+              'pages': 'page',
+              'note': 'note',
+              'publisher': 'publisher',
+              'address': 'publisher_place',
+              'edition': 'edition',
+              'booktitle': 'container_title',
+              'series': 'collection_title',
+              }
 
-    date_conversion = [('year', 'year'),
-                       ('month', 'month')]
+    types = {'article': ARTICLE_JOURNAL,
+             'inproceedings': PAPER_CONFERENCE,
+             'book': BOOK,
+             'misc': ARTICLE,
+             'phdthesis': THESIS,
+             'conference': PAPER_CONFERENCE,
+             'manual': BOOK,
+             'techreport': REPORT,
+             }
 
     def __init__(self, filename):
         for key, entry in parse_bib(filename).items():
@@ -41,22 +40,38 @@ class BibTeX(BibliographySource):
 
     def _bibtex_to_csl(self, bibtex_entry):
         csl_dict = {}
-        for bibtex_key, csl_key in self.conversion_tables[bibtex_entry.btype]:
-            if bibtex_key in bibtex_entry.data:
-                value = bibtex_entry.data[bibtex_key]
-                if csl_key in ('number', 'volume'):
+        for field, value in bibtex_entry.data.items():
+            try:
+                csl_field = self.fields[field]
+            except KeyError:
+                if field not in ('year', 'month', 'filename'):
+                    warn("Unsupported BibTeX field '{}'".format(field))
+                continue
+            if csl_field in ('number', 'volume'):
+                try:
                     value = int(value)
-                elif csl_key == 'page':
-                    value = value.replace(' ', '').replace('--', '-')
-                csl_dict[csl_key] = value
+                except ValueError:
+                    pass
+            elif csl_field == 'page':
+                value = value.replace(' ', '').replace('--', '-')
+            elif csl_field in ('author', 'editor'):
+                value = [name for name in self._parse_author(value)]
+            csl_dict[csl_field] = value
         return csl_dict
 
     def _bibtex_to_csl_date(self, bibtex_entry):
         date_dict = {}
-        for bibtex_key, date_key in self.date_conversion:
-            if bibtex_key in bibtex_entry.data:
-                date_dict[date_key] = bibtex_entry.data[bibtex_key]
+        if 'month' in bibtex_entry.data:
+            date_dict['month'] = self._parse_month(bibtex_entry.data['month'])
+        if 'year' in bibtex_entry.data:
+            date_dict['year'] = bibtex_entry.data['year']
         return date_dict
+
+    months = ('jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep',
+              'oct', 'nov', 'dec')
+
+    def _parse_month(self, month):
+        return self.months.index(month[:3].lower())
 
     def _parse_author(self, authors):
         # TODO: implement proper parsing
@@ -71,43 +86,9 @@ class BibTeX(BibliographySource):
         return csl_authors
 
     def create_reference(self, key, bibtex_entry):
-        # TODO: merge or encapsulate
-        if bibtex_entry.btype == 'article':
-            csl_keys = self._bibtex_to_csl(bibtex_entry)
-            date_keys = self._bibtex_to_csl_date(bibtex_entry)
-            date = Date(**date_keys)
-            authors = []
-            for name in self._parse_author(bibtex_entry.data['author']):
-                authors.append(name)
-            return Reference(key, types.ARTICLE_JOURNAL, issued=date,
-                             author=authors, **csl_keys)
-        elif bibtex_entry.btype == 'book':
-            csl_keys = self._bibtex_to_csl(bibtex_entry)
-            date_keys = self._bibtex_to_csl_date(bibtex_entry)
-            date = Date(**date_keys)
-            authors = []
-            for name in self._parse_author(bibtex_entry.data['author']):
-                authors.append(name)
-            if 'editor' in bibtex_entry.data:
-                editors = []
-                for name in self._parse_author(bibtex_entry.data['editor']):
-                    editors.append(name)
-                csl_keys['editor'] = editors
-            return Reference(key, types.BOOK, issued=date, author=authors,
-                             **csl_keys)
-        elif bibtex_entry.btype == 'inproceedings':
-            csl_keys = self._bibtex_to_csl(bibtex_entry)
-            date_keys = self._bibtex_to_csl_date(bibtex_entry)
-            date = Date(**date_keys)
-            authors = []
-            for name in self._parse_author(bibtex_entry.data['author']):
-                authors.append(name)
-            if 'editor' in bibtex_entry.data:
-                editors = []
-                for name in self._parse_author(bibtex_entry.data['editor']):
-                    editors.append(name)
-                csl_keys['editor'] = editors
-            return Reference(key, types.ARTICLE_JOURNAL, issued=date,
-                             author=authors, **csl_keys)
-        else:
-            raise NotImplementedError
+        csl_type = self.types[bibtex_entry.btype]
+        csl_fields = self._bibtex_to_csl(bibtex_entry)
+        date_keys = self._bibtex_to_csl_date(bibtex_entry)
+        if date_keys:
+            csl_fields['issued'] = Date(**date_keys)
+        return Reference(key, csl_type, **csl_fields)
