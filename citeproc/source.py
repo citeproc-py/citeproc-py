@@ -137,8 +137,7 @@ class Citation(CustomDict):
 class CitationItem(CustomDict):
     def __init__(self, key, bibliography=None, **args):
         self.key = key
-        if bibliography:
-            self._bibliography = bibliography
+        self._bibliography = bibliography
         optional = {'locator', 'prefix', 'suffix'}
         super().__init__(args, optional=optional)
 
@@ -151,7 +150,7 @@ class CitationItem(CustomDict):
 
     @property
     def number(self):
-        return self._bibliography.items.index(self) + 1
+        return self._bibliography.keys.index(self.key) + 1
 
 
 class Locator(object):
