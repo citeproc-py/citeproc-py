@@ -1,6 +1,6 @@
 
 from ... import types
-from ... import BibliographySource, Reference, Name, Date
+from ...source import BibliographySource, Reference, Name, Date
 from .bibparse import parse_bib
 
 
