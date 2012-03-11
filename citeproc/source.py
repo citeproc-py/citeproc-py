@@ -133,6 +133,10 @@ class Citation(CustomDict):
         cites = ', '.join([cite.key for cite in self.cites])
         return '{}({})'.format(self.__class__.__name__, cites)
 
+    @property
+    def bibliography(self):
+        return self.cites[0]._bibliography
+
 
 class CitationItem(CustomDict):
     def __init__(self, key, bibliography=None, **args):

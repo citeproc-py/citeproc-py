@@ -63,6 +63,9 @@ class CitationStylesElement(SomewhatObjectifiedElement):
     def get_layout(self):
         return self.xpath_search('./ancestor-or-self::cs:layout[1]')[0]
 
+    def get_target(self):
+        return self.get_root().target
+
     def render(self, *args, **kwargs):
         return self.markup(self.process(*args, **kwargs))
 
@@ -124,6 +127,9 @@ class Style(CitationStylesElement):
         if system_locale != 'en-US':
             # TODO: add other locales with same locale
             self.locales.append(CitationStylesLocale('en-US').root)
+
+    def set_target(self, target):
+        self.target = target
 
 
 class Locale(CitationStylesElement):
@@ -203,6 +209,7 @@ class Bibliography(FormattingInstructions, CitationStylesElement):
 
 class Formatted(object):
     def format(self, string):
+        string = str(string)
         text = self.font_style(string)
         text = self.font_variant(text)
         text = self.font_weight(text)
@@ -211,50 +218,55 @@ class Formatted(object):
         return text
 
     def font_style(self, text):
+        target = self.get_target()
         font_style = self.get('font-style', 'normal')
         if font_style == 'normal':
-            wrappers = '', ''
+            formatted = text
         elif font_style == 'italic':
-            wrappers = '<i>', '</i>'
+            formatted = target.Italic(text)
         elif font_style == 'oblique':
-            wrappers = '<i>', '</i>'
-        return '{1}{0}{2}'.format(text, *wrappers)
+            formatted = target.Oblique(text)
+        return formatted
 
     def font_variant(self, text):
+        target = self.get_target()
         font_variant = self.get('font-variant', 'normal')
         if font_variant == 'normal':
-            wrappers = '', ''
+            formatted = text
         elif font_variant == 'small-caps':
-            wrappers = '<span style="font-variant:small-caps;">', '</span>'
-        return '{1}{0}{2}'.format(text, *wrappers)
+            formatted = target.SmallCaps(text)
+        return formatted
 
     def font_weight(self, text):
+        target = self.get_target()
         font_weight = self.get('font-weight', 'normal')
         if font_weight == 'normal':
-            wrappers = '', ''
+            formatted = text
         elif font_weight == 'bold':
-            wrappers = '<b>', '</b>'
+            formatted = target.Bold(text)
         elif font_weight == 'light':
-            wrappers = '<l>', '</l>'
-        return '{1}{0}{2}'.format(text, *wrappers)
+            formatted = target.Light(text)
+        return formatted
 
     def text_decoration(self, text):
+        target = self.get_target()
         text_decoration = self.get('text-decoration', 'none')
         if text_decoration == 'none':
-            wrappers = '', ''
+            formatted = text
         elif text_decoration == 'underline':
-            wrappers = '<u>', '</u>'
-        return '{1}{0}{2}'.format(text, *wrappers)
+            formatted = target.Underline(text)
+        return formatted
 
     def vertical_align(self, text):
+        target = self.get_target()
         vertical_align = self.get('vertical-align', 'baseline')
         if vertical_align == 'baseline':
-            wrappers = '', ''
+            formatted = text
         elif vertical_align == 'sup':
-            wrappers = '<sup>', '</sup>'
+            formatted = target.Superscript(text)
         elif vertical_align == 'sub':
-            wrappers = '<sub>', '</sub>'
-        return '{1}{0}{2}'.format(text, *wrappers)
+            formatted = target.Subscript(text)
+        return formatted
 
 
 class Affixed(object):
@@ -518,7 +530,7 @@ class Macro(CitationStylesElement, Parent):
 class Layout(CitationStylesElement, Parent, Formatted, Affixed, Delimited):
     def render_citation(self, citation):
         # first sort citation items according to bibliography order
-        bibliography = citation.cites[0]._bibliography
+        bibliography = citation.bibliography
         citation.cites.sort(key=lambda x: bibliography.keys.index(x.key))
         # sort using citation/sort element
         if self.getparent().sort is not None:
@@ -544,17 +556,13 @@ class Layout(CitationStylesElement, Parent, Formatted, Affixed, Delimited):
         return citation_items
 
     def render_bibliography(self, citation_items):
-        item_prefix = '  <div class="csl-entry">'
-        item_suffix = '</div>'
-        output = ['<div class="csl-bib-body">']
+        output_items = []
         for item in citation_items:
             self.repressed = {}
             text = self.render_children(item)
             if text is not None:
-                text = item_prefix + self.wrap(self.format(text)) + item_suffix
-                output.append(text)
-        output.append('</div>')
-        return '\n'.join(output)
+                output_items.append(text)
+        return self.get_target().Bibliography(output_items)
 
 
 class Text(CitationStylesElement, Formatted, Affixed, Quoted, TextCased,

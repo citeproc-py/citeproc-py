@@ -4,7 +4,7 @@ import os
 from glob import glob
 from warnings import warn
 
-from . import types
+from . import types, formatter
 
 
 DATA_PATH = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'data')

@@ -7,6 +7,7 @@ from lxml import etree
 
 from . import SCHEMA_PATH, LOCALES_PATH
 from .model import CitationStylesElement
+from .formatter import html
 
 
 class CitationStylesXML(object):
@@ -68,9 +69,10 @@ class CitationStylesStyle(CitationStylesXML):
 
 
 class CitationStylesBibliography(object):
-    def __init__(self, style, source):
+    def __init__(self, style, source, target=html):
         self.style = style
         self.source = source
+        self.style.root.set_target(target)
         self.keys = []
         self.items = []
 
