@@ -78,10 +78,11 @@ class CitationStylesBibliography(object):
 
     def register(self, citation):
         for item in citation.cites:
-            item._bibliography = self
-            if item.key not in self.keys:
-                self.keys.append(item.key)
-                self.items.append(item)
+            if item.key in self.source:
+                item._bibliography = self
+                if item.key not in self.keys:
+                    self.keys.append(item.key)
+                    self.items.append(item)
 
     def sort(self):
         sorted_items = self.style.sort_bibliography(self.items)
