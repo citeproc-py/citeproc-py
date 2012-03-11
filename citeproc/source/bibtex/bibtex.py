@@ -3,7 +3,7 @@ from warnings import warn
 
 from ...types import (ARTICLE, ARTICLE_JOURNAL, BOOK, PAPER_CONFERENCE, REPORT,
                       THESIS)
-from ...source import BibliographySource, Reference, Name, Date
+from .. import BibliographySource, Reference, Name, Date
 from .bibparse import parse_bib
 
 

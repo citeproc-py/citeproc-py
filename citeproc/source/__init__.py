@@ -7,7 +7,7 @@ from warnings import warn
 
 from lxml import objectify
 
-from . import VARIABLES
+from .. import VARIABLES
 
 
 class CustomDict(dict):
@@ -191,3 +191,6 @@ class Bibliography(object):
 class BibliographySource(dict):
     def add(self, entry):
         self[entry.key] = entry
+
+
+from . import bibtex
