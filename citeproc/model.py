@@ -1,6 +1,7 @@
 
 import re
 
+from functools import reduce
 try:
     from html.entities import codepoint2name, name2codepoint
 except ImportError:
@@ -209,7 +210,8 @@ class Bibliography(FormattingInstructions, CitationStylesElement):
 
 class Formatted(object):
     def format(self, string):
-        string = str(string)
+        if isinstance(string, (int, float)):
+            string = str(string)
         text = self.font_style(string)
         text = self.font_variant(text)
         text = self.font_weight(text)
@@ -279,7 +281,7 @@ class Affixed(object):
 class Delimited(object):
     def join(self, strings, default_delimiter=''):
         delimiter = self.get('delimiter', default_delimiter)
-        return delimiter.join([item for item in strings if item is not None])
+        return reduce(lambda a, b: a + delimiter + b, filter(None, strings))
 
 
 class Displayed(object):
@@ -512,7 +514,7 @@ class Parent(object):
             except VariableError:
                 pass
         if output:
-            return ''.join(output)
+            return reduce(lambda a, b: a + b, output)
         else:
             return None
 
