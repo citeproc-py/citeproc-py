@@ -16,6 +16,8 @@ class BibTeX(BibliographySource):
               'volume': 'volume',
               'number': 'number',
               'pages': 'page',
+              'isbn': 'isbn',
+              'issn': 'issn',
               'note': 'note',
               'publisher': 'publisher',
               'address': 'publisher_place',
