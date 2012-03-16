@@ -25,13 +25,13 @@ NUMBERS = ['chapter_number', 'collection_number', 'edition', 'issue', 'number',
            'number_of_pages', 'number_of_volumes', 'volume']
 
 VARIABLES = (['abstract', 'annote', 'archive', 'archive_location',
-              'archive_place', 'authority', 'call_number', 'citation_label'
+              'archive_place', 'authority', 'call_number', 'citation_label',
               'citation_number', 'collection_title', 'container_title',
-              'container_title_short', 'dimensions', 'doi', 'event',
-              'event_place', 'first_reference_note_number', 'genre', 'isbn',
-              'issn', 'jurisdiction', 'keyword', 'locator', 'medium', 'note',
+              'container_title_short', 'dimensions', 'DOI', 'event',
+              'event_place', 'first_reference_note_number', 'genre', 'ISBN',
+              'ISSN', 'jurisdiction', 'keyword', 'locator', 'medium', 'note',
               'original_publisher', 'original_publisher_place', 'original_title',
-              'page', 'page_first', 'pmid', 'pmcid', 'publisher',
+              'page', 'page_first', 'PMCID', 'PMID', 'publisher',
               'publisher_place', 'references', 'section', 'source', 'status',
               'title', 'title_short', 'URL', 'version', 'year_suffix'] +
              NAMES + DATES + NUMBERS)
