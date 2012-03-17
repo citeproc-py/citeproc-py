@@ -1,40 +1,53 @@
 
 from warnings import warn
 
-from ...types import (ARTICLE, ARTICLE_JOURNAL, BOOK, PAPER_CONFERENCE, REPORT,
-                      THESIS)
+from ...types import (ARTICLE, ARTICLE_JOURNAL, BOOK, CHAPTER, MANUSCRIPT,
+                      PAMPHLET, PAPER_CONFERENCE, REPORT, THESIS)
 from .. import BibliographySource, Reference, Name, Date
 from .bibparse import parse_bib
 
 
-
 class BibTeX(BibliographySource):
-    fields = {'title': 'title',
+    fields = {'address': 'publisher_place',
+              'annote': 'annote',
               'author': 'author',
-              'editor': 'editor',
-              'journal': 'container_title',
-              'volume': 'volume',
-              'number': 'number',
-              'pages': 'page',
-              'isbn': 'isbn',
-              'issn': 'issn',
-              'note': 'note',
-              'publisher': 'publisher',
-              'address': 'publisher_place',
-              'edition': 'edition',
               'booktitle': 'container_title',
+              'chapter': 'chapter_number',
+              'edition': 'edition',
+              'editor': 'editor',
+#              'howpublished': None,
+#              'institution': None,
+              'journal': 'container_title',
+#              'month': None,
+              'note': 'note',
+              'number': 'issue',
+#              'organization': None,
+              'pages': 'page',
+              'publisher': 'publisher',
+#              'school': None,
               'series': 'collection_title',
-              }
+              'title': 'title',
+#              'type': None,
+#              'year': None,
+              'volume': 'volume',
+
+              # non-standard fields
+              'isbn': 'isbn',
+              'issn': 'issn'}
 
     types = {'article': ARTICLE_JOURNAL,
-             'inproceedings': PAPER_CONFERENCE,
              'book': BOOK,
+             'booklet': PAMPHLET,
+             'conference': PAPER_CONFERENCE,
+             'inbook': CHAPTER,
+             'incollection': ARTICLE_JOURNAL,
+             'inproceedings': PAPER_CONFERENCE,
+             'manual': BOOK,
+             'mastersthesis': THESIS,
              'misc': ARTICLE,
              'phdthesis': THESIS,
-             'conference': PAPER_CONFERENCE,
-             'manual': BOOK,
              'techreport': REPORT,
-             }
+             'unpublished': MANUSCRIPT}
 
     def __init__(self, filename):
         for key, entry in parse_bib(filename).items():
