@@ -3,6 +3,7 @@ from warnings import warn
 
 from ...types import (ARTICLE, ARTICLE_JOURNAL, BOOK, CHAPTER, MANUSCRIPT,
                       PAMPHLET, PAPER_CONFERENCE, REPORT, THESIS)
+from ...string import String, MixedString, NoCase
 from .. import BibliographySource, Reference, Name, Date
 from .bibparse import parse_bib
 
@@ -62,14 +63,16 @@ class BibTeX(BibliographySource):
                 if field not in ('year', 'month', 'filename'):
                     warn("Unsupported BibTeX field '{}'".format(field))
                 continue
-            if csl_field in ('number', 'volume'):
+            if field in ('number', 'volume'):
                 try:
                     value = int(value)
                 except ValueError:
                     pass
-            elif csl_field == 'page':
+            elif field == 'title':
+                value = self._parse_title(value)
+            elif field == 'pages':
                 value = value.replace(' ', '').replace('--', '-')
-            elif csl_field in ('author', 'editor'):
+            elif field in ('author', 'editor'):
                 value = [name for name in self._parse_author(value)]
             csl_dict[csl_field] = value
         return csl_dict
@@ -87,6 +90,32 @@ class BibTeX(BibliographySource):
 
     def _parse_month(self, month):
         return self.months.index(month[:3].lower())
+
+    def _parse_title(self, title):
+        output = MixedString()
+        level = 0
+        end = -1
+        start = 0
+        for i, char in enumerate(title):
+            if char == '{':
+                if level == 0:
+                    string = title[end + 1:i]
+                    if string:
+                        output += String(string)
+                    start = i + 1
+                level += 1
+            elif char == '}':
+                level -= 1
+                if level == 0:
+                    end = i
+                    no_case = title[start:end]
+                    output += NoCase(no_case.replace('{', '').replace('}', ''))
+        if level != 0:
+            raise SyntaxError('Non-matching braces in "{}"'.format(title))
+        string = title[end + 1:]
+        if string:
+            output += String(string)
+        return output
 
     def _parse_author(self, authors):
         # TODO: implement proper parsing
