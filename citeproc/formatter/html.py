@@ -59,7 +59,7 @@ class Bibliography(str):
     def __new__(cls, items):
         output = [cls.bib_prefix]
         for text in items:
-            text = cls.item_prefix + text + cls.item_suffix
+            text = cls.item_prefix + str(text) + cls.item_suffix
             output.append(text)
         output.append(cls.bib_suffix)
         return super().__new__(cls, '\n'.join(output))

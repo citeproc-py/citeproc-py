@@ -29,11 +29,12 @@ VARIABLES = (['abstract', 'annote', 'archive', 'archive_location',
               'citation_number', 'collection_title', 'container_title',
               'container_title_short', 'dimensions', 'DOI', 'event',
               'event_place', 'first_reference_note_number', 'genre', 'ISBN',
-              'ISSN', 'jurisdiction', 'keyword', 'locator', 'medium', 'note',
-              'original_publisher', 'original_publisher_place', 'original_title',
-              'page', 'page_first', 'PMCID', 'PMID', 'publisher',
-              'publisher_place', 'references', 'section', 'source', 'status',
-              'title', 'title_short', 'URL', 'version', 'year_suffix'] +
+              'ISSN', 'jurisdiction', 'keyword', 'language', 'locator',
+              'medium', 'note', 'original_publisher',
+              'original_publisher_place', 'original_title', 'page',
+              'page_first', 'PMCID', 'PMID', 'publisher', 'publisher_place',
+              'references', 'section', 'source', 'status', 'title',
+              'title_short', 'URL', 'version', 'year_suffix'] +
              NAMES + DATES + NUMBERS)
 
 LOCALES = [os.path.basename(path)[8:-4]

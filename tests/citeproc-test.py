@@ -15,6 +15,7 @@ from citeproc import CitationStylesStyle, CitationStylesBibliography
 from citeproc import NAMES, DATES, NUMBERS
 from citeproc.source import Reference, Name, Date, DateRange
 from citeproc.source import Citation, CitationItem, Locator
+from citeproc.string import String, MixedString, NoCase
 
 
 TESTS_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__),
@@ -54,6 +55,8 @@ class ProcessorTest(object):
                     value = self.parse_date(value)
                 elif python_key == 'shortTitle':
                     python_key = 'title_short'
+                else:
+                    value = self.parse_string(value)
 
                 ref_data[python_key] = value
             try:
@@ -62,6 +65,30 @@ class ProcessorTest(object):
                 # some tests don't specify the reference type
                 references.append(Reference(ref_key, 'book', **ref_data))
         return references
+
+    start_tag = '<span class="nocase">'
+    end_tag = '</span>'
+
+    def parse_string(self, string):
+        lower_string = string.lower()
+        end = 0
+        output = MixedString()
+        try:
+            while True:
+                start = lower_string.index(self.start_tag, end)
+                regular = string[end:start]
+                if regular:
+                    output += String(regular)
+                end = lower_string.index(self.end_tag, start + 1)
+                start += len(self.start_tag)
+                no_case = string[start:end]
+                output += NoCase(no_case)
+                end += len(self.end_tag)
+        except ValueError:
+            regular = string[end:]
+            if regular:
+                output += String(regular)
+        return output
 
     def parse_names(self, json_data):
         names = []
@@ -169,7 +196,6 @@ class ProcessorTest(object):
                 options[python_key] = value
 
         return CitationItem(reference_key, **options)
-
 
 
 def main():

@@ -308,21 +308,49 @@ class StrippedPeriods(object):
 
 
 class TextCased(object):
-    def case(self, text):
+    _stop_words = ['a', 'an', 'and', 'as', 'at', 'but', 'by', 'down', 'for',
+                   'from', 'in', 'into', 'nor', 'of', 'on', 'onto', 'or',
+                   'over', 'so', 'the', 'till', 'to', 'up', 'via', 'with',
+                   'yet']
+
+    def case(self, text, language=None):
         text_case = self.get('text-case')
         if text_case is not None:
+            if language != 'en' and text_case == 'title':
+                text_case = 'sentence'
             if text_case == 'lowercase':
                 text = text.lower()
             elif text_case == 'uppercase':
                 text = text.upper()
             elif text_case == 'capitalize-first':
-                text = text.capitalize()
+                text = text.capitalize_first()
             elif text_case == 'capitalize-all':
-                text = text.title()
+                output = []
+                for word in text.words():
+                    word = word.capitalize_first()
+                    output.append(word)
+                text = ' '.join(output)
             elif text_case == 'title':
-                text = text.title()
+                output = []
+                prev = ':'
+                for word in text.words():
+                    if not text.isupper() and not word.isupper():
+                        word = word.soft_lower()
+                        if (str(word) not in self._stop_words or
+                            prev in (':', '.')):
+                            word = word.capitalize_first()
+                    prev = word[-1]
+                    output.append(word)
+                text = ' '.join(output)
             elif text_case == 'sentence':
-                text = text.capitalize()
+                output = []
+                for i, word in enumerate(text.words()):
+                    if not text.isupper() and not word.isupper():
+                        word = word.soft_lower()
+                    if i == 0:
+                        word = word.capitalize_first()
+                    output.append(word)
+                text = ' '.join(output)
         return text
 
 
@@ -579,10 +607,18 @@ class Text(CitationStylesElement, Formatted, Affixed, Quoted, TextCased,
         else:
             return False
 
+    def render(self, *args, **kwargs):
+        text, language = self.process(*args, **kwargs)
+        return self.markup(text, language)
+
     def process(self, item, context=None, **kwargs):
         if context is None:
             context = self
 
+        try:
+            language = item.reference.language[:2]
+        except VariableError:
+            language = self.get_root().get('default-locale', 'en')[:2]
         if 'variable' in self.attrib:
             text = self._variable(item, context)
         elif 'macro' in self.attrib:
@@ -592,7 +628,7 @@ class Text(CitationStylesElement, Formatted, Affixed, Quoted, TextCased,
         elif 'value' in self.attrib:
             text = self.get('value')
 
-        return text
+        return text, language
 
     def _variable(self, item, context):
         variable = self.get('variable')
@@ -631,9 +667,9 @@ class Text(CitationStylesElement, Formatted, Affixed, Quoted, TextCased,
 
         return text
 
-    def markup(self, text):
+    def markup(self, text, language):
         if text:
-            tmp = self.format(self.case(self.strip_periods(text)))
+            tmp = self.format(self.case(self.strip_periods(text), language))
             return self.wrap(self.quote(tmp))
         else:
             return None
@@ -833,13 +869,13 @@ class Number(CitationStylesElement, Formatted, Affixed, Displayed, TextCased,
             variable = item.reference[variable]
 
         try:
-            first, last = map(int, self.re_range.match(variable).groups())
+            first, last = map(int, self.re_range.match(str(variable)).groups())
             first = self.format_number(first, form)
             last = self.format_number(last, form)
             text = first + chr(name2codepoint['ndash']) + last
         except AttributeError:
             try:
-                number = int(self.re_numeric.match(variable).group(1))
+                number = int(self.re_numeric.match(str(variable)).group(1))
                 text = self.format_number(number, form)
             except AttributeError:
                 text = variable
