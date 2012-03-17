@@ -110,7 +110,7 @@ def parse_bib(bibfile):
 				bibitems[current.key] = current
 				current = BibtexEntry(bibfile)
 			current.key = mr.group(2).strip()
-			current.btype = mr.group(1).strip()
+			current.btype = mr.group(1).strip().lower()
 			continue
 		try:
 			l.index('=')
