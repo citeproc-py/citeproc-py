@@ -100,7 +100,14 @@ class CitationStylesElement(SomewhatObjectifiedElement):
 # Top level elements
 
 class Style(CitationStylesElement):
-    def set_locale_list(self, system_locale):
+    _locale_fallback = {'de-AT': 'de-DE',
+                        'de-CH': 'de-DE',
+                        'en-GB': 'en-US',
+                        'pt-BR': 'pt-PT',
+                        'zh-TW': 'zh-CN'}
+
+    def set_locale_list(self, output_locale):
+        """Set up list of locales in which to search for localizable units"""
         from .frontend import CitationStylesLocale
 
         def search_locale(locale):
@@ -108,26 +115,33 @@ class Style(CitationStylesElement):
                                      .format(locale))[0]
 
         self.locales = []
+        # 1) (in-style locale) chosen dialect
         try:
-            self.locales.append(search_locale(system_locale))
+            self.locales.append(search_locale(output_locale))
         except IndexError:
             pass
-
-        language = system_locale.split('-')[0]
+        # 2) (in-style locale) matching language
+        language = output_locale.split('-')[0]
         try:
             self.locales.append(search_locale(language))
         except IndexError:
             pass
-
+        # 3) (in-style locale) no language set
         try:
             expr = './cs:locale[not(@xml:lang)]'
             self.locales.append(self.xpath_search(expr)[0])
         except IndexError:
             pass
-
-        self.locales.append(CitationStylesLocale(system_locale).root)
-        if system_locale != 'en-US':
-            # TODO: add other locales with same locale
+        # 4) (locale files) chosen dialect
+        self.locales.append(CitationStylesLocale(output_locale).root)
+        # 5) (locale files) fall back to primary language dialect
+        try:
+            fallback_locale = self._locale_fallback[output_locale]
+            self.locales.append(CitationStylesLocale(fallback_locale).root)
+        except KeyError:
+            pass
+        # 6) (locale files) default locale (en-US)
+        if output_locale != 'en-US':
             self.locales.append(CitationStylesLocale('en-US').root)
 
     def set_target(self, target):
