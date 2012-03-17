@@ -1117,7 +1117,7 @@ class Name(CitationStylesElement, Formatted, Affixed, Delimited):
                         text = self.join([text, ''])
                 else:
                     text += ' '
-                text += '{} '.format(and_term) + output[-1]
+                text += ' {} '.format(and_term) + output[-1]
             else:
                 text = self.join(output, delimiter)
 
