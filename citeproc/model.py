@@ -12,6 +12,7 @@ from lxml import etree
 
 from . import NAMES, DATES, NUMBERS
 from .source import VariableError, DateRange
+from .string import String
 
 
 # Base class
@@ -379,16 +380,18 @@ class Term(CitationStylesElement):
     @property
     def single(self):
         try:
-            return self.find('cs:single', self.nsmap).text
+            text = self.find('cs:single', self.nsmap).text
         except AttributeError:
-            return self.text or ''
+            text = self.text
+        return String(text or '')
 
     @property
     def multiple(self):
         try:
-            return self.find('cs:multiple', self.nsmap).text
+            text = self.find('cs:multiple', self.nsmap).text
         except AttributeError:
-            return self.text or ''
+            text = self.text
+        return String(text or '')
 
 
 # Sorting elements
@@ -405,12 +408,13 @@ class Sort(CitationStylesElement):
                     left_key, right_key = getter(left), getter(right)
                     if left_key is not None and right_key is not None:
                         try:
-                            left_key = left_key.lower()
-                            right_key = right_key.lower()
+                            left_key = str(left_key.lower())
+                            right_key = str(right_key.lower())
                         except AttributeError:
                             pass
                         try:
-                            left_key, right_key = int(left_key), int(right_key)
+                            left_key = int(str(left_key))
+                            right_key = int(str(right_key))
                         except ValueError:
                             pass
                         result = (left_key > right_key) - (left_key < right_key)
