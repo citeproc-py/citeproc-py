@@ -33,8 +33,8 @@ class BibTeX(BibliographySource):
               'volume': 'volume',
 
               # non-standard fields
-              'isbn': 'isbn',
-              'issn': 'issn'}
+              'isbn': 'ISBN',
+              'issn': 'ISSN'}
 
     types = {'article': ARTICLE_JOURNAL,
              'book': BOOK,
