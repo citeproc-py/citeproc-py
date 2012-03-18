@@ -66,7 +66,13 @@ class CitationStylesElement(SomewhatObjectifiedElement):
         return self.xpath_search('./ancestor-or-self::cs:layout[1]')[0]
 
     def get_target(self):
-        return self.get_root().target
+        if isinstance(self.get_root(), Locale):
+            return self.get_root().style.target
+        else:
+            return self.get_root().target
+
+    def preformat(self, text):
+        return self.get_target().preformat(text)
 
     def render(self, *args, **kwargs):
         return self.markup(self.process(*args, **kwargs))
@@ -143,6 +149,8 @@ class Style(CitationStylesElement):
         # 6) (locale files) default locale (en-US)
         if output_locale != 'en-US':
             self.locales.append(CitationStylesLocale('en-US').root)
+        for locale in self.locales:
+            locale.style = self
 
     def set_target(self, target):
         self.target = target
@@ -172,6 +180,9 @@ class Locale(CitationStylesElement):
         if options is None:
             raise IndexError
         return options.get(name, __class__._default_options[name])
+
+    def get_target(self):
+        return self.style.target
 
 
 class FormattingInstructions(object):
@@ -397,7 +408,8 @@ class Term(CitationStylesElement):
             text = self.find('cs:single', self.nsmap).text
         except AttributeError:
             text = self.text
-        return String(text or '')
+        text = self.preformat(text or '')
+        return String(text)
 
     @property
     def multiple(self):
@@ -405,7 +417,8 @@ class Term(CitationStylesElement):
             text = self.find('cs:multiple', self.nsmap).text
         except AttributeError:
             text = self.text
-        return String(text or '')
+        text = self.preformat(text or '')
+        return String(text)
 
 
 # Sorting elements

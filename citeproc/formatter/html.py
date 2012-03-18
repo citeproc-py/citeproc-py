@@ -1,4 +1,11 @@
 
+from html import escape
+
+
+def preformat(text):
+    return escape(str(text))
+
+
 class TagWrapper(str):
     tag = None
     attributes = None

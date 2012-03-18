@@ -1,4 +1,8 @@
 
+def preformat(text):
+    return text
+
+
 Italic = str
 Oblique = str
 Bold = str

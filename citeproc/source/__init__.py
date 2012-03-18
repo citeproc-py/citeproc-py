@@ -156,6 +156,11 @@ class CitationItem(CustomDict):
     def number(self):
         return self._bibliography.keys.index(self.key) + 1
 
+    def get_field(self, field):
+        string = self.reference.get(field)
+        if string is not None:
+            return self._bibliography.formatter.preformat(string)
+
 
 class Locator(object):
     def __init__(self, label, identifier):

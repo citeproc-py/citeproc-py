@@ -72,6 +72,7 @@ class CitationStylesBibliography(object):
     def __init__(self, style, source, target=html):
         self.style = style
         self.source = source
+        self.formatter = target
         self.style.root.set_target(target)
         self.keys = []
         self.items = []
