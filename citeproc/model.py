@@ -1,11 +1,8 @@
 
 import re
+import unicodedata
 
 from functools import reduce
-try:
-    from html.entities import codepoint2name, name2codepoint
-except ImportError:
-    from htmlentitydefs import codepoint2name, name2codepoint
 from operator import itemgetter
 
 from lxml import etree
@@ -73,6 +70,9 @@ class CitationStylesElement(SomewhatObjectifiedElement):
 
     def preformat(self, text):
         return self.get_target().preformat(text)
+
+    def unicode_character(self, name):
+        return self.preformat(unicodedata.lookup(name))
 
     def render(self, *args, **kwargs):
         return self.markup(self.process(*args, **kwargs))
@@ -768,8 +768,8 @@ class Date(CitationStylesElement, Parent, Formatted, Affixed, Delimited):
         if not (diff_begin and diff_begin):
             return None
 
-        diff = chr(name2codepoint['ndash']).join([diff_begin.rstrip(),
-                                                  diff_end])
+        diff = (diff_begin.rstrip() + self.unicode_character('en dash') +
+                diff_end)
         if same:
             text = context.join([diff, same.rstrip()])
         else:
@@ -903,7 +903,7 @@ class Number(CitationStylesElement, Formatted, Affixed, Displayed, TextCased,
             first, last = map(int, self.re_range.match(str(variable)).groups())
             first = self.format_number(first, form)
             last = self.format_number(last, form)
-            text = first + chr(name2codepoint['ndash']) + last
+            text = first + self.unicode_character('en dash') + last
         except AttributeError:
             try:
                 number = int(self.re_numeric.match(str(variable)).group(1))
@@ -1077,7 +1077,7 @@ class Name(CitationStylesElement, Formatted, Affixed, Delimited):
         if and_ == 'text':
             and_term = self.get_term('and').single
         elif and_ == 'symbol':
-            and_term = '&' + codepoint2name[ord('&')] + ';'
+            and_term = self.preformat('&')
 
         et_al = self.et_al()
         output = []
@@ -1126,7 +1126,7 @@ class Name(CitationStylesElement, Formatted, Affixed, Delimited):
 
             if et_al_truncate and et_al:
                 if et_al_last:
-                    ellipsis = chr(name2codepoint['hellip'])
+                    ellipsis = self.unicode_character('horizontal ellipsis')
                     output[-1] = ellipsis + ' ' + output[-1]
                     text = self.join(output, delimiter)
                 elif (delimiter_precedes_et_al == 'always' or
