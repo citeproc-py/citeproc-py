@@ -29,7 +29,6 @@ probably some I forgot though):
 * punctuation-in-quote
 * page-range-format
 * display
-* text-case (incomplete)
 * seasons
 
 Also, some [citeproc-js](http://bitbucket.org/fbennett/citeproc-js/wiki/Home)
