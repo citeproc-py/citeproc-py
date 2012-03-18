@@ -1,4 +1,4 @@
-
+﻿
 from warnings import warn
 
 from ...types import (ARTICLE, ARTICLE_JOURNAL, BOOK, CHAPTER, MANUSCRIPT,
@@ -68,12 +68,12 @@ class BibTeX(BibliographySource):
                     value = int(value)
                 except ValueError:
                     pass
-            elif field == 'title':
-                value = self._parse_title(value)
             elif field == 'pages':
                 value = value.replace(' ', '').replace('--', '-')
             elif field in ('author', 'editor'):
                 value = [name for name in self._parse_author(value)]
+            else:
+                value = self._parse_title(value)
             csl_dict[csl_field] = value
         return csl_dict
 
