@@ -69,11 +69,10 @@ class CitationStylesStyle(CitationStylesXML):
 
 
 class CitationStylesBibliography(object):
-    def __init__(self, style, source, target=html):
+    def __init__(self, style, source, formatter=html):
         self.style = style
         self.source = source
-        self.formatter = target
-        self.style.root.set_target(target)
+        self.formatter = self.style.root.formatter = formatter
         self.keys = []
         self.items = []
 

@@ -62,14 +62,14 @@ class CitationStylesElement(SomewhatObjectifiedElement):
     def get_layout(self):
         return self.xpath_search('./ancestor-or-self::cs:layout[1]')[0]
 
-    def get_target(self):
+    def get_formatter(self):
         if isinstance(self.get_root(), Locale):
-            return self.get_root().style.target
+            return self.get_root().style.formatter
         else:
-            return self.get_root().target
+            return self.get_root().formatter
 
     def preformat(self, text):
-        return self.get_target().preformat(text)
+        return self.get_formatter().preformat(text)
 
     def unicode_character(self, name):
         return self.preformat(unicodedata.lookup(name))
@@ -152,9 +152,6 @@ class Style(CitationStylesElement):
         for locale in self.locales:
             locale.style = self
 
-    def set_target(self, target):
-        self.target = target
-
 
 class Locale(CitationStylesElement):
     _default_options = {'punctuation-in-quote': 'false'}
@@ -181,8 +178,8 @@ class Locale(CitationStylesElement):
             raise IndexError
         return options.get(name, __class__._default_options[name])
 
-    def get_target(self):
-        return self.style.target
+    def get_formatter(self):
+        return self.style.formatter
 
 
 class FormattingInstructions(object):
@@ -246,54 +243,54 @@ class Formatted(object):
         return text
 
     def font_style(self, text):
-        target = self.get_target()
+        formatter = self.get_formatter()
         font_style = self.get('font-style', 'normal')
         if font_style == 'normal':
             formatted = text
         elif font_style == 'italic':
-            formatted = target.Italic(text)
+            formatted = formatter.Italic(text)
         elif font_style == 'oblique':
-            formatted = target.Oblique(text)
+            formatted = formatter.Oblique(text)
         return formatted
 
     def font_variant(self, text):
-        target = self.get_target()
+        formatter = self.get_formatter()
         font_variant = self.get('font-variant', 'normal')
         if font_variant == 'normal':
             formatted = text
         elif font_variant == 'small-caps':
-            formatted = target.SmallCaps(text)
+            formatted = formatter.SmallCaps(text)
         return formatted
 
     def font_weight(self, text):
-        target = self.get_target()
+        formatter = self.get_formatter()
         font_weight = self.get('font-weight', 'normal')
         if font_weight == 'normal':
             formatted = text
         elif font_weight == 'bold':
-            formatted = target.Bold(text)
+            formatted = formatter.Bold(text)
         elif font_weight == 'light':
-            formatted = target.Light(text)
+            formatted = formatter.Light(text)
         return formatted
 
     def text_decoration(self, text):
-        target = self.get_target()
+        formatter = self.get_formatter()
         text_decoration = self.get('text-decoration', 'none')
         if text_decoration == 'none':
             formatted = text
         elif text_decoration == 'underline':
-            formatted = target.Underline(text)
+            formatted = formatter.Underline(text)
         return formatted
 
     def vertical_align(self, text):
-        target = self.get_target()
+        formatter = self.get_formatter()
         vertical_align = self.get('vertical-align', 'baseline')
         if vertical_align == 'baseline':
             formatted = text
         elif vertical_align == 'sup':
-            formatted = target.Superscript(text)
+            formatted = formatter.Superscript(text)
         elif vertical_align == 'sub':
-            formatted = target.Subscript(text)
+            formatted = formatter.Subscript(text)
         return formatted
 
 
@@ -628,7 +625,7 @@ class Layout(CitationStylesElement, Parent, Formatted, Affixed, Delimited):
             text = self.format(self.wrap(self.render_children(item)))
             if text is not None:
                 output_items.append(text)
-        return self.get_target().Bibliography(output_items)
+        return self.get_formatter().Bibliography(output_items)
 
 
 class Text(CitationStylesElement, Formatted, Affixed, Quoted, TextCased,
