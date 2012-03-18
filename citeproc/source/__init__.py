@@ -168,31 +168,6 @@ class Locator(object):
         self.identifier = identifier
 
 
-class Bibliography(object):
-    def __init__(self, source, formatter):
-        self.source = source
-        self.formatter = formatter
-        formatter.bibliography = self
-        self.references = []
-
-    def register(self, citation):
-        for item in citation.items:
-            self.references.append(item.reference)
-
-    def cite(self, key):
-        try:
-            reference = self.source[key]
-        except KeyError:
-            warning = "Unknown reference ID '{}'".format(id)
-            warn(warning)
-            return '[{}]'.format(warning)
-        self.register(reference)
-        return self.formatter.format_citation(reference)
-
-    def bibliography(self, target=None):
-        return self.formatter.format_bibliography(target)
-
-
 class BibliographySource(dict):
     def add(self, entry):
         self[entry.key] = entry
