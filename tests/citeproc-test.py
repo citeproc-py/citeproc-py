@@ -70,6 +70,7 @@ class ProcessorTest(object):
     end_tag = '</span>'
 
     def parse_string(self, string):
+        string = str(string)
         lower_string = string.lower()
         end = 0
         output = MixedString()
@@ -252,7 +253,7 @@ def main():
             results = t.execute()
             results = reduce(lambda x, y: x+y,
                              [item.split('\n') for item in results])
-            results = [item.replace('&amp;', '&').replace('&', '&#38;')
+            results = [item.replace('&amp;', '&#38;')
                        for item in results]
             print('RES: ' + '\n     '.join(results), file=destination)
             if results == t.expected:

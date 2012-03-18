@@ -10,6 +10,12 @@ class String(str):
     def __iadd__(self, other):
         return self.__add__(other)
 
+    def replace(self, *args, **kwargs):
+        return self.__class__(super().replace(*args, **kwargs))
+
+    def rstrip(self, *args, **kwargs):
+        return self.__class__(super().rstrip(*args, **kwargs))
+
     def lower(self):
         return self.__class__(super().lower())
 
@@ -53,6 +59,12 @@ class MixedString(list):
     def __getitem__(self, index):
         return str(self)[index]
 
+    def replace(self, *args):
+        return self.__class__([string.replace(*args) for string in self])
+
+    def translate(self, table):
+        return self.__class__([string.translate(table) for string in self])
+
     def lower(self):
         return self.__class__([string.lower() for string in self])
 
@@ -71,8 +83,14 @@ class MixedString(list):
     def isupper(self):
         return all(string.isupper() for string in self)
 
-    def split(self, sep=None, maxsplit=-1):
-        return str(self).split(sep, maxsplit)
+    def split(self, *args, **kwargs):
+        return str(self).split(*args, **kwargs)
+
+    def rstrip(self, *args, **kwargs):
+        rev_iter = reversed(self)
+        output = [next(rev_iter).rstrip(*args, **kwargs)]
+        output += [string for string in rev_iter]
+        return self.__class__(reversed(output))
 
     def words(self):
         for string in self:

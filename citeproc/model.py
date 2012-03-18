@@ -307,7 +307,12 @@ class Affixed(object):
 class Delimited(object):
     def join(self, strings, default_delimiter=''):
         delimiter = self.get('delimiter', default_delimiter)
-        return reduce(lambda a, b: a + delimiter + b, filter(None, strings))
+        try:
+            text = reduce(lambda a, b: a + delimiter + b,
+                          filter(lambda s: s is not None, strings))
+        except:
+            text = String('')
+        return text
 
 
 class Displayed(object):
@@ -440,8 +445,8 @@ class Sort(CitationStylesElement):
                         except AttributeError:
                             pass
                         try:
-                            left_key = int(str(left_key))
-                            right_key = int(str(right_key))
+                            left_key, right_key = (int(str(left_key)),
+                                                   int(str(right_key)))
                         except ValueError:
                             pass
                         result = (left_key > right_key) - (left_key < right_key)
@@ -490,7 +495,7 @@ class Key(CitationStylesElement):
             elif variable == 'citation_number':
                 sort_keys = [item.number for item in items]
             else:
-                sort_keys = [item.reference.get(variable) for item in items]
+                sort_keys = [item.get_field(variable) for item in items]
         elif 'macro' in self.attrib:
             layout = context.get_layout()
             # override name options
@@ -620,7 +625,7 @@ class Layout(CitationStylesElement, Parent, Formatted, Affixed, Delimited):
         output_items = []
         for item in citation_items:
             self.repressed = {}
-            text = self.render_children(item)
+            text = self.format(self.wrap(self.render_children(item)))
             if text is not None:
                 output_items.append(text)
         return self.get_target().Bibliography(output_items)
@@ -657,7 +662,7 @@ class Text(CitationStylesElement, Formatted, Affixed, Quoted, TextCased,
         elif 'term' in self.attrib:
             text = self._term(item)
         elif 'value' in self.attrib:
-            text = self.get('value')
+            text = String(self.preformat(self.get('value')))
 
         return text, language
 
@@ -678,7 +683,7 @@ class Text(CitationStylesElement, Formatted, Affixed, Quoted, TextCased,
             text = str(item.locator.identifier)
         elif variable == 'page-first' and variable not in item.reference:
             page = item.reference.page
-            text = Number.re_range.match(page).group(1)
+            text = Number.re_range.match(str(page)).group(1)
         else:
             text = item.reference[variable.replace('-', '_')]
 
@@ -1144,7 +1149,7 @@ class Name(CitationStylesElement, Formatted, Affixed, Delimited):
                         text = self.join([text, ''])
                 else:
                     text += ' '
-                text += ' {} '.format(and_term) + output[-1]
+                text += '{} '.format(and_term) + output[-1]
             else:
                 text = self.join(output, delimiter)
 
