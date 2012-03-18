@@ -91,28 +91,57 @@ class BibTeX(BibliographySource):
     def _parse_month(self, month):
         return self.months.index(month[:3].lower())
 
+    math_map = {'mu': 'µ'}
+
     def _parse_title(self, title):
         output = MixedString()
+        escape = False
+        math = False
+        math_escape = False
+        math_escape_string = None
         level = 0
-        end = -1
-        start = 0
+        string = ''
         for i, char in enumerate(title):
-            if char == '{':
+            if escape:
+                string += char
+                escape = False
+            elif math:
+                if char == ' ':
+                    if math_escape_string:
+                        string += self.math_map[math_escape_string]
+                elif char == '$':
+                    if math_escape_string:
+                        string += self.math_map[math_escape_string]
+                    math = False
+                else:
+                    if char == '\\':
+                        if math_escape_string:
+                            string += self.math_map[math_escape_string]
+                        math_escape = True
+                        math_escape_string = ''
+                    else:
+                        math_escape_string += char
+            elif char == '$':
+                math = True
+                math_string = ''
+            elif char == '\\':
+                escape = True
+            elif char == '{':
                 if level == 0:
-                    string = title[end + 1:i]
                     if string:
                         output += String(string)
-                    start = i + 1
+                        string = ''
                 level += 1
             elif char == '}':
                 level -= 1
                 if level == 0:
-                    end = i
-                    no_case = title[start:end]
-                    output += NoCase(no_case.replace('{', '').replace('}', ''))
+                    output += NoCase(string)
+                    string = ''
+            else:
+                string += char
+            prev_char = char
         if level != 0:
             raise SyntaxError('Non-matching braces in "{}"'.format(title))
-        string = title[end + 1:]
         if string:
             output += String(string)
         return output
