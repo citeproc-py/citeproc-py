@@ -5,8 +5,6 @@
 
 from warnings import warn
 
-from lxml import objectify
-
 from .. import VARIABLES
 
 
@@ -133,15 +131,10 @@ class Citation(CustomDict):
         cites = ', '.join([cite.key for cite in self.cites])
         return '{}({})'.format(self.__class__.__name__, cites)
 
-    @property
-    def bibliography(self):
-        return self.cites[0]._bibliography
-
 
 class CitationItem(CustomDict):
     def __init__(self, key, bibliography=None, **args):
         self.key = key
-        self._bibliography = bibliography
         optional = {'locator', 'prefix', 'suffix'}
         super().__init__(args, optional=optional)
 
@@ -149,17 +142,24 @@ class CitationItem(CustomDict):
         return '{}({})'.format(self.__class__.__name__, self.key)
 
     @property
+    def bibliography(self):
+        return self.citation.bibliography
+
+    @property
     def reference(self):
-        return self._bibliography.source[self.key]
+        return self.bibliography.source[self.key]
 
     @property
     def number(self):
-        return self._bibliography.keys.index(self.key) + 1
+        return self.bibliography.keys.index(self.key) + 1
 
     def get_field(self, field):
         string = self.reference.get(field)
         if string is not None:
-            return self._bibliography.formatter.preformat(string)
+            return self.bibliography.formatter.preformat(string)
+
+    def is_bad(self):
+        return self.key not in self.bibliography.keys
 
 
 class Locator(object):

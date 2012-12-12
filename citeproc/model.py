@@ -208,8 +208,8 @@ class Citation(FormattingInstructions, CitationStylesElement):
                         # note distance
                         'near-note-distance': 5}
 
-    def render(self, citation):
-        return self.layout.render_citation(citation)
+    def render(self, citation, callback=None):
+        return self.layout.render_citation(citation, callback)
 
 
 class Bibliography(FormattingInstructions, CitationStylesElement):
@@ -591,15 +591,17 @@ class Macro(CitationStylesElement, Parent):
 
 
 class Layout(CitationStylesElement, Parent, Formatted, Affixed, Delimited):
-    def render_citation(self, citation):
+    def render_citation(self, citation, callback=None):
         # first sort citation items according to bibliography order
         bibliography = citation.bibliography
-        citation.cites.sort(key=lambda x: bibliography.keys.index(x.key))
+        good_cites = [cite for cite in citation.cites if not cite.is_bad()]
+        bad_cites = [cite for cite in citation.cites if cite.is_bad()]
+        good_cites.sort(key=lambda item: bibliography.keys.index(item.key))
         # sort using citation/sort element
         if self.getparent().sort is not None:
-            citation.cites = self.getparent().sort.sort(citation.cites, self)
+            good_cites = self.getparent().sort.sort(good_cites, self)
         out = []
-        for item in citation.cites:
+        for item in good_cites:
             self.repressed = {}
             prefix = item.get('prefix', '')
             suffix = item.get('suffix', '')
@@ -610,6 +612,9 @@ class Layout(CitationStylesElement, Parent, Formatted, Affixed, Delimited):
                     out.append(text)
             except VariableError:
                 pass
+        for item in bad_cites:
+            callback(item)
+            out.append('{}?'.format(item.key))
         return self.format(self.wrap(self.join(out)))
 
     def sort_bibliography(self, citation_items):

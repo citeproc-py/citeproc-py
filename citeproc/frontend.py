@@ -58,13 +58,13 @@ class CitationStylesStyle(CitationStylesXML):
     def has_bibliography(self):
         return self.root.bibliography is not None
 
-    def render_citation(self, citation, **options):
-        return self.root.citation.render(citation)
+    def render_citation(self, citation, callback=None):
+        return self.root.citation.render(citation, callback)
 
     def sort_bibliography(self, citation_items):
         return self.root.bibliography.sort(citation_items)
 
-    def render_bibliography(self, citation_items, **options):
+    def render_bibliography(self, citation_items):
         return self.root.bibliography.render(citation_items)
 
 
@@ -76,22 +76,22 @@ class CitationStylesBibliography(object):
         self.keys = []
         self.items = []
 
-    def register(self, citation):
+    def register(self, citation, callback=None):
+        citation.bibliography = self
         for item in citation.cites:
             if item.key in self.source:
-                item._bibliography = self
                 if item.key not in self.keys:
                     self.keys.append(item.key)
                     self.items.append(item)
+            elif callback is not None:
+                callback(item)
 
     def sort(self):
-        sorted_items = self.style.sort_bibliography(self.items)
-        sorted_keys = [item.key for item in sorted_items]
-        self.keys = sorted_keys
-        self.items = sorted_items
+        self.items = self.style.sort_bibliography(self.items)
+        self.keys = [item.key for item in self.items]
 
-    def cite(self, citation):
-        return self.style.render_citation(citation)
+    def cite(self, citation, callback=None):
+        return self.style.render_citation(citation, callback)
 
     def bibliography(self):
         return self.style.render_bibliography(self.items)
