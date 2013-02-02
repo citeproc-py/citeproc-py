@@ -134,7 +134,7 @@ class Citation(CustomDict):
 
 class CitationItem(CustomDict):
     def __init__(self, key, bibliography=None, **args):
-        self.key = key
+        self.key = key.lower()
         optional = {'locator', 'prefix', 'suffix'}
         super().__init__(args, optional=optional)
 

@@ -5,7 +5,7 @@ from ...types import (ARTICLE, ARTICLE_JOURNAL, BOOK, CHAPTER, MANUSCRIPT,
                       PAMPHLET, PAPER_CONFERENCE, REPORT, THESIS)
 from ...string import String, MixedString, NoCase
 from .. import BibliographySource, Reference, Name, Date
-from .bibparse import parse_bib
+from .bibparse import BibTeXParser
 
 
 class BibTeX(BibliographySource):
@@ -47,16 +47,17 @@ class BibTeX(BibliographySource):
              'mastersthesis': THESIS,
              'misc': ARTICLE,
              'phdthesis': THESIS,
+             'proceedings': BOOK,
              'techreport': REPORT,
              'unpublished': MANUSCRIPT}
 
     def __init__(self, filename):
-        for key, entry in parse_bib(filename).items():
+        for key, entry in BibTeXParser(filename).items():
             self.add(self.create_reference(key, entry))
 
     def _bibtex_to_csl(self, bibtex_entry):
         csl_dict = {}
-        for field, value in bibtex_entry.data.items():
+        for field, value in bibtex_entry.items():
             try:
                 csl_field = self.fields[field]
             except KeyError:
@@ -79,10 +80,13 @@ class BibTeX(BibliographySource):
 
     def _bibtex_to_csl_date(self, bibtex_entry):
         date_dict = {}
-        if 'month' in bibtex_entry.data:
-            date_dict['month'] = self._parse_month(bibtex_entry.data['month'])
-        if 'year' in bibtex_entry.data:
-            date_dict['year'] = bibtex_entry.data['year']
+        if 'month' in bibtex_entry:
+            try:
+                date_dict['month'] = self._parse_month(bibtex_entry['month'])
+            except ValueError:
+                pass
+        if 'year' in bibtex_entry:
+            date_dict['year'] = bibtex_entry['year']
         return date_dict
 
     months = ('jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep',
@@ -120,7 +124,7 @@ class BibTeX(BibliographySource):
                         math_escape = True
                         math_escape_string = ''
                     else:
-                        math_escape_string += char
+                        string += char
             elif char == '$':
                 math = True
                 math_string = ''
@@ -163,7 +167,7 @@ class BibTeX(BibliographySource):
         return csl_authors
 
     def create_reference(self, key, bibtex_entry):
-        csl_type = self.types[bibtex_entry.btype]
+        csl_type = self.types[bibtex_entry.document_type]
         csl_fields = self._bibtex_to_csl(bibtex_entry)
         date_keys = self._bibtex_to_csl_date(bibtex_entry)
         if date_keys:
