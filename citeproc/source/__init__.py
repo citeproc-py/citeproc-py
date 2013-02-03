@@ -173,4 +173,4 @@ class BibliographySource(dict):
         self[entry.key] = entry
 
 
-from . import bibtex
+from . import bibtex, json

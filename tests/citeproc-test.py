@@ -12,10 +12,8 @@ from functools import reduce
 from optparse import OptionParser
 
 from citeproc import CitationStylesStyle, CitationStylesBibliography
-from citeproc import NAMES, DATES, NUMBERS
-from citeproc.source import Reference, Name, Date, DateRange
 from citeproc.source import Citation, CitationItem, Locator
-from citeproc.string import String, MixedString, NoCase
+from citeproc.source.json import CiteProcJSON
 
 
 TESTS_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__),
@@ -31,94 +29,11 @@ class ProcessorTest(object):
 
         csl_io = io.BytesIO(utf_8_encode(self.json_data['csl'])[0])
         self.style = CitationStylesStyle(csl_io)
-        self.references = self.parse_references(self.json_data['input'])
-        self.references_dict = {ref.key: ref for ref in self.references}
+        self.references = [item['id'] for item in self.json_data['input']]
+        self.references_dict = CiteProcJSON(self.json_data['input'])
         self.bibliography = CitationStylesBibliography(self.style,
                                                        self.references_dict)
         self.expected = self.json_data['result'].splitlines()
-
-    def parse_references(self, json_data):
-        references = []
-        for ref in json_data:
-            ref_data = {}
-            for key, value in ref.items():
-                python_key = key.replace('-', '_')
-                if python_key == 'id':
-                    ref_key = value
-                    continue
-                if python_key == 'type':
-                    ref_type = value
-                    continue
-                elif python_key in NAMES:
-                    value = self.parse_names(value)
-                elif python_key in DATES:
-                    value = self.parse_date(value)
-                elif python_key == 'shortTitle':
-                    python_key = 'title_short'
-                else:
-                    value = self.parse_string(value)
-
-                ref_data[python_key] = value
-            try:
-                references.append(Reference(ref_key, ref_type, **ref_data))
-            except UnboundLocalError:
-                # some tests don't specify the reference type
-                references.append(Reference(ref_key, 'book', **ref_data))
-        return references
-
-    start_tag = '<span class="nocase">'
-    end_tag = '</span>'
-
-    def parse_string(self, string):
-        string = str(string)
-        lower_string = string.lower()
-        end = 0
-        output = MixedString()
-        try:
-            while True:
-                start = lower_string.index(self.start_tag, end)
-                regular = string[end:start]
-                if regular:
-                    output += String(regular)
-                end = lower_string.index(self.end_tag, start + 1)
-                start += len(self.start_tag)
-                no_case = string[start:end]
-                output += NoCase(no_case)
-                end += len(self.end_tag)
-        except ValueError:
-            regular = string[end:]
-            if regular:
-                output += String(regular)
-        return output
-
-    def parse_names(self, json_data):
-        names = []
-        for name_data in json_data:
-            name = Name(**name_data)
-            names.append(name)
-        return names
-
-    def parse_date(self, json_data):
-        def parse_single_date(json_date):
-            date_data = {}
-            try:
-                for i, part in enumerate(('year', 'month', 'day')):
-                    date_data[part] = json_date[i]
-            except IndexError:
-                pass
-            return date_data
-
-        dates = []
-        for json_date in json_data['date-parts']:
-            dates.append(parse_single_date(json_date))
-
-        circa = json_data.get('circa', 0) != 0
-
-        if len(dates) > 1:
-            return DateRange(begin=Date(**dates[0]), end=Date(**dates[1]),
-                             circa=circa)
-        else:
-            return Date(circa=circa, **dates[0])
 
     def execute(self):
         if self.json_data['citation_items']:
@@ -140,8 +55,8 @@ class ProcessorTest(object):
             citations = [Citation(citation_items)]
         else:
             if self.json_data['mode'] == 'citation':
-                self.references.sort(key=lambda e: e.key)
-            citation_items = [self.parse_citation_item({'id': ref.key})
+                self.references.sort()
+            citation_items = [self.parse_citation_item({'id': ref})
                               for ref in self.references]
             citations = [Citation(citation_items)]
 
