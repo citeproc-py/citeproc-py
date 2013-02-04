@@ -67,6 +67,7 @@ class ProcessorTest(object):
             self.bibliography.sort()
 
         results = []
+        do_nothing = lambda x: None     # callback passed to cite()
         if self.json_data['mode'] == 'citation':
             if self.json_data['citations']:
                 for i, citation in enumerate(citations):
@@ -75,10 +76,10 @@ class ProcessorTest(object):
                     else:
                         dots_or_other = '..'
                     results.append('{}[{}] '.format(dots_or_other, i) +
-                                   self.bibliography.cite(citation))
+                                   self.bibliography.cite(citation, do_nothing))
             else:
                 for citation in citations:
-                    results.append(self.bibliography.cite(citation))
+                    results.append(self.bibliography.cite(citation, do_nothing))
         elif self.json_data['mode'] in ('bibliography', 'bibliography-nosort'):
             results.append(self.bibliography.bibliography())
 

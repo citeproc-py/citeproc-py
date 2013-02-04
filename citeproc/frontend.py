@@ -90,7 +90,7 @@ class CitationStylesBibliography(object):
         self.items = self.style.sort_bibliography(self.items)
         self.keys = [item.key for item in self.items]
 
-    def cite(self, citation, callback=None):
+    def cite(self, citation, callback):
         return self.style.render_citation(citation, callback)
 
     def bibliography(self):

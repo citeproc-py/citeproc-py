@@ -118,22 +118,32 @@ citation1 = Citation([CitationItem('ITEM-3')])
 citation2 = Citation([CitationItem('ITEM-1'), CitationItem('ITEM-2')])
 citation3 = Citation([CitationItem('ITEM-4')])
 citation4 = Citation([CitationItem('ITEM-5')])
+citation5 = Citation([CitationItem('MISSING')])
 
 bibliography.register(citation1)
 bibliography.register(citation2)
 bibliography.register(citation3)
 bibliography.register(citation4)
+bibliography.register(citation5)
 
 
 # In the second pass, CitationStylesBibliography can generate citations.
+# CitationStylesBibliography.cite() requires a callback function to be passed
+# along to be called in case a CitationItem's key is not present in the
+# bilbiography.
+
+def warn(citation_item):
+    print("WARNING: Reference with key '{}' not found in the bibliography."
+          .format(citation_item.key))
 
 print('Citations')
 print('---------')
 
-print(bibliography.cite(citation1))
-print(bibliography.cite(citation2))
-print(bibliography.cite(citation3))
-print(bibliography.cite(citation4))
+print(bibliography.cite(citation1, warn))
+print(bibliography.cite(citation2, warn))
+print(bibliography.cite(citation3, warn))
+print(bibliography.cite(citation4, warn))
+print(bibliography.cite(citation5, warn))
 
 
 # And finally, the bibliography can be rendered.

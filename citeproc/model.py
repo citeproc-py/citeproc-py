@@ -208,7 +208,7 @@ class Citation(FormattingInstructions, CitationStylesElement):
                         # note distance
                         'near-note-distance': 5}
 
-    def render(self, citation, callback=None):
+    def render(self, citation, callback):
         return self.layout.render_citation(citation, callback)
 
 
@@ -591,7 +591,7 @@ class Macro(CitationStylesElement, Parent):
 
 
 class Layout(CitationStylesElement, Parent, Formatted, Affixed, Delimited):
-    def render_citation(self, citation, callback=None):
+    def render_citation(self, citation, callback):
         # first sort citation items according to bibliography order
         bibliography = citation.bibliography
         good_cites = [cite for cite in citation.cites if not cite.is_bad()]
