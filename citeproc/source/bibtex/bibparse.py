@@ -10,7 +10,18 @@ class BibTeXEntry(dict):
 
 
 class BibTeXParser(dict):
-    standard_variables = {'jan': 'January'}
+    standard_variables = {'jan': 'January',
+                          'feb': 'February',
+                          'mar': 'March',
+                          'apr': 'April',
+                          'may': 'May',
+                          'jun': 'June',
+                          'jul': 'July',
+                          'aug': 'August',
+                          'sep': 'September',
+                          'oct': 'October',
+                          'nov': 'November',
+                          'dec': 'December'}
 
     def __init__(self, file_or_filename):
         try:
@@ -81,12 +92,9 @@ class BibTeXParser(dict):
     def _parse_key(self, file):
         key = ''
         char = file.read(1)
-        while char.isalnum():
+        while char != ',':
             key += char
             char = file.read(1)
-        if char != ',':
-            assert char in ' \t\n\r'
-            assert self._eat_whitespace(file) == ','
         return key.strip().lower()
 
     def _parse_name(self, file):
@@ -128,22 +136,21 @@ class BibTeXParser(dict):
                 break
             elif char == '}':
                 depth -= 1
-            else:
-                string += char
+            string += char
         return string
 
     def _parse_variable(self, file, char):
         key = ''
         restore_point = file.tell()
-        while char.isalpha():
+        while char.isalnum() or char in '-_':
             key += char
             restore_point = file.tell()
             char = file.read(1)
         file.seek(restore_point)
-        if key in self.variables:
-            value = self.variables[key]
+        if key.lower() in self.variables:
+            value = self.variables[key.lower()]
         else:
-            value = self.standard_variables[key]
+            value = self.standard_variables[key.lower()]
         return value
 
     def _parse_integer(self, file, char):
@@ -249,6 +256,13 @@ Book{landru21,
 @preamble {"This bibliography was generated on \today"}
 @preamble ("This bibliography was generated on \today")
 
+@INBOOK{inbook-minimal,
+   author = "Donald E. Knuth",
+   title = "Fundamental Algorithms",
+   publisher = "Addison-Wesley",
+   year = "{\noopsort{1973b}}1973",
+   chapter = "1.2",
+}
 """
 
 

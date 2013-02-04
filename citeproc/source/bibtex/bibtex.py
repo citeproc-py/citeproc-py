@@ -1,10 +1,12 @@
 ﻿
+import re
+
 from warnings import warn
 
 from ...types import (ARTICLE, ARTICLE_JOURNAL, BOOK, CHAPTER, MANUSCRIPT,
                       PAMPHLET, PAPER_CONFERENCE, REPORT, THESIS)
 from ...string import String, MixedString, NoCase
-from .. import BibliographySource, Reference, Name, Date
+from .. import BibliographySource, Reference, Name, Date, DateRange
 from .bibparse import BibTeXParser
 
 
@@ -74,26 +76,59 @@ class BibTeX(BibliographySource):
             elif field in ('author', 'editor'):
                 value = [name for name in self._parse_author(value)]
             else:
-                value = self._parse_title(value)
+                try:
+                    value = self._parse_title(value)
+                except TypeError:
+                    value = str(value)
             csl_dict[csl_field] = value
         return csl_dict
 
     def _bibtex_to_csl_date(self, bibtex_entry):
-        date_dict = {}
+        is_range = False
         if 'month' in bibtex_entry:
-            try:
-                date_dict['month'] = self._parse_month(bibtex_entry['month'])
-            except ValueError:
-                pass
+            begin_dict, end_dict = self._parse_month(bibtex_entry['month'])
+        else:
+            begin_dict, end_dict = {}, {}
         if 'year' in bibtex_entry:
-            date_dict['year'] = bibtex_entry['year']
-        return date_dict
+            begin_dict['year'], end_dict['year'] \
+                = self._parse_year(bibtex_entry['year'])
+        if not begin_dict:
+            return None
+        if begin_dict == end_dict:
+            return Date(**begin_dict)
+        else:
+            return DateRange(begin=Date(**begin_dict), end=Date(**end_dict))
+
+    def _parse_year(self, year):
+        year = str(year)
+        if '-' in year:
+            begin_year, end_year = year.split('-')
+            begin_len, end_len = len(begin_year), len(end_year)
+            if end_len < begin_len:
+                end_year = begin_year[:begin_len - end_len] + end_year
+        else:
+            begin_year = end_year = int(year)
+        return begin_year, end_year
 
     months = ('jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep',
               'oct', 'nov', 'dec')
 
     def _parse_month(self, month):
-        return self.months.index(month[:3].lower())
+        begin = {}
+        end = {}
+        month = month.strip()
+        if month.replace('-', '').isalpha():
+            if '-' in month:
+                begin['month'], end['month'] = month.split('-')
+            else:
+                begin['month'] = end['month'] = month
+        else:
+            m = re.match('(?P<day>\d+)[ ~]*(?P<month>\w+)', month)
+            begin['day'] = end['day'] = m.group('day')
+            begin['month'] = end['month'] = m.group('month')
+        begin['month'] = self.months.index(begin['month'][:3].lower())
+        end['month'] = self.months.index(end['month'][:3].lower())
+        return begin, end
 
     math_map = {'mu': 'µ'}
 
@@ -169,7 +204,7 @@ class BibTeX(BibliographySource):
     def create_reference(self, key, bibtex_entry):
         csl_type = self.types[bibtex_entry.document_type]
         csl_fields = self._bibtex_to_csl(bibtex_entry)
-        date_keys = self._bibtex_to_csl_date(bibtex_entry)
-        if date_keys:
-            csl_fields['issued'] = Date(**date_keys)
+        csl_date = self._bibtex_to_csl_date(bibtex_entry)
+        if csl_date:
+            csl_fields['issued'] = csl_date
         return Reference(key, csl_type, **csl_fields)
