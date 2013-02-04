@@ -185,12 +185,13 @@ def main():
             else:
                 raise
 
-    for category in sorted(total.keys()):
-        print('{} passed {}/{}'.format(category, passed[category],
-                                       total[category]), file=destination)
+    def print_result(name, passed, total):
+        print('{:<13} {:>3} / {:>3} ({:>4.0%})'
+              .format(name, passed, total, passed / total), file=destination)
 
-    print('total: {}/{}'.format(sum(passed.values()), sum(total.values())),
-          file=destination)
+    for category in sorted(total.keys()):
+        print_result(category, passed[category], total[category])
+    print_result('total', sum(passed.values()), sum(total.values()))
 
 
 if __name__ == '__main__':
