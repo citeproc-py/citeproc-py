@@ -29,6 +29,8 @@ class BibTeXParser(dict):
         except TypeError:
             self.file = file_or_filename
         self.variables = {}
+        self._macros = {}
+        self._preamble = ''
         self._parse(self.file)
         self.file.close()
 
@@ -41,6 +43,11 @@ class BibTeXParser(dict):
                     self[key] = BibTeXEntry(entry_type, attributes)
             except EOFError:
                 break
+        self._parse_preamble(self._preamble)
+        for key, entry in self.items():
+            for attribute, value in entry.items():
+                if isinstance(value, str):
+                    entry[attribute] = self._expand_macros(value)
 
     def _parse_entry(self, file):
         while True:
@@ -67,7 +74,7 @@ class BibTeXParser(dict):
             assert self._eat_whitespace(file) == sentinel
             return None
         elif entry_type == 'preamble':
-            value = self._parse_value(file)
+            self._preamble += self._parse_value(file, False)
             assert self._eat_whitespace(file) == sentinel
             return None
         key = self._parse_key(file)
@@ -107,10 +114,10 @@ class BibTeXParser(dict):
             char = file.read(1)
         return name.strip().lower()
 
-    def _parse_value(self, file):
+    def _parse_value(self, file, expand_macros=True):
         char = self._eat_whitespace(file)
         if char in '{"':
-            value = self._parse_string(file, char)
+            value = self._parse_string(file, char, expand_macros)
         elif char.isalpha():
             value = self._parse_variable(file, char)
         else:
@@ -124,7 +131,7 @@ class BibTeXParser(dict):
             file.seek(restore_position)
         return value
 
-    def _parse_string(self, file, opening_character):
+    def _parse_string(self, file, opening_character, expand_macros):
         closing_character = '"' if opening_character == '"' else '}'
         string = ''
         depth = 0
@@ -177,12 +184,115 @@ class BibTeXParser(dict):
             char = file.read(1)
         file.seek(restore_point)
 
+    def _parse_preamble(self, preamble):
+        self.macros = {}
+        state = None
+        for char in preamble:
+            print(char, end='')
+            if state == 'MACRO':
+                if char == '{':
+                    state = 'MACRO-BODY'
+                elif char in ' \t\n\r':
+                    state = None
+                else:
+                    macro_name += char
+            elif state == 'MACRO-BODY':
+                if macro_name.lower() == 'newcommand':
+                    state = 'NEWCOMMAND'
+                    assert char == '\\'
+                    command_name = ''
+                else:
+                    raise NotImplementedError
+            elif state == 'NEWCOMMAND':
+                if char == '}':
+                    state = None
+                    macro_name = None
+                    state = 'NEWCOMMAND-ARGCOUNT'
+                else:
+                    command_name += char
+            elif state == 'NEWCOMMAND-ARGCOUNT':
+                if char == '[':
+                    command_argcount = ''
+                elif char == ']':
+                    argument_index = None
+                    state = 'NEWCOMMAND-BODY'
+                else:
+                    command_argcount += char
+            elif state == 'NEWCOMMAND-BODY':
+                if char == '{':
+                    command_body = []
+                elif char == '}':
+                    if argument_index:
+                        command_body.append(int(argument_index))
+                    self.macros[command_name] = (int(command_argcount),
+                                                 command_body)
+                    state = None
+                elif char == '#':
+                    if argument_index:
+                        command_body.append(int(argument_index))
+                    argument_index = ''
+                else:
+                    argument_index += char
+            elif char == '\\':
+                state = 'MACRO'
+                macro_name = ''
+
+    def _expand_macros(self, string):
+        output = ''
+        state = None
+        parsing_arguments = False
+        for char in string:
+            if state == 'OPEN-BRACE':
+                if char == '\\':
+                    state = 'ESCAPE'
+                else:
+                    output += '{' + char
+                    state = None
+            elif state == 'ESCAPE':
+                if char in """'`"´~""":
+                    accent = char
+                    state = 'ACCENT'
+                elif char.isalpha():
+                    macro_name = char
+                    state = 'MACRO-NAME'
+            elif state == 'ACCENT':
+                output += char
+                state = None
+            elif state == 'MACRO-NAME':
+                if char == '{':
+                    arguments = []
+                    arg_count, arg_indices = self.macros[macro_name]
+                    argument = ''
+                    state = 'MACRO-ARG'
+                else:
+                    macro_name += char
+            elif state == 'MACRO-ARG':
+                if char == '}':
+                    arguments.append(argument)
+                    argument = ''
+                    if len(arguments) == arg_count:
+                        for index in arg_indices:
+                            output += arguments[index - 1]
+                        state = 'CLOSE-BRACE'
+                elif char == '{':
+                    argument = ''
+                else:
+                    argument += char
+            elif state == 'CLOSE-BRACE':
+                assert char == '}'
+                state = None
+            elif char == '{':
+                state = 'OPEN-BRACE'
+            else:
+                output += char
+        return output
+
     def _split_name(self, name):
         pass
 
 
 
-sample = """
+sample = r"""
 @Article(py03,
      author = {Xavier D\'ecoret},
      title  = "PyBiTex",
@@ -253,8 +363,10 @@ Book{landru21,
 @String {lastname  = "Decoret"}
 @String {email      = firstname # "." # lastname # "@imag.fr"}
 
-@preamble {"This bibliography was generated on \today"}
-@preamble ("This bibliography was generated on \today")
+@preamble{ "\newcommand{\noopsort}[1]{} "
+        # "\newcommand{\printfirst}[2]{#1} "
+        # "\newcommand{\singleletter}[1]{#1} "
+        # "\newcommand{\switchargs}[2]{#2#1} " }
 
 @INBOOK{inbook-minimal,
    author = "Donald E. Knuth",
@@ -275,4 +387,5 @@ if __name__ == '__main__':
         print(key)
         for name, value in entry.items():
             print('   {}: {}'.format(name, value))
+    print(bib.macros)
     print(bib.variables)

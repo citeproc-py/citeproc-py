@@ -100,7 +100,7 @@ class BibTeX(BibliographySource):
             return DateRange(begin=Date(**begin_dict), end=Date(**end_dict))
 
     def _parse_year(self, year):
-        year = str(year)
+        year = str(year).replace('--', '-')
         if '-' in year:
             begin_year, end_year = year.split('-')
             begin_len, end_len = len(begin_year), len(end_year)
@@ -117,6 +117,7 @@ class BibTeX(BibliographySource):
         begin = {}
         end = {}
         month = month.strip()
+        month = month.replace(', ', '-')
         if month.replace('-', '').isalpha():
             if '-' in month:
                 begin['month'], end['month'] = month.split('-')
