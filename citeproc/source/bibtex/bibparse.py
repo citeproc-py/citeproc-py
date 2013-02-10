@@ -1,4 +1,5 @@
 
+import unicodedata
 
 # http://maverick.inria.fr/~Xavier.Decoret/resources/xdkbibtex/bibtex_summary.html
 # http://www.lsv.ens-cachan.fr/~markey/bibla.php?lang=en
@@ -249,14 +250,28 @@ class BibTeXParser(dict):
                     output += '{' + char
                     state = None
             elif state == 'ESCAPE':
-                if char in """'`"´~""":
-                    accent = char
+                no_alpha = filter(lambda key: not key.isalpha(), ACCENTS.keys())
+                if char in no_alpha:
+                    accented = ''
+                    accent = ACCENTS[char]
                     state = 'ACCENT'
                 elif char.isalpha():
                     macro_name = char
                     state = 'MACRO-NAME'
             elif state == 'ACCENT':
-                output += char
+                if char == '{':
+                    state = 'ACCENT-MULTI'
+                else:
+                    accented = char
+                    state = 'ACCENT-END'
+            elif state == 'ACCENT-MULTI':
+                if char == '}':
+                    state = 'ACCENT-END'
+                else:
+                    accented += char
+            elif state == 'ACCENT-END':
+                print(unicodedata.normalize('NFC', accented + accent))
+                output += unicodedata.normalize('NFC', accented + accent)
                 state = None
             elif state == 'MACRO-NAME':
                 if char == '{':
@@ -290,6 +305,49 @@ class BibTeXParser(dict):
     def _split_name(self, name):
         pass
 
+
+ACCENTS = {'`': '\u0300',    # grave accent
+           "'": '\u0301',    # acute accent
+           '^': '\u0302',    # circumflex
+           '"': '\u0308',    # umlaut, trema or dieresis
+           'H': '\u030B',    # long Hungarian umlaut (double acute)
+           '~': '\u0303',    # tilde
+           'c': '\u0327',    # cedilla
+           'k': '\u0328',    # ogonek
+           '=': '\u0304',    # macron accent (a bar over the letter)
+           'b': '\u0332',    # bar under the letter
+           '.': '\u0307',    # dot over the letter
+           'd': '\u0323',    # dot under the letter
+           'r': '\u030A',    # ring over the letter
+           'u': '\u0306',    # breve over the letter
+           'v': '\u030C',    # caron/hacek ("v") over the letter
+           't': '\u035C',    # "tie" (inverted u) over the two letters}
+
+           '|': '\u030D',    # vertical line above ?
+           'h': '\u0309',    # hook above
+           'G': '\u030F',    # double grave
+           'U': '\u030E'}    # double vertical line above ?
+
+
+SPECIAL = {'oe': '\u0153',   # small ligature oe
+           'OE': '\u0152',   # capital ligature OE
+           'ae': '\u00E6',   # small letter ae
+           'AE': '\u00C6',   # capital letter AE
+           'aa': '\u00E5',   # small letter a with ring above
+           'AA': '\u00C5',   # capital letter A with ring above
+           'o': '\u00F8',    # small letter o with stroke
+           'O': '\u00D8',    # capital letter O with stroke
+           'l': '\u0142',    # small letter l with stroke
+           'L': '\u0141',    # capital letter l with stroke
+           'ss': '\u00DF',   # small letter sharp s
+
+           'dag': '\u2020',       # dagger
+           'ddag': '\u02021',     # double dagger
+           'S': '\u00A7',         # section sign
+           'copyright': '\u00A9', # copyright sign
+           'pounds': '\u00A3'}    # pound sign
+
+            # '#$%&_{}' # special symbols
 
 
 sample = r"""
