@@ -9,8 +9,16 @@ It shouldn't be too hard to get it to work in Python 2 though (3to2?). In
 addition, citeproc-py depends on [lxml](http://lxml.de/) for parsing and
 navigating the CSL styles and locale files.
 
-citeproc-py has basic, incomplete support for loading reference data from a
-BibTeX file.
+
+Getting Started
+---------------
+
+To get started with citeproc-py, take a look at the examples under `examples/`.
+Two examples are provided, one parsing references from a JSON representation of
+references as supported by citeproc-js, another parsing the references from
+a BibTeX file. Both show and explain how to cite references and render the
+bibliography.
+
 
 CSL Compatibility
 -----------------
