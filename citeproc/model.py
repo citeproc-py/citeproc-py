@@ -398,7 +398,7 @@ class PluralTest(object):
         if variable.startswith('number-of') and int(item[variable]) > 1:
             return True
         else:
-            return Number.re_range.match(str(value))
+            return Number.re_range.match(str(value)) is not None
 
 
 # Locale elements
@@ -1261,6 +1261,8 @@ class Label(CitationStylesElement, Formatted, Affixed, StrippedPeriods,
         if variable == 'locator':
             try:
                 variable = item.locator.label
+                if variable is None:
+                    return None
             except KeyError:
                 return None
 
