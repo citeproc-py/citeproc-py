@@ -13,10 +13,13 @@ class CiteProcJSON(BibliographySource):
             for key, value in ref.items():
                 python_key = key.replace('-', '_')
                 if python_key == 'id':
-                    ref_key = value.lower()
+                    ref_key = str(value).lower()
                     continue
                 if python_key == 'type':
                     ref_type = value
+                    continue
+                if python_key == 'key':
+                    # conflicts with the ref_key, so ignore
                     continue
                 elif python_key in NAMES:
                     value = self.parse_names(value)

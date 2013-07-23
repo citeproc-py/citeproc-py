@@ -98,7 +98,7 @@ class ProcessorTest(object):
         for key, value in citation_item_data.items():
             python_key = key.replace('-', '_')
             if python_key == 'id':
-                reference_key = value
+                reference_key = str(value)
                 continue
             elif python_key == 'locator':
                 try:
