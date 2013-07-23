@@ -1382,9 +1382,15 @@ class If(CitationStylesElement, Parent):
                 for var in self.get('is-numeric').split()]
 
     def _is_uncertain_date(self, item):
-        dates = self.get('is-uncertain-date').split()
-        return [item.reference[date.replace('-', '_')].get('circa', False)
-                for date in dates]
+        result = []
+        for date in self.get('is-uncertain-date').split():
+            date_variable = date.replace('-', '_')
+            try:
+                circa = item.reference[date_variable].get('circa', False)
+            except VariableError:
+                circa = False
+            result.append(circa)
+        return result
 
     def _locator(self, item):
         return [var.replace('-', ' ') == item.locator.label
