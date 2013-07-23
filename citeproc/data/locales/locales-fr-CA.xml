@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<locale xmlns="http://purl.org/net/xbiblio/csl" version="1.0" xml:lang="fr-FR">
+<locale xmlns="http://purl.org/net/xbiblio/csl" version="1.0" xml:lang="fr-CA">
   <info>
     <translator>
       <name>Grégoire Colly</name>
@@ -39,7 +39,7 @@
     <term name="forthcoming">à paraître</term>
     <term name="from">à l'adresse</term>
     <term name="ibid">ibid.</term>
-    <term name="in">in</term>
+    <term name="in">dans</term>
     <term name="in press">sous presse</term>
     <term name="internet">Internet</term>
     <term name="interview">entretien</term>
@@ -73,9 +73,9 @@
 
     <!-- ORDINALS -->
     <term name="ordinal">ᵉ</term>
-    <term name="ordinal-01" gender-form="feminine" match="whole-number">ʳᵉ</term>
+   	<term name="ordinal-01" gender-form="feminine" match="whole-number">ʳᵉ</term>
     <term name="ordinal-01" gender-form="masculine" match="whole-number">ᵉʳ</term>
-    
+
     <!-- LONG ORDINALS -->
     <term name="long-ordinal-01">premier</term>
     <term name="long-ordinal-02">deuxième</term>
