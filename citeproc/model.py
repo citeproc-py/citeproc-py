@@ -682,7 +682,8 @@ class Text(CitationStylesElement, Formatted, Affixed, Quoted, TextCased,
         if variable == 'citation-number':
             text = item.number
         elif variable == 'locator':
-            text = str(item.locator.identifier)
+            en_dash = unicodedata.lookup('EN DASH')
+            text = str(item.locator.identifier).replace('-', en_dash)
         elif variable == 'page-first' and variable not in item.reference:
             page = item.reference.page
             text = Number.re_range.match(str(page)).group(1)
