@@ -154,7 +154,8 @@ class Style(CitationStylesElement):
 
 
 class Locale(CitationStylesElement):
-    _default_options = {'punctuation-in-quote': 'false'}
+    _default_options = {'limit-day-ordinals-to-day-1': 'false',
+                        'punctuation-in-quote': 'false'}
 
     def get_term(self, name, form=None):
         attributes = "@name='{}'".format(name)
@@ -850,12 +851,18 @@ class Date_Part(CitationStylesElement, Formatted, Affixed, TextCased,
 
         if name == 'day':
             form = self.get('form', 'numeric')
+            if (form == 'ordinal'
+                and self.get_locale_option('limit-day-ordinals-to-day-1')
+                    .lower() == 'true'
+                and date.day > 1):
+                form = 'numeric'
+
             if form == 'numeric':
                 text = date.day
             elif form == 'numeric-leading-zeros':
                 text = '{:02}'.format(date.day)
             elif form == 'ordinal':
-                text = to_ordinal(number, context)
+                text = to_ordinal(date.day, context)
         elif name == 'month':
             form = self.get('form', 'long')
             strip_periods = self.get('form', False)
