@@ -54,8 +54,6 @@ class ProcessorTest(object):
                               for entry in self.json_data['bibentries'][-1]]
             citations = [Citation(citation_items)]
         else:
-            if self.json_data['mode'] == 'citation':
-                self.references.sort()
             citation_items = [self.parse_citation_item({'id': ref})
                               for ref in self.references]
             citations = [Citation(citation_items)]
