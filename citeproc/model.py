@@ -139,7 +139,10 @@ class Style(CitationStylesElement):
         except IndexError:
             pass
         # 4) (locale files) chosen dialect
-        self.locales.append(CitationStylesLocale(output_locale).root)
+        try:
+            self.locales.append(CitationStylesLocale(output_locale).root)
+        except ValueError:
+            pass
         # 5) (locale files) fall back to primary language dialect
         try:
             fallback_locale = self._locale_fallback[output_locale]
