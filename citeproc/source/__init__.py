@@ -104,6 +104,15 @@ class Date(DateBase):
                 self.get('day', 0) == 0)
 
 
+class LiteralDate(DateBase):
+    def __init__(self, text, **args):
+        self.text = text
+        super().__init__(args)
+
+    def sort_key(self):
+        return self.text
+
+
 class DateRange(DateBase):
     def __init__(self, **args):
         required = {'begin'}

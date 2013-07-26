@@ -1,6 +1,6 @@
 
 
-from . import BibliographySource, Reference, Name, Date, DateRange
+from . import BibliographySource, Reference, Name, Date, DateRange, LiteralDate
 from ..string import String, MixedString, NoCase
 from .. import NAMES, DATES, NUMBERS
 
@@ -90,5 +90,7 @@ class CiteProcJSON(BibliographySource):
         elif len(dates) > 1:
             return DateRange(begin=Date(**dates[0]), end=Date(**dates[1]),
                              circa=circa)
+        elif 'literal' in json_data:
+            return LiteralDate(json_data['literal'], circa=circa)
         else:
             return None

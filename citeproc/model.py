@@ -8,7 +8,7 @@ from operator import itemgetter
 from lxml import etree
 
 from . import NAMES, DATES, NUMBERS
-from .source import VariableError, DateRange
+from .source import VariableError, DateRange, LiteralDate
 from .string import String
 
 
@@ -807,6 +807,8 @@ class Date(CitationStylesElement, Parent, Formatted, Affixed, Delimited):
             date_or_range = item.reference[variable.replace('-', '_')]
             if not date_or_range:
                 text = None
+            elif isinstance(date_or_range, LiteralDate):
+                text = date_or_range.text
             elif isinstance(date_or_range, DateRange):
                 text = self.render_date_range(date_or_range, show_parts,
                                               context)
