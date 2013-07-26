@@ -805,7 +805,9 @@ class Date(CitationStylesElement, Parent, Formatted, Affixed, Delimited):
                                          show_parts=show_parts, context=self)
         else:
             date_or_range = item.reference[variable.replace('-', '_')]
-            if isinstance(date_or_range, DateRange):
+            if not date_or_range:
+                text = None
+            elif isinstance(date_or_range, DateRange):
                 text = self.render_date_range(date_or_range, show_parts,
                                               context)
             else:

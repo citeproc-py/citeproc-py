@@ -85,8 +85,10 @@ class CiteProcJSON(BibliographySource):
 
         circa = json_data.get('circa', 0) != 0
 
-        if len(dates) > 1:
+        if len(dates) == 1:
+            return Date(circa=circa, **dates[0])
+        elif len(dates) > 1:
             return DateRange(begin=Date(**dates[0]), end=Date(**dates[1]),
                              circa=circa)
         else:
-            return Date(circa=circa, **dates[0])
+            return None
