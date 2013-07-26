@@ -729,8 +729,6 @@ class Date(CitationStylesElement, Parent, Formatted, Affixed, Delimited):
 
     def render_single_date(self, date, show_parts=None, context=None):
         form = self.get('form')
-        date_parts = self.get('date-parts')
-
         if context != self:
             parts = self.parts(date, show_parts, context)
         else:
@@ -870,15 +868,24 @@ class Date_Part(CitationStylesElement, Formatted, Affixed, TextCased,
         elif name == 'month':
             form = self.get('form', 'long')
             strip_periods = self.get('form', False)
+            try:
+                index = date.month
+                term = 'month'
+            except VariableError:
+                index = date.season
+                term = 'season'
+
             if form == 'long':
-                text = context.get_term('month-{:02}'.format(date.month)).single
+                text = context.get_term('{}-{:02}'.format(term, index)).single
             elif form == 'short':
-                term = context.get_term('month-{:02}'.format(date.month), 'short')
+                term = context.get_term('{}-{:02}'.format(term, index), 'short')
                 text = term.single
-            elif form == 'numeric':
-                text = '{}'.format(date.month)
-            elif form == 'numeric-leading-zeros':
-                text = '{:02}'.format(date.month)
+            else:
+                assert term == 'month'
+                if form == 'numeric':
+                    text = '{}'.format(index)
+                elif form == 'numeric-leading-zeros':
+                    text = '{:02}'.format(index)
         elif name == 'year':
             form = self.get('form', 'long')
             if form == 'long':

@@ -81,7 +81,10 @@ class CiteProcJSON(BibliographySource):
 
         dates = []
         for json_date in json_data['date-parts']:
-            dates.append(parse_single_date(json_date))
+            date = parse_single_date(json_date)
+            if 'season' in json_data:
+                date['season'] = json_data['season']
+            dates.append(date)
 
         circa = json_data.get('circa', 0) != 0
 
