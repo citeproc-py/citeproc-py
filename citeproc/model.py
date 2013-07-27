@@ -685,17 +685,26 @@ class Text(CitationStylesElement, Formatted, Affixed, Quoted, TextCased,
             if short_variable.replace('-', '_') in item.reference:
                 variable = short_variable
 
-        if variable == 'citation-number':
+        if variable == 'page':
+            text = self._page(item)
+        elif variable == 'citation-number':
             text = item.number
         elif variable == 'locator':
             en_dash = unicodedata.lookup('EN DASH')
             text = str(item.locator.identifier).replace('-', en_dash)
         elif variable == 'page-first' and variable not in item.reference:
-            page = item.reference.page
-            text = Number.re_range.match(str(page)).group(1)
+            text = str(item.reference.page.first)
         else:
             text = item.reference[variable.replace('-', '_')]
 
+        return text
+
+    def _page(self, item):
+        page = item.reference.page
+        text = str(page.first)
+        if 'last' in page:
+            text += unicodedata.lookup('EN DASH')
+            text += str(page.last)
         return text
 
     def _term(self, item):

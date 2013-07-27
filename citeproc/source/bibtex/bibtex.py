@@ -6,7 +6,7 @@ from warnings import warn
 from ...types import (ARTICLE, ARTICLE_JOURNAL, BOOK, CHAPTER, MANUSCRIPT,
                       PAMPHLET, PAPER_CONFERENCE, REPORT, THESIS)
 from ...string import String, MixedString, NoCase
-from .. import BibliographySource, Reference, Name, Date, DateRange
+from .. import BibliographySource, Reference, Name, Date, DateRange, Pages
 from .bibparse import BibTeXParser
 
 
@@ -72,7 +72,11 @@ class BibTeX(BibliographySource):
                 except ValueError:
                     pass
             elif field == 'pages':
-                value = value.replace(' ', '').replace('--', '-')
+                if value.endswith('+'):
+                    value = Pages(first=int(value[:-1]))
+                else:
+                    first, last = value.replace(' ', '').split('--')
+                    value = Pages(first=int(first), last=int(last))
             elif field in ('author', 'editor'):
                 value = [name for name in self._parse_author(value)]
             else:

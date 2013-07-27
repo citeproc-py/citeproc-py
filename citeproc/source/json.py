@@ -1,6 +1,7 @@
 
 
-from . import BibliographySource, Reference, Name, Date, DateRange, LiteralDate
+from . import BibliographySource, Reference
+from . import Pages, Name, Date, DateRange, LiteralDate
 from ..string import String, MixedString, NoCase
 from .. import NAMES, DATES, NUMBERS
 
@@ -18,9 +19,11 @@ class CiteProcJSON(BibliographySource):
                 if python_key == 'type':
                     ref_type = value
                     continue
-                if python_key == 'key':
+                elif python_key == 'key':
                     # conflicts with the ref_key, so ignore
                     continue
+                elif python_key == 'page':
+                    value = self.parse_page(value)
                 elif python_key in NAMES:
                     value = self.parse_names(value)
                 elif python_key in DATES:
@@ -57,6 +60,13 @@ class CiteProcJSON(BibliographySource):
             if regular:
                 output += String(regular)
         return output
+
+    def parse_page(self, json_data):
+        if '-' in json_data:
+            first, last = json_data.split('-')
+            return Pages(first=first, last=last)
+        else:
+            return Pages(first=json_data)
 
     def parse_names(self, json_data):
         names = []
