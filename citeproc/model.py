@@ -690,7 +690,7 @@ class Text(CitationStylesElement, Formatted, Affixed, Quoted, TextCased,
         elif variable == 'citation-number':
             text = item.number
         elif variable == 'locator':
-            en_dash = unicodedata.lookup('EN DASH')
+            en_dash = self.unicode_character('EN DASH')
             text = str(item.locator.identifier).replace('-', en_dash)
         elif variable == 'page-first':
             text = str(item.reference.page.first)
@@ -704,7 +704,7 @@ class Text(CitationStylesElement, Formatted, Affixed, Quoted, TextCased,
         str_first, str_last = str(page.first), str(page.last)
         text = str_first
         if 'last' in page:
-            text += unicodedata.lookup('EN DASH')
+            text += self.unicode_character('EN DASH')
             if len(str_first) != len(str_last):
                 text += str_last
             else:
@@ -822,7 +822,7 @@ class Date(CitationStylesElement, Parent, Formatted, Affixed, Delimited):
         if not (diff_begin and diff_begin):
             return None
 
-        diff = (diff_begin.rstrip() + self.unicode_character('en dash') +
+        diff = (diff_begin.rstrip() + self.unicode_character('EN DASH') +
                 diff_end)
         if same:
             text = context.join([diff, same.rstrip()])
@@ -978,7 +978,7 @@ class Number(CitationStylesElement, Formatted, Affixed, Displayed, TextCased,
             first, last = map(int, self.re_range.match(str(variable)).groups())
             first = self.format_number(first, form)
             last = self.format_number(last, form)
-            text = first + self.unicode_character('en dash') + last
+            text = first + self.unicode_character('EN DASH') + last
         except AttributeError:
             try:
                 number = int(self.re_numeric.match(str(variable)).group(1))
