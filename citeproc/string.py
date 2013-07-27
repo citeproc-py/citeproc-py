@@ -29,11 +29,7 @@ class String(str):
         return self.upper()
 
     def capitalize_first(self):
-        string = str(self)
-        result = string[0].upper()
-        if len(string) > 1:
-            result += string[1:]
-        return self.__class__(result)
+        return self.__class__(self[0].upper() + self[1:])
 
     def words(self):
         for word in self.split():
