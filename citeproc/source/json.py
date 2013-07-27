@@ -63,7 +63,9 @@ class CiteProcJSON(BibliographySource):
 
     def parse_page(self, json_data):
         if '-' in json_data:
-            first, last = json_data.split('-')
+            first, last = (number.strip() for number in json_data.split('-'))
+            if len(last) < len(first):
+                last = first[:- len(last)] + last
             return Pages(first=first, last=last)
         else:
             return Pages(first=json_data)
