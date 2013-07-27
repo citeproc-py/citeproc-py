@@ -175,6 +175,10 @@ class CitationItem(CustomDict):
     def number(self):
         return self.bibliography.keys.index(self.key) + 1
 
+    @property
+    def has_locator(self):
+        return 'locator' in self
+
     def get_field(self, field):
         string = self.reference.get(field)
         if string is not None:

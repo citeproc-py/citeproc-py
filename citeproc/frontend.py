@@ -58,8 +58,8 @@ class CitationStylesStyle(CitationStylesXML):
     def has_bibliography(self):
         return self.root.bibliography is not None
 
-    def render_citation(self, citation, callback=None):
-        return self.root.citation.render(citation, callback)
+    def render_citation(self, citation, cites, callback=None):
+        return self.root.citation.render(citation, cites, callback)
 
     def sort_bibliography(self, citation_items):
         return self.root.bibliography.sort(citation_items)
@@ -75,6 +75,7 @@ class CitationStylesBibliography(object):
         self.formatter = self.style.root.formatter = formatter
         self.keys = []
         self.items = []
+        self._cites = []
 
     def register(self, citation, callback=None):
         citation.bibliography = self
@@ -91,7 +92,7 @@ class CitationStylesBibliography(object):
         self.keys = [item.key for item in self.items]
 
     def cite(self, citation, callback):
-        return self.style.render_citation(citation, callback)
+        return self.style.render_citation(citation, self._cites, callback)
 
     def bibliography(self):
         return self.style.render_bibliography(self.items)

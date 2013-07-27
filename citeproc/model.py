@@ -212,7 +212,8 @@ class Citation(FormattingInstructions, CitationStylesElement):
                         # note distance
                         'near-note-distance': 5}
 
-    def render(self, citation, callback):
+    def render(self, citation, cites, callback):
+        self.cites = cites
         return self.layout.render_citation(citation, callback)
 
 
@@ -616,6 +617,7 @@ class Layout(CitationStylesElement, Parent, Formatted, Affixed, Delimited):
                 if output is not None:
                     text = prefix + output + suffix
                     out.append(text)
+                    self.getparent().cites.append(item)
             except VariableError:
                 pass
         for item in bad_cites:
@@ -1416,7 +1418,7 @@ class If(CitationStylesElement, Parent):
         if 'locator' in self.attrib:
             results += self._locator(item)
         if 'position' in self.attrib:
-            results += self._position(item)
+            results += self._position(item, context)
 
         # TODO: 'match' also applies to individual tests above!
         if self.get('match') == 'any':
@@ -1467,8 +1469,37 @@ class If(CitationStylesElement, Parent):
         return [var.replace('-', ' ') == item.locator.label
                 for var in self.get('locator').split()]
 
-    def _position(self, item):
-        raise NotImplementedError
+    def _position(self, item, context):
+        context = context or self
+        if context.xpath_search('./ancestor::*[self::cs:bibliography]'):
+            return [False]
+        # citation node
+        cites = context.get_layout().getparent().cites
+        last_cite = cites[-1] if cites else None
+        already_cited = item.key in (cite.key for cite in cites)
+        possibly_ibid = (already_cited
+                         and item.key == last_cite.key
+                         and (item.citation == last_cite.citation
+                              or len(last_cite.citation.cites) == 1))
+        results = []
+        for position in self.get('position').split():
+            result = False
+            if position == 'first':
+                result = not already_cited
+            elif possibly_ibid and position == 'ibid':
+                result = (not item.has_locator and not last_cite.has_locator
+                          or (item.has_locator and last_cite.has_locator
+                              and item.locator == last_cite.locator))
+            elif possibly_ibid and position == 'ibid-with-locator':
+                result = (item.has_locator and not last_cite.has_locator
+                          or (item.has_locator and last_cite.has_locator
+                              and item.locator != last_cite.locator))
+            elif position == 'subsequent':
+                result = already_cited
+            elif position == 'near-note':
+                raise NotImplementedError
+            results.append(result)
+        return results
 
 
 class Else_If(If, CitationStylesElement):
