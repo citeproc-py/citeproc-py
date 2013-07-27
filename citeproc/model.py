@@ -389,6 +389,8 @@ class TextCased(object):
 # Tests
 
 class PluralTest(object):
+    RE_MULTIPLE_NUMBERS = re.compile(r'\d.*\d')
+
     def is_plural(self, item):
         variable = self.get('variable')
         if variable == 'locator':
@@ -402,7 +404,7 @@ class PluralTest(object):
         if variable.startswith('number-of') and int(item[variable]) > 1:
             return True
         else:
-            return Number.re_range.match(str(value)) is not None
+            return self.RE_MULTIPLE_NUMBERS.search(str(value)) is not None
 
 
 # Locale elements
