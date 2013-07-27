@@ -25,8 +25,6 @@ TESTS_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__),
 # features, but citeproc-js specific features
 
 IGNORED_RESULS = {
-    'bugreports_AsmJournals': 'isInstitution',
-
     'date_Accessed': 'raw date',
     'date_LoneJapaneseMonth': 'raw date',
     'date_LopsidedDataYearSuffixCollapse': 'raw date',

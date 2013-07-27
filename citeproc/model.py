@@ -1172,7 +1172,7 @@ class Name(CitationStylesElement, Formatted, Affixed, Delimited):
             for i, name in enumerate(names):
                 given, family, dp, ndp, suffix = name.parts()
 
-                if initialize_with is not None:
+                if given is not None and initialize_with is not None:
                     given = self.initialize(given, initialize_with, context)
 
                 if form == 'long':

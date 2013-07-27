@@ -64,8 +64,9 @@ class Name(CustomDict):
             required = {'name'}
             optional = set()
         else:
-            required = {'given', 'family'}
-            optional = {'dropping-particle', 'non-dropping-particle', 'suffix'}
+            required = {'family'}
+            optional = {'given', 'dropping-particle', 'non-dropping-particle',
+                        'suffix'}
         super().__init__(args, required, optional)
 
     def parts(self):
