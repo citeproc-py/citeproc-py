@@ -1,5 +1,7 @@
 
 
+import unicodedata
+
 from . import BibliographySource, Reference
 from . import Pages, Name, Date, DateRange, LiteralDate
 from ..string import String, MixedString, NoCase
@@ -62,6 +64,7 @@ class CiteProcJSON(BibliographySource):
         return output
 
     def parse_page(self, json_data):
+        json_data = json_data.replace(unicodedata.lookup('EN DASH'), '-')
         if '-' in json_data:
             first, last = (number.strip() for number in json_data.split('-'))
             if len(last) < len(first):
