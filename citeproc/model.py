@@ -1355,6 +1355,9 @@ class Label(CitationStylesElement, Formatted, Affixed, StrippedPeriods,
 
 
 class Group(CitationStylesElement, Parent, Formatted, Affixed, Delimited):
+    def calls_variable(self):
+        return True
+
     def process(self, item, context=None, **kwargs):
         output = []
         variable_called = False
