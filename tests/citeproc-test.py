@@ -21,6 +21,22 @@ TESTS_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__),
                                           'citeproc-test', 'processor-tests',
                                           'machines'))
 
+# The results of the following tests are ignored, since they don't CSL
+# features, but citeproc-js specific features
+
+IGNORED_RESULS = {
+    'bugreports_AsmJournals': 'isInstitution',
+
+    'date_Accessed': 'raw date',
+    'date_LoneJapaneseMonth': 'raw date',
+    'date_LopsidedDataYearSuffixCollapse': 'raw date',
+    'date_RawParseSimpleDate': 'raw date',
+    'date_RawSeasonRange1': 'raw date',
+    'date_RawSeasonRange2': 'raw date',
+    'date_RawSeasonRange3': 'raw date',
+    'date_String': 'raw date',
+}
+
 
 class ProcessorTest(object):
     def __init__(self, filename):
@@ -29,11 +45,20 @@ class ProcessorTest(object):
 
         csl_io = io.BytesIO(utf_8_encode(self.json_data['csl'])[0])
         self.style = CitationStylesStyle(csl_io)
+        self._fix_input(self.json_data['input'])
         self.references = [item['id'] for item in self.json_data['input']]
         self.references_dict = CiteProcJSON(self.json_data['input'])
         self.bibliography = CitationStylesBibliography(self.style,
                                                        self.references_dict)
         self.expected = self.json_data['result'].splitlines()
+
+    @staticmethod
+    def _fix_input(input_data):
+        for i, ref in enumerate(input_data):
+            if 'id' not in ref:
+                ref['id'] = i
+            if 'type' not in ref:
+                ref['type'] = 'book'
 
     def execute(self):
         if self.json_data['citation_items']:
@@ -141,25 +166,29 @@ def main():
         glob_pattern = '*'
         filter_tests = True
 
-    total = {}
-    passed = {}
+    total_count = {}
+    passed_count = {}
+    failed = []
     max_tests = int(options.max)
 
     count = 0
     for filename in glob.glob(os.path.join(TESTS_PATH,
                                            '{}.json'.format(glob_pattern))):
+        test_name = os.path.basename(filename).split('.json')[0]
         category = os.path.basename(filename).split('_')[0]
-        passed[category] = passed.get(category, 0)
+        passed_count.setdefault(category, 0)
         if count == max_tests:
             break
 
+
         try:
+            if test_name not in IGNORED_RESULS:
+                total_count[category] = total_count.get(category, 0) + 1
+                count += 1
             t = ProcessorTest(filename)
             if filter_tests and (t.json_data['mode'] == 'bibliography-header' or
                                  t.json_data['bibsection']):
                 continue
-            total[category] = total.get(category, 0) + 1
-            count += 1
             print('>>> Testing {}'.format(os.path.basename(filename)),
                   file=destination)
             print('EXP: ' + '\n     '.join(t.expected), file=destination)
@@ -171,8 +200,10 @@ def main():
                        for item in results]
             print('RES: ' + '\n     '.join(results), file=destination)
             if results == t.expected:
-                passed[category] += 1
+                if test_name not in IGNORED_RESULS:
+                    passed_count[category] += 1
                 print('<<< SUCCESS\n', file=destination)
+                continue
             else:
                 print('<<< FAILED\n', file=destination)
             del t
@@ -182,15 +213,22 @@ def main():
                 traceback.print_exc(file=destination)
             else:
                 raise
+        if test_name not in IGNORED_RESULS:
+            failed.append(test_name)
 
     def print_result(name, passed, total):
         print('{:<13} {:>3} / {:>3} ({:>4.0%})'
               .format(name, passed, total, passed / total), file=destination)
 
-    for category in sorted(total.keys()):
-        print_result(category, passed[category], total[category])
-    print_result('total', sum(passed.values()), sum(total.values()))
+    print('Failed tests:')
+    for test_name in failed:
+        print(' ' + test_name)
 
+    print()
+    for category in sorted(total_count.keys()):
+        print_result(category, passed_count[category], total_count[category])
+    print()
+    print_result('total', sum(passed_count.values()), sum(total_count.values()))
 
 if __name__ == '__main__':
     main()

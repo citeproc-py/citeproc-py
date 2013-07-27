@@ -31,11 +31,7 @@ class CiteProcJSON(BibliographySource):
                     value = self.parse_string(value)
 
                 ref_data[python_key] = value
-            try:
-                self.add(Reference(ref_key, ref_type, **ref_data))
-            except UnboundLocalError:
-                # some tests don't specify the reference type
-                self.add(Reference(ref_key, 'book', **ref_data))
+            self.add(Reference(ref_key, ref_type, **ref_data))
 
     start_tag = '<span class="nocase">'
     end_tag = '</span>'
