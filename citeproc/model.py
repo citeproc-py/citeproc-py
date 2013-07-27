@@ -686,7 +686,7 @@ class Text(CitationStylesElement, Formatted, Affixed, Quoted, TextCased,
                 variable = short_variable
 
         if variable == 'page':
-            text = self._page(item)
+            text = self._page(item, context)
         elif variable == 'citation-number':
             text = item.number
         elif variable == 'locator':
@@ -699,13 +699,46 @@ class Text(CitationStylesElement, Formatted, Affixed, Quoted, TextCased,
 
         return text
 
-    def _page(self, item):
+    def _page(self, item, context):
         page = item.reference.page
-        text = str(page.first)
+        str_first, str_last = str(page.first), str(page.last)
+        text = str_first
         if 'last' in page:
             text += unicodedata.lookup('EN DASH')
-            text += str(page.last)
+            if len(str_first) != len(str_last):
+                text += str_last
+            else:
+                range_fmt = self.get_root().get_option('page-range-format')
+                text += self._page_format_last(str_first, str_last, range_fmt)
         return text
+
+    @staticmethod
+    def _page_format_last(first, last, range_format):
+        def find_common(first, last):
+            for count, (f, l) in enumerate(zip(first, last)):
+                if f != l:
+                    return count
+            return count + 1
+
+        common = find_common(first, last)
+        if range_format == 'chicago':
+            m = re.search('\d+', first)
+            first_number = int(m.group())
+            if first_number < 100 or first_number % 100 == 0:
+                range_format = 'expanded'
+            elif len(first) >= 4 and common < 2:
+                range_format = 'expanded'
+            elif first_number % 100 in range(1, 10):
+                range_format = 'minimal'
+            elif first_number % 100 in range(10, 100):
+                range_format = 'minimal-two'
+        if range_format in ('expanded', None):
+            index = 0
+        elif range_format == 'minimal':
+            index = common
+        elif range_format == 'minimal-two':
+            index = min(common, len(first) - 2)
+        return last[index:]
 
     def _term(self, item):
         form = self.get('form', 'long')
