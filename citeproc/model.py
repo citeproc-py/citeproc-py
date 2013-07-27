@@ -692,7 +692,7 @@ class Text(CitationStylesElement, Formatted, Affixed, Quoted, TextCased,
         elif variable == 'locator':
             en_dash = unicodedata.lookup('EN DASH')
             text = str(item.locator.identifier).replace('-', en_dash)
-        elif variable == 'page-first' and variable not in item.reference:
+        elif variable == 'page-first':
             text = str(item.reference.page.first)
         else:
             text = item.reference[variable.replace('-', '_')]
@@ -969,6 +969,8 @@ class Number(CitationStylesElement, Formatted, Affixed, Displayed, TextCased,
                 variable = item.locator.identifier
             except KeyError:
                 return None
+        elif variable == 'page-first':
+            variable = item.reference.page.first
         else:
             variable = item.reference[variable]
 
