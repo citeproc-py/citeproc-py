@@ -52,6 +52,21 @@ class CitationStylesElement(SomewhatObjectifiedElement):
     def xpath_search(self, expression):
         return self.xpath(expression, namespaces=self.nsmap)
 
+    @property
+    def loc(self):
+        full_xpath = self.getroottree().getpath(self)
+        xpath = ''
+        tree = []
+        for i, node in enumerate(full_xpath.split('/')[1:]):
+            xpath += '/' + node
+            element = self.xpath(xpath)[0]
+            namespace, tag = element.tag.split('}', 1)
+            attribs = ''.join(' {}="{}"'.format(key, value)
+                               for key, value in element.attrib.items())
+            tree.append('{:>4}: {}<{}{}>'.format(element.sourceline,
+                                                 i * '  ', tag, attribs))
+        print('\n'.join(tree))
+
     def get_option(self, name):
         return self.get(name, __class__._default_options[name])
 
