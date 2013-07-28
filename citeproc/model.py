@@ -718,9 +718,10 @@ class Text(CitationStylesElement, Formatted, Affixed, Quoted, TextCased,
 
     def _page(self, item, context):
         page = item.reference.page
-        str_first, str_last = str(page.first), str(page.last)
+        str_first = str(page.first)
         text = str_first
         if 'last' in page:
+            str_last = str(page.last)
             text += self.unicode_character('EN DASH')
             if len(str_first) != len(str_last):
                 text += str_last
