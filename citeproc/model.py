@@ -402,27 +402,6 @@ class TextCased(object):
         return text
 
 
-# Tests
-
-class PluralTest(object):
-    RE_MULTIPLE_NUMBERS = re.compile(r'\d.*\d')
-
-    def is_plural(self, item):
-        variable = self.get('variable')
-        if variable == 'locator':
-            value = item.locator.identifier
-        else:
-            try:
-                value = item.reference[variable.replace('-', '_')]
-            except VariableError:
-                return False
-
-        if variable.startswith('number-of') and int(item[variable]) > 1:
-            return True
-        else:
-            return self.RE_MULTIPLE_NUMBERS.search(str(value)) is not None
-
-
 # Locale elements
 
 class Term(CitationStylesElement):
@@ -657,7 +636,7 @@ class Layout(CitationStylesElement, Parent, Formatted, Affixed, Delimited):
 
 
 class Text(CitationStylesElement, Formatted, Affixed, Quoted, TextCased,
-           StrippedPeriods, PluralTest):
+           StrippedPeriods):
     generated_variables = ('year-suffix', 'citation-number')
 
     def calls_variable(self):
@@ -972,7 +951,7 @@ class Date_Part(CitationStylesElement, Formatted, Affixed, TextCased,
 
 
 class Number(CitationStylesElement, Formatted, Affixed, Displayed, TextCased,
-             StrippedPeriods, PluralTest):
+             StrippedPeriods):
     re_numeric = re.compile(r'^(\d+).*')
     re_range = re.compile(r'^(\d+)\s*-\s*(\d+)$')
 
@@ -1328,28 +1307,17 @@ class Label(CitationStylesElement, Formatted, Affixed, StrippedPeriods,
     def calls_variable(self):
         return self.get('variable') == 'locator'
 
-    def plural(self, item):
-        expr = './parent::*/*[self::cs:text or self::cs:number]'
-        try:
-            element = self.xpath_search(expr)[0]
-            return element.is_plural(item)
-        except IndexError:
-            return False
-
     def process(self, item, variable=None, plural=None, context=None, **kwargs):
         if variable is None:
             variable = self.get('variable')
-        if plural is None:
-            plural = self.plural(item)
         form = self.get('form', 'long')
         plural_option = self.get('plural', 'contextual')
+        if plural is None:
+            plural = self._is_plural(item)
 
-        if variable == 'locator':
-            try:
-                variable = item.locator.label
-                if variable is None:
-                    return None
-            except KeyError:
+        if variable == 'locator' and item.has_locator:
+            variable = item.locator.label
+            if variable is None:
                 return None
 
         if form == 'long':
@@ -1370,6 +1338,23 @@ class Label(CitationStylesElement, Formatted, Affixed, StrippedPeriods,
             return self.wrap(self.format(self.case(self.strip_periods(text))))
         else:
             return None
+
+    RE_MULTIPLE_NUMBERS = re.compile(r'\d+[^\d]+\d+')
+
+    def _is_plural(self, item):
+        variable = self.get('variable')
+        if variable == 'locator':
+            value = item.locator.identifier
+        else:
+            try:
+                value = item.reference[variable.replace('-', '_')]
+            except VariableError:
+                return False
+
+        if variable.startswith('number-of') and int(item[variable]) > 1:
+            return True
+        else:
+            return self.RE_MULTIPLE_NUMBERS.search(str(value)) is not None
 
 
 class Group(CitationStylesElement, Parent, Formatted, Affixed, Delimited):
