@@ -127,7 +127,7 @@ class ProcessorTest(object):
                                                  value)
                 except KeyError:
                     # some tests don't specify the label
-                    options['locator'] = Locator(None, value)
+                    options['locator'] = Locator('page', value)
             elif python_key == 'label':
                 pass
             else:

@@ -1317,8 +1317,6 @@ class Label(CitationStylesElement, Formatted, Affixed, StrippedPeriods,
 
         if variable == 'locator' and item.has_locator:
             variable = item.locator.label
-            if variable is None:
-                return None
 
         if form == 'long':
             term = self.get_term(variable)
