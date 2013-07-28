@@ -1469,7 +1469,8 @@ class If(CitationStylesElement, Parent):
                 for var in self.get('locator').split()]
 
     def _position(self, item, context):
-        context = context or self
+        if context is None:
+            context = self
         if context.xpath_search('./ancestor::*[self::cs:bibliography]'):
             return [False]
         # citation node
@@ -1478,25 +1479,32 @@ class If(CitationStylesElement, Parent):
         already_cited = item.key in (cite.key for cite in cites)
         possibly_ibid = (already_cited
                          and item.key == last_cite.key
-                         and (item.citation == last_cite.citation
+                         and (item.citation is last_cite.citation
                               or len(last_cite.citation.cites) == 1))
         results = []
         for position in self.get('position').split():
             result = False
             if position == 'first':
                 result = not already_cited
+            elif position == 'subsequent':
+                result = already_cited
             elif possibly_ibid and position == 'ibid':
-                result = (not item.has_locator and not last_cite.has_locator
-                          or (item.has_locator and last_cite.has_locator
-                              and item.locator == last_cite.locator))
+                result = item.has_locator or not last_cite.has_locator
             elif possibly_ibid and position == 'ibid-with-locator':
                 result = (item.has_locator and not last_cite.has_locator
                           or (item.has_locator and last_cite.has_locator
                               and item.locator != last_cite.locator))
-            elif position == 'subsequent':
-                result = already_cited
-            elif position == 'near-note':
-                raise NotImplementedError
+            elif already_cited and position == 'near-note':
+                max_distance = self.get_root().get_option('near-note-distance')
+                citations = 1
+                last_citation = None
+                for cite in reversed(cites):
+                    if item.key == cite.key and citations <= max_distance:
+                        result = True
+                        break
+                    elif cite.citation is not last_citation:
+                        citations += 1
+                        last_citation = cite.citation
             results.append(result)
         return results
 
