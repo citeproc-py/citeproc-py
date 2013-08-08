@@ -32,12 +32,9 @@ probably some I forgot though):
 
 * disambiguation/year-suffix
 * et-al-subsequent-min/et-al-subsequent-use-first
-* position
 * collapsing
 * punctuation-in-quote
-* page-range-format
 * display
-* seasons
 
 Also, some [citeproc-js](http://bitbucket.org/fbennett/citeproc-js/wiki/Home)
 functionality that is not part of the CSL spec is not (yet) supported:
