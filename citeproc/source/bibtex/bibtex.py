@@ -1,4 +1,5 @@
-﻿
+﻿from __future__ import print_function, unicode_literals
+
 import re
 
 from warnings import warn
@@ -195,10 +196,10 @@ class BibTeX(BibliographySource):
         csl_authors = []
         for author in authors.split(' and '):
             if ',' in author:
-                family, given = map(str.strip, author.split(',', 1))
+                family, given = [a.strip() for a in  author.split(',', 1)]
                 name = Name(family=family, given=given)
             elif ' ' in author:
-                given, family = map(str.strip, author.rsplit(' ', 1))
+                given, family = [a.strip() for a in author.rsplit(' ', 1)]
                 name = Name(family=family, given=given)
             else:
                 # TODO: handle 'others'

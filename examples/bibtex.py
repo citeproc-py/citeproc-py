@@ -1,3 +1,4 @@
+from __future__ import print_function, unicode_literals
 
 # The references are parsed from a BibTeX database, so we import the
 # corresponding parser.

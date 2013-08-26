@@ -36,7 +36,7 @@ class CustomDict(dict):
 
     def __getitem__(self, key):
         try:
-            return super().__getitem__(key)
+            return super(CustomDict, self).__getitem__(key)
         except KeyError:
             raise VariableError
 
@@ -48,7 +48,7 @@ class Reference(CustomDict):
         #required_or = [set(csl.VARIABLES)]
         optional = ({'uri', 'container_uri', 'contributor', 'date'} |
                     set(VARIABLES))
-        super().__init__(args, optional=optional)
+        super(Reference, self).__init__(args, optional=optional)
 
     def __repr__(self):
         return '{}({})'.format(self.__class__.__name__, self.key)
@@ -67,7 +67,7 @@ class Name(CustomDict):
             required = {'family'}
             optional = {'given', 'dropping-particle', 'non-dropping-particle',
                         'suffix'}
-        super().__init__(args, required, optional)
+        super(Name, self).__init__(args, required, optional)
 
     def parts(self):
         return (self.get('given'), self.get('family'),
@@ -78,7 +78,7 @@ class Name(CustomDict):
 class DateBase(CustomDict):
     def __init__(self, args, required=set(), optional=set()):
         optional = {'circa'} | optional
-        super().__init__(args, required, optional)
+        super(DateBase, self).__init__(args, required, optional)
         # defaults
         if 'circa' not in self:
             self['circa'] = False
@@ -92,7 +92,7 @@ class Date(DateBase):
             raise TypeError('When specifying the day, you should also specify '
                             'the month')
         args = {key: int(value) for key, value in args.items()}
-        super().__init__(args, required, optional)
+        super(Date, self).__init__(args, required, optional)
 
     def sort_key(self):
         year = self.year
@@ -108,7 +108,7 @@ class Date(DateBase):
 class LiteralDate(DateBase):
     def __init__(self, text, **args):
         self.text = text
-        super().__init__(args)
+        super(LiteralDate, self).__init__(args)
 
     def sort_key(self):
         return self.text
@@ -118,7 +118,7 @@ class DateRange(DateBase):
     def __init__(self, **args):
         required = {'begin'}
         optional = {'end'}
-        super().__init__(args, required, optional)
+        super(DateRange, self).__init__(args, required, optional)
 
     def sort_key(self):
         begin = self.begin.sort_key()
@@ -139,7 +139,7 @@ class Pages(CustomDict):
                 args[key] = int(value)
             except ValueError:
                 pass
-        super().__init__(args, required, optional)
+        super(Pages, self).__init__(args, required, optional)
 
 
 class Citation(CustomDict):
@@ -147,7 +147,7 @@ class Citation(CustomDict):
         for cite in cites:
             cite.citation = self
         self.cites = cites
-        super().__init__(kwargs)
+        super(Citation, self).__init__(kwargs)
 
     def __repr__(self):
         cites = ', '.join([cite.key for cite in self.cites])
@@ -158,7 +158,7 @@ class CitationItem(CustomDict):
     def __init__(self, key, bibliography=None, **args):
         self.key = key.lower()
         optional = {'locator', 'prefix', 'suffix'}
-        super().__init__(args, optional=optional)
+        super(CitationItem, self).__init__(args, optional=optional)
 
     def __repr__(self):
         return '{}({})'.format(self.__class__.__name__, self.key)

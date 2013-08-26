@@ -68,7 +68,7 @@ class CitationStylesElement(SomewhatObjectifiedElement):
         print('\n'.join(tree))
 
     def get_option(self, name):
-        return self.get(name, __class__._default_options[name])
+        return self.get(name, self._default_options[name])
 
     def get_macro(self, name):
         expression = "cs:macro[@name='{}'][1]".format(name)
@@ -195,7 +195,7 @@ class Locale(CitationStylesElement):
         options = self.find('cs:style-options', self.nsmap)
         if options is None:
             raise IndexError
-        return options.get(name, __class__._default_options[name])
+        return options.get(name, self._default_options[name])
 
     def get_formatter(self):
         return self.style.formatter

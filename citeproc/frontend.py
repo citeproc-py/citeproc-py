@@ -35,7 +35,7 @@ class CitationStylesLocale(CitationStylesXML):
     def __init__(self, locale):
         locale_path = os.path.join(LOCALES_PATH, 'locales-{}.xml'.format(locale))
         try:
-            super().__init__(locale_path)
+            super(CitationStylesLocale, self).__init__(locale_path)
         except IOError:
             raise ValueError("'{}' is not a known locale".format(locale))
 
@@ -48,7 +48,7 @@ class CitationStylesStyle(CitationStylesXML):
         except TypeError:
             pass
         try:
-            super().__init__(style)
+            super(CitationStylesStyle, self).__init__(style)
         except IOError:
             raise ValueError("'{}' is not a known style".format(style))
         if locale is None:
