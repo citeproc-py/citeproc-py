@@ -5,7 +5,7 @@ from warnings import warn
 
 from lxml import etree
 
-from . import SCHEMA_PATH, LOCALES_PATH
+from . import SCHEMA_PATH, LOCALES_PATH, STYLES_PATH
 from .model import CitationStylesElement
 from .formatter import html
 
