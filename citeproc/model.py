@@ -1067,8 +1067,13 @@ class Names(CitationStylesElement, Parent, Formatted, Affixed, Delimited):
         if output:
             try:
                 total = sum(output)
-                text = str(total) if total > 0 else None
             except TypeError:
+                is_int = False
+            else:
+                is_int = isinstance(total, int)
+            if is_int:
+                text = str(total) if total > 0 else None
+            else:
                 text = self.join(output, self.get_parent_delimiter(context))
         else:
             substitute = self.substitute()
