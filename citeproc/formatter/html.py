@@ -24,7 +24,7 @@ class TagWrapper(text_type):
                                                       attrib=attrib,text=text)
 
     def __new__(cls, text):
-        return super().__new__(cls, cls._wrap(text))
+        return super(TagWrapper, cls).__new__(cls, cls._wrap(text))
 
 
 class Italic(TagWrapper):
@@ -72,4 +72,4 @@ class Bibliography(text_type):
             text = cls.item_prefix + text_type(text) + cls.item_suffix
             output.append(text)
         output.append(cls.bib_suffix)
-        return super().__new__(cls, '\n'.join(output))
+        return super(Bibliography, cls).__new__(cls, '\n'.join(output))
