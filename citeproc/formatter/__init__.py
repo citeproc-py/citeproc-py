@@ -1,2 +1,2 @@
 
-from . import plain, html
+from . import plain, html, rst
