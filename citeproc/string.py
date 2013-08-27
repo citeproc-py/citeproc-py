@@ -1,6 +1,8 @@
+from __future__ import print_function, unicode_literals
 
+from .py2compat import text_type
 
-class String(str):
+class String(text_type):
     def __radd__(self, other):
         return MixedString([other]).__add__(self)
 
@@ -11,16 +13,16 @@ class String(str):
         return self.__add__(other)
 
     def replace(self, *args, **kwargs):
-        return self.__class__(super().replace(*args, **kwargs))
+        return self.__class__(super(String, self).replace(*args, **kwargs))
 
     def rstrip(self, *args, **kwargs):
-        return self.__class__(super().rstrip(*args, **kwargs))
+        return self.__class__(super(String, self).rstrip(*args, **kwargs))
 
     def lower(self):
-        return self.__class__(super().lower())
+        return self.__class__(super(String, self).lower())
 
     def upper(self):
-        return self.__class__(super().upper())
+        return self.__class__(super(String, self).upper())
 
     def soft_lower(self):
         return self.lower()
@@ -39,9 +41,10 @@ class String(str):
 class MixedString(list):
     def __add__(self, other):
         try:
-            return self.__class__(super().__add__(other))
+            return self.__class__(super(MixedString, self).__add__(other))
         except TypeError:
-            return self.__class__(super().__add__(__class__([other])))
+            return self.__class__(super(MixedString, self).__add__(
+                self.__class__([other])))
 
     def __radd__(self, other):
         return self.__class__([other]).__add__(self)
@@ -50,7 +53,7 @@ class MixedString(list):
         return self.__add__(other)
 
     def __str__(self):
-        return ''.join(map(str, self))
+        return ''.join(map(text_type, self))
 
     def __getitem__(self, index):
         return str(self)[index]
@@ -80,7 +83,7 @@ class MixedString(list):
         return all(string.isupper() for string in self)
 
     def split(self, *args, **kwargs):
-        return str(self).split(*args, **kwargs)
+        return text_type(self).split(*args, **kwargs)
 
     def rstrip(self, *args, **kwargs):
         rev_iter = reversed(self)
@@ -96,7 +99,7 @@ class MixedString(list):
 
 class NoCase(String):
     def __repr__(self):
-        return '{}({})'.format(self.__class__.__name__, str(self))
+        return '{}({})'.format(self.__class__.__name__, text_type(self))
 
     def soft_lower(self):
         return self

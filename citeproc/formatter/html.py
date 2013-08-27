@@ -1,12 +1,15 @@
+try:
+    from html import escape
+except ImportError:
+    from cgi import escape
 
-from html import escape
-
+from ..py2compat import text_type
 
 def preformat(text):
-    return escape(str(text))
+    return escape(text_type(text))
 
 
-class TagWrapper(str):
+class TagWrapper(text_type):
     tag = None
     attributes = None
 
@@ -21,7 +24,7 @@ class TagWrapper(str):
                                                       attrib=attrib,text=text)
 
     def __new__(cls, text):
-        return super().__new__(cls, cls._wrap(text))
+        return super(TagWrapper, cls).__new__(cls, cls._wrap(text))
 
 
 class Italic(TagWrapper):
@@ -57,7 +60,7 @@ class SmallCaps(TagWrapper):
     attributes = {'style': 'font-variant:small-caps;'}
 
 
-class Bibliography(str):
+class Bibliography(text_type):
     bib_prefix = '<div class="csl-bib-body">'
     bib_suffix = '</div>'
     item_prefix = '  <div class="csl-entry">'
@@ -66,7 +69,7 @@ class Bibliography(str):
     def __new__(cls, items):
         output = [cls.bib_prefix]
         for text in items:
-            text = cls.item_prefix + str(text) + cls.item_suffix
+            text = cls.item_prefix + text_type(text) + cls.item_suffix
             output.append(text)
         output.append(cls.bib_suffix)
-        return super().__new__(cls, '\n'.join(output))
+        return super(Bibliography, cls).__new__(cls, '\n'.join(output))

@@ -1,3 +1,6 @@
+from __future__ import print_function, unicode_literals
+
+from ...py2compat import string_types
 
 import unicodedata
 
@@ -6,7 +9,7 @@ import unicodedata
 
 class BibTeXEntry(dict):
     def __init__(self, document_type, attributes):
-        super().__init__(attributes)
+        super(BibTeXEntry, self).__init__(attributes)
         self.document_type = document_type
 
 
@@ -26,7 +29,7 @@ class BibTeXParser(dict):
 
     def __init__(self, file_or_filename):
         try:
-            self.file = open(file_or_filename, 'r')
+            self.file = open(file_or_filename, 'rt')
         except TypeError:
             self.file = file_or_filename
         self.variables = {}
@@ -47,7 +50,7 @@ class BibTeXParser(dict):
         self._parse_preamble(self._preamble)
         for key, entry in self.items():
             for attribute, value in entry.items():
-                if isinstance(value, str):
+                if isinstance(value, string_types):
                     entry[attribute] = self._expand_macros(value)
 
     def _parse_entry(self, file):
@@ -164,7 +167,7 @@ class BibTeXParser(dict):
     def _parse_integer(self, file, char):
         integer = ''
         restore_point = file.tell()
-        while char.isnumeric():
+        while char.isdigit():
             integer += char
             restore_point = file.tell()
             char = file.read(1)

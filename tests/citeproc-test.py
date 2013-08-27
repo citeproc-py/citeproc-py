@@ -1,4 +1,5 @@
-
+from __future__ import (print_function, unicode_literals, absolute_import,
+                        division)
 
 import glob
 import io
@@ -38,7 +39,7 @@ IGNORED_RESULS = {
 
 class ProcessorTest(object):
     def __init__(self, filename):
-        with open(filename, encoding='UTF-8') as f:
+        with open(filename, 'rt', encoding='UTF-8') as f:
             self.json_data = json.load(f)
 
         csl_io = io.BytesIO(utf_8_encode(self.json_data['csl'])[0])
@@ -152,7 +153,7 @@ def main():
     (options, args) = parser.parse_args()
 
     try:
-        destination = open(options.file, 'w', encoding='utf-8')
+        destination = open(options.file, 'wt', encoding='utf-8')
         sys.stderr = destination
     except TypeError:
         destination = sys.stdout
@@ -215,8 +216,12 @@ def main():
             failed.append(test_name)
 
     def print_result(name, passed, total):
-        print('{:<13} {:>3} / {:>3} ({:>4.0%})'
-              .format(name, passed, total, passed / total), file=destination)
+        if total == 0:
+            print('<no tests found>: check README.md file for instructions')
+        else:
+            print('{:<13} {:>3} / {:>3} ({:>4.0%})'.format(
+                name, passed, total, passed / total),
+                file=destination)
 
     print('Failed tests:')
     for test_name in failed:
