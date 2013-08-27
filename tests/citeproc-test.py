@@ -39,7 +39,7 @@ IGNORED_RESULS = {
 
 class ProcessorTest(object):
     def __init__(self, filename):
-        with open(filename, encoding='UTF-8') as f:
+        with open(filename, 'rt', encoding='UTF-8') as f:
             self.json_data = json.load(f)
 
         csl_io = io.BytesIO(utf_8_encode(self.json_data['csl'])[0])
@@ -153,7 +153,7 @@ def main():
     (options, args) = parser.parse_args()
 
     try:
-        destination = open(options.file, 'w', encoding='utf-8')
+        destination = open(options.file, 'wt', encoding='utf-8')
         sys.stderr = destination
     except TypeError:
         destination = sys.stdout
