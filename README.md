@@ -1,13 +1,16 @@
 citeproc-py
 ===========
 
-citeproc-py is a CSL processor written in Python. It aims to implement CSL 1.0,
-but already supports some CSL 1.0.1 features.
+citeproc-py is a [CSL][csl] processor for Python. It aims to implement the 
+[CSL 1.0.1 specification][csl_spec].
 
-It has been developed using Python 3 and currently doesn't run under Python 2.x.
-It shouldn't be too hard to get it to work in Python 2 though (3to2?). In
-addition, citeproc-py depends on [lxml](http://lxml.de/) for parsing and
-navigating the CSL styles and locale files.
+It has been developed using Python 3 but also runs on Python 2.x. citeproc-py
+depends on [lxml][lxml] for parsing and navigating the CSL style and locale
+files.
+
+[csl]: http://citationstyles.org/
+[csl_spec]: http://citationstyles.org/documentation/
+[lxml]: http://lxml.de/
 
 
 Getting Started
