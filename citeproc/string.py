@@ -2,6 +2,7 @@ from __future__ import print_function, unicode_literals
 
 from .py2compat import text_type
 
+
 class String(text_type):
     def __radd__(self, other):
         return MixedString([other]).__add__(self)
@@ -40,11 +41,11 @@ class String(text_type):
 
 class MixedString(list):
     def __add__(self, other):
+        super_obj = super(MixedString, self)
         try:
-            return self.__class__(super(MixedString, self).__add__(other))
+            return self.__class__(super_obj.__add__(other))
         except TypeError:
-            return self.__class__(super(MixedString, self).__add__(
-                self.__class__([other])))
+            return self.__class__(super_obj.__add__(MixedString([other])))
 
     def __radd__(self, other):
         return self.__class__([other]).__add__(self)
