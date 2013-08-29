@@ -240,7 +240,10 @@ def main():
             print_result(category, passed_count[category], total_count[category])
         out()
         print_result('total', sum(passed_count.values()), sum(total_count.values()))
-    destination.close()
+    try:
+        destination.close()
+    except AttributeError:
+        pass
 
 
 if __name__ == '__main__':
