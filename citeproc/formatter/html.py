@@ -1,15 +1,23 @@
+
+from __future__ import unicode_literals
+
+import sys
+
 try:
     from html import escape
 except ImportError:
     from cgi import escape
 
-from ..py2compat import text_type
+
+if sys.version_info[0] < 3:
+    str = unicode
+
 
 def preformat(text):
-    return escape(text_type(text))
+    return escape(str(text))
 
 
-class TagWrapper(text_type):
+class TagWrapper(str):
     tag = None
     attributes = None
 
@@ -60,7 +68,7 @@ class SmallCaps(TagWrapper):
     attributes = {'style': 'font-variant:small-caps;'}
 
 
-class Bibliography(text_type):
+class Bibliography(str):
     bib_prefix = '<div class="csl-bib-body">'
     bib_suffix = '</div>'
     item_prefix = '  <div class="csl-entry">'
@@ -69,7 +77,7 @@ class Bibliography(text_type):
     def __new__(cls, items):
         output = [cls.bib_prefix]
         for text in items:
-            text = cls.item_prefix + text_type(text) + cls.item_suffix
+            text = cls.item_prefix + str(text) + cls.item_suffix
             output.append(text)
         output.append(cls.bib_suffix)
         return super(Bibliography, cls).__new__(cls, '\n'.join(output))

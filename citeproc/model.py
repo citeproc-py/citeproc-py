@@ -1,6 +1,9 @@
 
+from __future__ import print_function, unicode_literals
+
 import re
 import unicodedata
+import sys
 
 from functools import reduce, cmp_to_key
 from operator import itemgetter
@@ -10,6 +13,10 @@ from lxml import etree
 from . import NAMES, DATES, NUMBERS
 from .source import VariableError, DateRange, LiteralDate
 from .string import String
+
+
+if sys.version_info[0] < 3:
+    str = unicode
 
 
 # Base class

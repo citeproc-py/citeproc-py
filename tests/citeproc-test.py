@@ -16,7 +16,10 @@ from optparse import OptionParser
 from citeproc import CitationStylesStyle, CitationStylesBibliography
 from citeproc.source import Citation, CitationItem, Locator
 from citeproc.source.json import CiteProcJSON
-from citeproc.py2compat import text_type
+
+
+if sys.version_info[0] < 3:
+    str = unicode
 
 
 TESTS_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__),
@@ -158,7 +161,7 @@ def main():
         destination = open(options.file, 'wt', encoding='utf-8')
         class UnicodeWriter(object):
             def write(self, s):
-                destination.write(text_type(s))
+                destination.write(str(s))
         sys.stderr = UnicodeWriter()
     except TypeError:
         destination = sys.stdout

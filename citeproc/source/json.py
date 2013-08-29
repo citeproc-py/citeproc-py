@@ -1,5 +1,7 @@
 
+from __future__ import unicode_literals
 
+import sys
 import unicodedata
 
 from . import BibliographySource, Reference
@@ -7,6 +9,9 @@ from . import Pages, Name, Date, DateRange, LiteralDate
 from ..string import String, MixedString, NoCase
 from .. import NAMES, DATES, NUMBERS
 
+
+if sys.version_info[0] < 3:
+    str = unicode
 
 
 class CiteProcJSON(BibliographySource):
