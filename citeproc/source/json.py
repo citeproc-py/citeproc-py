@@ -18,21 +18,22 @@ class CiteProcJSON(BibliographySource):
                 if python_key == 'id':
                     ref_key = str(value).lower()
                     continue
-                if python_key == 'type':
+                elif python_key == 'type':
                     ref_type = value
                     continue
                 elif python_key == 'key':
                     # conflicts with the ref_key, so ignore
                     continue
-                elif python_key == 'page':
+                if python_key == 'shortTitle':
+                    python_key = 'title_short'
+
+                if python_key == 'page':
                     value = self.parse_page(value)
                 elif python_key in NAMES:
                     value = self.parse_names(value)
                 elif python_key in DATES:
                     value = self.parse_date(value)
-                elif python_key == 'shortTitle':
-                    python_key = 'title_short'
-                else:
+                elif key not in ('language', ):
                     value = self.parse_string(value)
 
                 ref_data[python_key] = value
