@@ -10,11 +10,13 @@ import traceback
 
 from codecs import utf_8_encode
 from functools import reduce
+from io import open
 from optparse import OptionParser
 
 from citeproc import CitationStylesStyle, CitationStylesBibliography
 from citeproc.source import Citation, CitationItem, Locator
 from citeproc.source.json import CiteProcJSON
+from citeproc.py2compat import text_type
 
 
 TESTS_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__),
@@ -22,7 +24,7 @@ TESTS_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__),
                                           'citeproc-test', 'processor-tests',
                                           'machines'))
 
-# The results of the following tests are ignored, since they don't CSL
+# The results of the following tests are ignored, since they don't test CSL
 # features, but citeproc-js specific features
 
 IGNORED_RESULS = {
@@ -154,9 +156,17 @@ def main():
 
     try:
         destination = open(options.file, 'wt', encoding='utf-8')
-        sys.stderr = destination
+        class UnicodeWriter(object):
+            def write(self, s):
+                destination.write(text_type(s))
+        sys.stderr = UnicodeWriter()
     except TypeError:
         destination = sys.stdout
+    def out(*args):
+        if not args:
+            destination.write('\n')
+        else:
+            print(*args, file=destination)
 
     try:
         glob_pattern = args[0]
@@ -179,7 +189,6 @@ def main():
         if count == max_tests:
             break
 
-
         try:
             if test_name not in IGNORED_RESULS:
                 total_count[category] = total_count.get(category, 0) + 1
@@ -188,50 +197,51 @@ def main():
             if filter_tests and (t.json_data['mode'] == 'bibliography-header' or
                                  t.json_data['bibsection']):
                 continue
-            print('>>> Testing {}'.format(os.path.basename(filename)),
-                  file=destination)
-            print('EXP: ' + '\n     '.join(t.expected), file=destination)
+            out('>>> Testing {}'.format(os.path.basename(filename)))
+            out('EXP: ' + '\n     '.join(t.expected))
 
             results = t.execute()
             results = reduce(lambda x, y: x+y,
                              [item.split('\n') for item in results])
             results = [item.replace('&amp;', '&#38;')
                        for item in results]
-            print('RES: ' + '\n     '.join(results), file=destination)
+            out('RES: ' + '\n     '.join(results))
             if results == t.expected:
                 if test_name not in IGNORED_RESULS:
                     passed_count[category] += 1
-                print('<<< SUCCESS\n', file=destination)
+                out('<<< SUCCESS\n')
                 continue
             else:
-                print('<<< FAILED\n', file=destination)
+                out('<<< FAILED\n')
             del t
         except Exception as e:
-            print('Exception in', os.path.basename(filename), file=destination)
+            out('Exception in', os.path.basename(filename))
             if options.catch_exceptions:
-                traceback.print_exc(file=destination)
+                traceback.print_exc()
             else:
                 raise
         if test_name not in IGNORED_RESULS:
             failed.append(test_name)
 
-    def print_result(name, passed, total):
-        if total == 0:
-            print('<no tests found>: check README.md file for instructions')
-        else:
-            print('{:<13} {:>3} / {:>3} ({:>4.0%})'.format(
-                name, passed, total, passed / total),
-                file=destination)
+    if sum(total_count.values()) == 0:
+        print('<no tests found>: check README.md file for instructions')
+    else:
+        def print_result(name, passed, total):
+            out(' {:<13} {:>3} / {:>3} ({:>4.0%})'.format(name, passed, total,
+                                                          passed / total))
 
-    print('Failed tests:')
-    for test_name in failed:
-        print(' ' + test_name)
+        out('Failed tests:')
+        for test_name in failed:
+            out(' ' + test_name)
 
-    print()
-    for category in sorted(total_count.keys()):
-        print_result(category, passed_count[category], total_count[category])
-    print()
-    print_result('total', sum(passed_count.values()), sum(total_count.values()))
+        out()
+        out('Summary:')
+        for category in sorted(total_count.keys()):
+            print_result(category, passed_count[category], total_count[category])
+        out()
+        print_result('total', sum(passed_count.values()), sum(total_count.values()))
+    destination.close()
+
 
 if __name__ == '__main__':
     main()
