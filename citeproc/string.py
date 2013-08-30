@@ -1,12 +1,32 @@
 from __future__ import print_function, unicode_literals
 
-from .py2compat import text_type
+import sys
+
+if sys.version_info[0] < 3:
+    str = unicode
 
 
-class String(text_type):
+from functools import wraps
+
+
+def discard_empty_other(method):
+    """Decorator for addition operator methods that returns the object itself if
+    `other` is the empty string."""
+    @wraps(method)
+    def wrapper(obj, other):
+        if other == '':
+            return obj
+        else:
+            return method(obj, other)
+    return wrapper
+
+
+class String(str):
+    @discard_empty_other
     def __radd__(self, other):
         return MixedString([other]).__add__(self)
 
+    @discard_empty_other
     def __add__(self, other):
         return MixedString([self]).__add__(other)
 
@@ -40,6 +60,7 @@ class String(text_type):
 
 
 class MixedString(list):
+    @discard_empty_other
     def __add__(self, other):
         super_obj = super(MixedString, self)
         try:
@@ -47,6 +68,7 @@ class MixedString(list):
         except TypeError:
             return self.__class__(super_obj.__add__(MixedString([other])))
 
+    @discard_empty_other
     def __radd__(self, other):
         return self.__class__([other]).__add__(self)
 
@@ -54,7 +76,7 @@ class MixedString(list):
         return self.__add__(other)
 
     def __str__(self):
-        return ''.join(map(text_type, self))
+        return ''.join(map(str, self))
 
     def __getitem__(self, index):
         return str(self)[index]
@@ -84,7 +106,7 @@ class MixedString(list):
         return all(string.isupper() for string in self)
 
     def split(self, *args, **kwargs):
-        return text_type(self).split(*args, **kwargs)
+        return str(self).split(*args, **kwargs)
 
     def rstrip(self, *args, **kwargs):
         rev_iter = reversed(self)
@@ -98,9 +120,14 @@ class MixedString(list):
                 yield word
 
 
+if sys.version_info[0] < 3:
+    MixedString.__unicode__ = MixedString.__str__
+    MixedString.__str__ = lambda self: self.__unicode__().encode('utf-8')
+
+
 class NoCase(String):
     def __repr__(self):
-        return '{}({})'.format(self.__class__.__name__, text_type(self))
+        return '{}({})'.format(self.__class__.__name__, str(self))
 
     def soft_lower(self):
         return self

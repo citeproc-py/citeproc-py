@@ -1,19 +1,30 @@
-from ..py2compat import text_type
+from __future__ import print_function, unicode_literals
+
+import sys
+
+if sys.version_info[0] < 3:
+    str = unicode
+
 
 def preformat(text):
     return text
 
 
-Italic = text_type
-Oblique = text_type
-Bold = text_type
-Light = text_type
-Underline = text_type
-Superscript = text_type
-Subscript = text_type
-SmallCaps = text_type
+Italic = str
+Oblique = str
+Bold = str
+Light = str
+Underline = str
+Superscript = str
+Subscript = str
+SmallCaps = str
 
-class Bibliography(text_type):
+
+class Bibliography(str):
     def __new__(cls, items):
-        items = map(text_type, items)
+        items = map(str, items)
         return super(Bibliography, cls).__new__(cls, '\n'.join(items))
+
+
+if sys.version_info[0] < 3:
+    Bibliography.__str__ = lambda self: self.encode('utf-8')
