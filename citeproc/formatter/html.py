@@ -10,7 +10,7 @@ except ImportError:
 
 
 def preformat(text):
-    return escape(str(text))
+    return escape(str(text), quote=False)
 
 
 class TagWrapper(str):
