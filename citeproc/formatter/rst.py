@@ -1,9 +1,7 @@
-from __future__ import print_function, unicode_literals
 
-import sys
-
-if sys.version_info[0] < 3:
-    str = unicode
+from __future__ import (absolute_import, division, print_function,
+                        unicode_literals)
+from citeproc.py2compat import *
 
 
 def escape(text):
