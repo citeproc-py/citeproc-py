@@ -1,5 +1,8 @@
 #!/usr/bin/env python
-from __future__ import print_function, unicode_literals
+from __future__ import (absolute_import, division, print_function,
+                        unicode_literals)
+from citeproc.py2compat import *
+
 import os
 import sys
 import warnings
@@ -36,19 +39,21 @@ environment variable with something like (bash shell)::
     if len(args) != 1:
         parser.print_usage()
         sys.exit(1)
-    if options.format == 'rst':
-        format = formatter.rst
-    elif options.format == 'plain':
-        format = formatter.plain
-    elif options.format == 'html':
-        format = formatter.html
-    else:
-        print('style should be one of "rst", "plain", "html"')
+
+    output_format = options.format
+    try:
+        output_format = getattr(formatter, options.format)
+    except AttributeError:
+        available_formatters = (attr for attr in dir(formatter)
+                                if not attr.startswith('__'))
+        print('style should be one of: ' + ', '.join(available_formatters))
         sys.exit(1)
+
     # Get styles path out of the environment variable
     env_path = os.environ.get('CSL_STYLES_PATH')
-    if not env_path is None:
+    if env_path is not None:
         frontend.STYLES_PATH = env_path
+
     # Silence lots of warnings
     warnings.simplefilter('ignore')
     # Read bibliography
@@ -59,7 +64,8 @@ environment variable with something like (bash shell)::
     # * CitationStylesStyle,
     # * BibliographySource (BibTeX in this case), and
     # * a formatter (plain, html, or rst)
-    bibliography = CitationStylesBibliography(bib_style, bib_source, format)
+    bibliography = CitationStylesBibliography(bib_style, bib_source,
+                                              output_format)
     # Processing citations in a document need to be done in two passes as for some
     # CSL styles, a citation can depend on the order of citations in the
     # bibliography and thus on citations following the current one.
