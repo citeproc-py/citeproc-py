@@ -1,4 +1,8 @@
 
+from __future__ import (absolute_import, division, print_function,
+                        unicode_literals)
+from citeproc.py2compat import *
+
 # We'll use json.loads for parsing the JSON data.
 import json
 

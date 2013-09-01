@@ -1,16 +1,12 @@
 
-from __future__ import unicode_literals
-
-import sys
+from __future__ import (absolute_import, division, print_function,
+                        unicode_literals)
+from citeproc.py2compat import *
 
 try:
     from html import escape
 except ImportError:
     from cgi import escape
-
-
-if sys.version_info[0] < 3:
-    str = unicode
 
 
 def preformat(text):

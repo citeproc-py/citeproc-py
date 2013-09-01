@@ -1,5 +1,8 @@
-from __future__ import (print_function, unicode_literals, absolute_import,
-                        division)
+
+from __future__ import (absolute_import, division, print_function,
+                        unicode_literals)
+from citeproc.py2compat import *
+
 
 import glob
 import io
@@ -10,7 +13,6 @@ import traceback
 
 from codecs import utf_8_encode
 from functools import reduce
-from io import open
 from optparse import OptionParser
 
 from citeproc import CitationStylesStyle, CitationStylesBibliography

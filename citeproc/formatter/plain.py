@@ -1,9 +1,7 @@
-from __future__ import print_function, unicode_literals
 
-import sys
-
-if sys.version_info[0] < 3:
-    str = unicode
+from __future__ import (absolute_import, division, print_function,
+                        unicode_literals)
+from citeproc.py2compat import *
 
 
 def preformat(text):
@@ -24,7 +22,3 @@ class Bibliography(str):
     def __new__(cls, items):
         items = map(str, items)
         return super(Bibliography, cls).__new__(cls, '\n'.join(items))
-
-
-if sys.version_info[0] < 3:
-    Bibliography.__str__ = lambda self: self.encode('utf-8')

@@ -1,5 +1,7 @@
 
-from __future__ import unicode_literals
+from __future__ import (absolute_import, division, print_function,
+                        unicode_literals)
+from citeproc.py2compat import *
 
 import sys
 import unicodedata
@@ -8,10 +10,6 @@ from . import BibliographySource, Reference
 from . import Pages, Name, Date, DateRange, LiteralDate
 from ..string import String, MixedString, NoCase
 from .. import NAMES, DATES, NUMBERS
-
-
-if sys.version_info[0] < 3:
-    str = unicode
 
 
 class CiteProcJSON(BibliographySource):

@@ -1,6 +1,8 @@
-from __future__ import print_function, unicode_literals
 
-from ...py2compat import string_types
+from __future__ import (absolute_import, division, print_function,
+                        unicode_literals)
+from citeproc.py2compat import *
+
 
 import unicodedata
 
@@ -29,7 +31,7 @@ class BibTeXParser(dict):
 
     def __init__(self, file_or_filename):
         try:
-            self.file = open(file_or_filename, 'rt')
+            self.file = open(file_or_filename, 'rt', encoding='ascii')
         except TypeError:
             self.file = file_or_filename
         self.variables = {}
@@ -50,7 +52,7 @@ class BibTeXParser(dict):
         self._parse_preamble(self._preamble)
         for key, entry in self.items():
             for attribute, value in entry.items():
-                if isinstance(value, string_types):
+                if isinstance(value, str):
                     entry[attribute] = self._expand_macros(value)
 
     def _parse_entry(self, file):
@@ -192,7 +194,6 @@ class BibTeXParser(dict):
         self.macros = {}
         state = None
         for char in preamble:
-            print(char, end='')
             if state == 'MACRO':
                 if char == '{':
                     state = 'MACRO-BODY'
@@ -273,7 +274,6 @@ class BibTeXParser(dict):
                 else:
                     accented += char
             elif state == 'ACCENT-END':
-                print(unicodedata.normalize('NFC', accented + accent))
                 output += unicodedata.normalize('NFC', accented + accent)
                 state = None
             elif state == 'MACRO-NAME':

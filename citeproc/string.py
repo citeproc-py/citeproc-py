@@ -1,10 +1,7 @@
-from __future__ import print_function, unicode_literals
 
-import sys
-
-if sys.version_info[0] < 3:
-    str = unicode
-
+from __future__ import (absolute_import, division, print_function,
+                        unicode_literals)
+from citeproc.py2compat import *
 
 from functools import wraps
 
@@ -120,9 +117,9 @@ class MixedString(list):
                 yield word
 
 
-if sys.version_info[0] < 3:
+if PY2:
     MixedString.__unicode__ = MixedString.__str__
-    MixedString.__str__ = lambda self: self.__unicode__().encode('utf-8')
+    del MixedString.__str__
 
 
 class NoCase(String):

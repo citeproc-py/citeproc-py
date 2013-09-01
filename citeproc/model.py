@@ -1,5 +1,7 @@
 
-from __future__ import print_function, unicode_literals
+from __future__ import (absolute_import, division, print_function,
+                        unicode_literals)
+from citeproc.py2compat import *
 
 import re
 import unicodedata
@@ -13,10 +15,6 @@ from lxml import etree
 from . import NAMES, DATES, NUMBERS
 from .source import VariableError, DateRange, LiteralDate
 from .string import String
-
-
-if sys.version_info[0] < 3:
-    str = unicode
 
 
 # Base class

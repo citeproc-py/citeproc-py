@@ -4,7 +4,7 @@ citeproc-py
 citeproc-py is a [CSL][csl] processor for Python. It aims to implement the 
 [CSL 1.0.1 specification][csl_spec].
 
-It has been developed using Python 3 but also runs on Python 2.x. citeproc-py
+citeproc-py has been developed for Python 3 but also runs on Python 2.6+. It
 depends on [lxml][lxml] for parsing and navigating the CSL style and locale
 files.
 
