@@ -3,7 +3,13 @@ citeproc-py
 ===========
 
 citeproc-py is a `CSL`_ processor for Python. It aims to implement the
-`CSL 1.0.1 specification`_.
+`CSL 1.0.1 specification`_. citeproc-py can output styled citations and
+bibliographies in a number of different output formats. Currently
+supported are plain text, reStructuredText and HTML. Other formats can
+be added easily.
+
+.. _CSL: http://citationstyles.org/
+.. _CSL 1.0.1 specification: http://citationstyles.org/documentation/
 
 
 Requirements
@@ -13,8 +19,6 @@ citeproc-py has been developed for Python 3 but also runs on Python
 2.6+. It depends on `lxml`_ for parsing and navigating the CSL style and
 locale files.
 
-.. _CSL: http://citationstyles.org/
-.. _CSL 1.0.1 specification: http://citationstyles.org/documentation/
 .. _lxml: http://lxml.de/
 
 
@@ -63,7 +67,5 @@ citeproc-py directory. Then run the ``processor.py`` script to generate
 the test fixtures (using Python 2.x). After that, you can run
 ``citeproc-test.py`` (in the ``tests`` directory). Run
 ``citeproc-test.py --help`` to see its usage information.
-
-  Brecht Machiels
 
 .. _citeproc-test suite: https://bitbucket.org/bdarcus/citeproc-test
