@@ -8,8 +8,13 @@ bibliographies in a number of different output formats. Currently
 supported are plain text, reStructuredText and HTML. Other formats can
 be added easily.
 
+citeproc-py uses `semantic versioning`_. Currently, its major version
+number is still at 0, meaning the API is not yet stable. However, you
+should not expect to see any major API changes soon.
+
 .. _CSL: http://citationstyles.org/
 .. _CSL 1.0.1 specification: http://citationstyles.org/documentation/
+.. _semantic versioning: http://semver.org/
 
 
 Requirements
