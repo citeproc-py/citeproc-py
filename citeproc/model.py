@@ -1,4 +1,3 @@
-
 from __future__ import (absolute_import, division, print_function,
                         unicode_literals)
 from citeproc.py2compat import *
@@ -620,8 +619,8 @@ class Layout(CitationStylesElement, Parent, Formatted, Affixed, Delimited):
             except VariableError:
                 pass
         for item in bad_cites:
-            callback(item)
-            out.append('{}?'.format(item.key))
+            callback_value = callback(item)
+            out.append(callback_value or '{}?'.format(item.key))
         return self.format(self.wrap(self.join(out)))
 
     def sort_bibliography(self, citation_items):
