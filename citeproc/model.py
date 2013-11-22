@@ -131,7 +131,7 @@ class Style(CitationStylesElement):
                         'pt-BR': 'pt-PT',
                         'zh-TW': 'zh-CN'}
 
-    def set_locale_list(self, output_locale):
+    def set_locale_list(self, output_locale, validate=True):
         """Set up list of locales in which to search for localizable units"""
         from .frontend import CitationStylesLocale
 
@@ -159,18 +159,21 @@ class Style(CitationStylesElement):
             pass
         # 4) (locale files) chosen dialect
         try:
-            self.locales.append(CitationStylesLocale(output_locale).root)
+            self.locales.append(CitationStylesLocale(output_locale,
+                                                     validate=validate).root)
         except ValueError:
             pass
         # 5) (locale files) fall back to primary language dialect
         try:
             fallback_locale = self._locale_fallback[output_locale]
-            self.locales.append(CitationStylesLocale(fallback_locale).root)
+            self.locales.append(CitationStylesLocale(fallback_locale,
+                                                     validate=validate).root)
         except KeyError:
             pass
         # 6) (locale files) default locale (en-US)
         if output_locale != 'en-US':
-            self.locales.append(CitationStylesLocale('en-US').root)
+            self.locales.append(CitationStylesLocale('en-US',
+                                                     validate=validate).root)
         for locale in self.locales:
             locale.style = self
 
