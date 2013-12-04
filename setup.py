@@ -1,4 +1,4 @@
-#!/bin/env python
+#!/usr/bin/env python
 
 """
 Setup script for citeproc-py
@@ -63,7 +63,7 @@ setup(
 
     author='Brecht Machiels',
     author_email='brecht@mos6581.org',
-    description='Citations and bibliograpy formatter',
+    description='Citations and bibliography formatter',
     long_description=README,
     url='https://github.com/brechtm/citeproc-py',
     keywords='csl citation html rst bibtex xml',
