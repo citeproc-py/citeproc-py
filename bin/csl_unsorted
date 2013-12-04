@@ -77,7 +77,7 @@ environment variable with something like (bash shell)::
     # In the second pass, CitationStylesBibliography can generate citations.
     # CitationStylesBibliography.cite() requires a callback function to be passed
     # along to be called in case a CitationItem's key is not present in the
-    # bilbiography.
+    # bibliography.
     print(bibliography.bibliography())
 
 
