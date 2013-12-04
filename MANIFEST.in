@@ -1,2 +1,3 @@
 include LICENSE README.rst
 recursive-include docs *.html *.css *.png
+recursive-include examples *.py *.csl *.bib
