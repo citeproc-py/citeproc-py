@@ -21,7 +21,7 @@ bib_source = BibTeX('xampl.bib')
 
 # load a CSL style (from the current directory)
 
-bib_style = CitationStylesStyle('harvard1.csl')
+bib_style = CitationStylesStyle('harvard1')
 
 
 # Create the citeproc-py bibliography, passing it the:
