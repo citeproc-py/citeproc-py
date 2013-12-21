@@ -66,8 +66,8 @@ environment variable with something like (bash shell)::
     # * a formatter (plain, html, or rst)
     bibliography = CitationStylesBibliography(bib_style, bib_source,
                                               output_format)
-    # Processing citations in a document need to be done in two passes as for some
-    # CSL styles, a citation can depend on the order of citations in the
+    # Processing citations in a document need to be done in two passes as for
+    # some CSL styles, a citation can depend on the order of citations in the
     # bibliography and thus on citations following the current one.
     # For this reason, we first need to register all citations with the
     # CitationStylesBibliography.
@@ -75,10 +75,11 @@ environment variable with something like (bash shell)::
     for name in sorted(bib_source):
         bibliography.register(Citation([CitationItem(name)]))
     # In the second pass, CitationStylesBibliography can generate citations.
-    # CitationStylesBibliography.cite() requires a callback function to be passed
-    # along to be called in case a CitationItem's key is not present in the
-    # bibliography.
-    print(bibliography.bibliography())
+    # CitationStylesBibliography.cite() requires a callback function to be
+    # passed along to be called in case a CitationItem's key is not present in
+    # the bibliography.
+    for item in bibliography.bibliography():
+        print(str(item))
 
 
 if __name__ == '__main__':

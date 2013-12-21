@@ -45,6 +45,11 @@ IGNORED_RESULS = {
 
 
 class ProcessorTest(object):
+    bib_prefix = '<div class="csl-bib-body">'
+    bib_suffix = '</div>'
+    item_prefix = '  <div class="csl-entry">'
+    item_suffix = '</div>'
+
     def __init__(self, filename):
         with open(filename, 'rt', encoding='UTF-8') as f:
             self.json_data = json.load(f)
@@ -110,7 +115,11 @@ class ProcessorTest(object):
                 for citation in citations:
                     results.append(self.bibliography.cite(citation, do_nothing))
         elif self.json_data['mode'] in ('bibliography', 'bibliography-nosort'):
-            results.append(self.bibliography.bibliography())
+            results.append(self.bib_prefix)
+            for entry in self.bibliography.bibliography():
+                text = self.item_prefix + str(entry) + self.item_suffix
+                results.append(text)
+            results.append(self.bib_suffix)
 
         return results
 

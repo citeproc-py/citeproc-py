@@ -72,4 +72,5 @@ print('')
 print('Bibliography')
 print('------------')
 
-print(bibliography.bibliography())
+for item in bibliography.bibliography():
+    print(str(item))

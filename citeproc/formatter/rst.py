@@ -50,9 +50,3 @@ class Subscript(RoleWrapper):
 
 
 SmallCaps = str
-
-
-class Bibliography(str):
-    def __new__(cls, items):
-        items = map(str, items)
-        return super(Bibliography, cls).__new__(cls, '\n'.join(items))

@@ -639,7 +639,7 @@ class Layout(CitationStylesElement, Parent, Formatted, Affixed, Delimited):
             text = self.format(self.wrap(self.render_children(item)))
             if text is not None:
                 output_items.append(text)
-        return self.get_formatter().Bibliography(output_items)
+        return output_items
 
 
 class Text(CitationStylesElement, Formatted, Affixed, Quoted, TextCased,

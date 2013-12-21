@@ -62,18 +62,3 @@ class Subscript(TagWrapper):
 class SmallCaps(TagWrapper):
     tag = 'span'
     attributes = {'style': 'font-variant:small-caps;'}
-
-
-class Bibliography(str):
-    bib_prefix = '<div class="csl-bib-body">'
-    bib_suffix = '</div>'
-    item_prefix = '  <div class="csl-entry">'
-    item_suffix = '</div>'
-
-    def __new__(cls, items):
-        output = [cls.bib_prefix]
-        for text in items:
-            text = cls.item_prefix + str(text) + cls.item_suffix
-            output.append(text)
-        output.append(cls.bib_suffix)
-        return super(Bibliography, cls).__new__(cls, '\n'.join(output))
