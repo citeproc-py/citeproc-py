@@ -8,9 +8,8 @@ import os
 import sys
 
 from datetime import datetime
-from distutils.core import setup
-from pkgutil import walk_packages
 from subprocess import Popen, PIPE
+from setuptools import setup, find_packages
 
 
 PACKAGE = 'citeproc'
@@ -42,18 +41,10 @@ with open('README.rst') as file:
     README = file.read()
 
 
-def find_packages(path, prefix):
-    yield prefix
-    prefix = prefix + "."
-    for _, name, ispkg in walk_packages(path, prefix):
-        if ispkg:
-            yield name
-
-
 setup(
     name='citeproc-py',
     version=__version__,
-    packages=list(find_packages([PACKAGE_ABSPATH], PACKAGE)),
+    packages=find_packages(),
     package_data={PACKAGE: ['data/locales/*.xml',
                             'data/schema/*.rng']},
     scripts=['bin/csl_unsorted'],
