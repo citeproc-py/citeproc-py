@@ -48,7 +48,7 @@ setup(
     package_data={PACKAGE: ['data/locales/*.xml',
                             'data/schema/*.rng']},
     scripts=['bin/csl_unsorted'],
-    requires=['lxml'],
+    install_requires=['lxml'],
     provides=[PACKAGE],
     #test_suite='nose.collector',
 
