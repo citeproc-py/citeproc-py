@@ -34,7 +34,7 @@ class Oblique(Italic):
 
 
 class Bold(RoleWrapper):
-    role ='strong'
+    role = 'strong'
 
 
 Light = str
@@ -42,11 +42,11 @@ Underline = str
 
 
 class Superscript(RoleWrapper):
-    role ='superscript'
+    role = 'superscript'
 
 
 class Subscript(RoleWrapper):
-    role ='subscript'
+    role = 'subscript'
 
 
 SmallCaps = str

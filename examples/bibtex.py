@@ -33,7 +33,7 @@ bibliography = CitationStylesBibliography(bib_style, bib_source,
                                           formatter.plain)
 
 
-# Processing citations in a document need to be done in two passes as for some
+# Processing citations in a document needs to be done in two passes as for some
 # CSL styles, a citation can depend on the order of citations in the
 # bibliography and thus on citations following the current one.
 # For this reason, we first need to register all citations with the
@@ -51,7 +51,7 @@ bibliography.register(citation3)
 # In the second pass, CitationStylesBibliography can generate citations.
 # CitationStylesBibliography.cite() requires a callback function to be passed
 # along to be called in case a CitationItem's key is not present in the
-# bilbiography.
+# bibliography.
 
 def warn(citation_item):
     print("WARNING: Reference with key '{}' not found in the bibliography."
