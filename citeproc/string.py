@@ -6,6 +6,39 @@ from citeproc.py2compat import *
 from functools import wraps
 
 
+def soft_lower(string):
+    try:
+        return string.soft_lower()
+    except AttributeError:
+        assert type(string) == str
+        return string.lower()
+
+
+def soft_upper(string):
+    try:
+        return string.soft_upper()
+    except AttributeError:
+        assert type(string) == str
+        return string.upper()
+
+
+def capitalize_first(string):
+    try:
+        return string.capitalize_first()
+    except AttributeError:
+        assert type(string) == str
+        return string[0].upper() + string[1:]
+
+
+def words(string):
+    try:
+        return string.words()
+    except AttributeError:
+        assert type(string) == str
+        for word in string.split():
+            yield word
+
+
 def discard_empty_other(method):
     """Decorator for addition operator methods that returns the object itself if
     `other` is the empty string."""
@@ -18,7 +51,13 @@ def discard_empty_other(method):
     return wrapper
 
 
-class String(str):
+class StringBase(object):
+    def __repr__(self):
+        base_repr = super(StringBase, self).__repr__()
+        return '{}({})'.format(self.__class__.__name__, base_repr)
+
+
+class String(StringBase, str):
     @discard_empty_other
     def __radd__(self, other):
         return MixedString([other]).__add__(self)
@@ -56,7 +95,7 @@ class String(str):
             yield self.__class__(word)
 
 
-class MixedString(list):
+class MixedString(StringBase, list):
     @discard_empty_other
     def __add__(self, other):
         super_obj = super(MixedString, self)

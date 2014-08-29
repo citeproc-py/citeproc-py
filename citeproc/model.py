@@ -13,7 +13,7 @@ from lxml import etree
 
 from . import NAMES, DATES, NUMBERS
 from .source import VariableError, DateRange, LiteralDate
-from .string import String
+from .string import capitalize_first
 
 
 # Base class
@@ -333,9 +333,9 @@ class Delimited(object):
         delimiter = self.get('delimiter', default_delimiter)
         try:
             text = reduce(lambda a, b: a + delimiter + b,
-                          filter(lambda s: s is not None, strings))
-        except:
-            text = String('')
+                          (string for string in strings if string is not None))
+        except TypeError:
+            text = ''
         return text
 
 
@@ -378,7 +378,7 @@ class TextCased(object):
             elif text_case == 'uppercase':
                 text = text.upper()
             elif text_case == 'capitalize-first':
-                text = text.capitalize_first()
+                text = capitalize_first(text)
             elif text_case == 'capitalize-all':
                 output = []
                 for word in text.words():
@@ -419,7 +419,7 @@ class Term(CitationStylesElement):
         except AttributeError:
             text = self.text
         text = self.preformat(text or '')
-        return String(text)
+        return text
 
     @property
     def multiple(self):
@@ -428,7 +428,7 @@ class Term(CitationStylesElement):
         except AttributeError:
             text = self.text
         text = self.preformat(text or '')
-        return String(text)
+        return text
 
 
 # Sorting elements
@@ -569,7 +569,7 @@ class Parent(object):
             except VariableError:
                 pass
         if output:
-            return ''.join(output)
+            return reduce(lambda a, b: a + b, output)
         else:
             return None
 
@@ -591,7 +591,7 @@ class Parent(object):
 class Macro(CitationStylesElement, Parent):
     def process(self, item, context=None, sort_options=None):
         return self.process_children(item, context=context,
-                                    sort_options=sort_options)
+                                     sort_options=sort_options)
 
     def render(self, item, context=None, sort_options=None):
         return self.render_children(item, context=context,
@@ -599,6 +599,10 @@ class Macro(CitationStylesElement, Parent):
 
 
 class Layout(CitationStylesElement, Parent, Formatted, Affixed, Delimited):
+    def render_children(self, item):
+        self.repressed = {}
+        return super(Layout, self).render_children(item)
+
     def render_citation(self, citation, callback):
         # first sort citation items according to bibliography order
         bibliography = citation.bibliography
@@ -610,7 +614,6 @@ class Layout(CitationStylesElement, Parent, Formatted, Affixed, Delimited):
             good_cites = self.getparent().sort.sort(good_cites, self)
         out = []
         for item in good_cites:
-            self.repressed = {}
             prefix = item.get('prefix', '')
             suffix = item.get('suffix', '')
             try:
@@ -635,7 +638,6 @@ class Layout(CitationStylesElement, Parent, Formatted, Affixed, Delimited):
     def render_bibliography(self, citation_items):
         output_items = []
         for item in citation_items:
-            self.repressed = {}
             text = self.format(self.wrap(self.render_children(item)))
             if text is not None:
                 output_items.append(text)
@@ -673,7 +675,7 @@ class Text(CitationStylesElement, Formatted, Affixed, Quoted, TextCased,
         elif 'term' in self.attrib:
             text = self._term(item)
         elif 'value' in self.attrib:
-            text = String(self.preformat(self.get('value')))
+            text = self.preformat(self.get('value'))
 
         return text, language
 
@@ -792,23 +794,23 @@ class Date(CitationStylesElement, Parent, Formatted, Affixed, Delimited):
 
     def render_date_range(self, date_range, show_parts=None, context=None):
         same_show_parts = []
-        if date_range.end.is_nil():
+        if date_range.add_current_word.is_nil():
             same = None
             diff_begin = self.render_single_date(date_range.begin, show_parts,
                                                  context)
             diff_end = ''
         else:
-            if date_range.begin.year == date_range.end.year:
+            if date_range.begin.year == date_range.add_current_word.year:
                 show_parts.remove('year')
                 same_show_parts.append('year')
                 try:
                     if ('month' in show_parts and
-                        date_range.begin.month == date_range.end.month):
+                        date_range.begin.month == date_range.add_current_word.month):
                         show_parts.remove('month')
                         same_show_parts.append('month')
                         try:
                             if ('day' in show_parts and
-                                date_range.begin.day == date_range.end.day):
+                                date_range.begin.day == date_range.add_current_word.day):
                                 show_parts.remove('day')
                                 same_show_parts.append('day')
                         except AttributeError:
@@ -816,11 +818,11 @@ class Date(CitationStylesElement, Parent, Formatted, Affixed, Delimited):
                 except AttributeError:
                     show_parts.remove('month')
 
-            same = self.render_single_date(date_range.end, same_show_parts,
+            same = self.render_single_date(date_range.add_current_word, same_show_parts,
                                            context)
             diff_begin = self.render_single_date(date_range.begin, show_parts,
                                                  context)
-            diff_end = self.render_single_date(date_range.end, show_parts,
+            diff_end = self.render_single_date(date_range.add_current_word, show_parts,
                                                context)
 
         if not (diff_begin and diff_begin):

@@ -159,3 +159,6 @@ print('------------')
 
 for item in bibliography.bibliography():
     print(str(item))
+
+from pprint import pprint
+pprint(bibliography.bibliography())
