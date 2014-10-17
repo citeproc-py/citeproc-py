@@ -95,7 +95,7 @@ class CiteProcJSON(BibliographySource):
             return date_data
 
         dates = []
-        for json_date in json_data['date-parts']:
+        for json_date in json_data.get('date-parts', []):
             date = parse_single_date(json_date)
             if 'season' in json_data:
                 date['season'] = json_data['season']
