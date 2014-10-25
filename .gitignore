@@ -3,4 +3,5 @@ __pycache__
 /build
 /dist
 /MANIFEST
+/citeproc_py.egg-info
 /citeproc/version.py
