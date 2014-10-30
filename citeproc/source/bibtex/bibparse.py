@@ -341,7 +341,7 @@ ACCENTS = {'`': '\u0300',    # grave accent
            'c': '\u0327',    # cedilla
            'k': '\u0328',    # ogonek
            '=': '\u0304',    # macron accent (a bar over the letter)
-           'b': '\u0332',    # bar under the letter
+           'b': '\u0331',    # bar under the letter
            '.': '\u0307',    # dot over the letter
            'd': '\u0323',    # dot under the letter
            'r': '\u030A',    # ring over the letter
