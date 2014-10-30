@@ -315,8 +315,13 @@ class BibTeXParser(dict):
                 return unicodedata.normalize('NFC', arg + ACCENTS[name])
             elif name in SPECIAL:
                 return SPECIAL[name]
+            else:
+                num_args, command_body = self.macros[name]
+                args = [parse_argument(tokens) for _ in range(num_args)]
+                result = ''
+                for arg_index in command_body:
+                    result += args[arg_index - 1]
                 return result
-            raise NotImplementedError(name)
 
         output = ''
         tokens = peek(tokenize(string))
