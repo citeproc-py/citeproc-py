@@ -243,66 +243,96 @@ class BibTeXParser(dict):
                 macro_name = ''
 
     def _expand_macros(self, string):
-        output = ''
-        state = None
-        parsing_arguments = False
-        for char in string:
-            if state == 'OPEN-BRACE':
+        def tokenize(input_string):
+            for char in input_string:
                 if char == '\\':
-                    state = 'ESCAPE'
-                else:
-                    output += '{' + char
-                    state = None
-            elif state == 'ESCAPE':
-                no_alpha = filter(lambda key: not key.isalpha(), ACCENTS.keys())
-                if char in no_alpha:
-                    accented = ''
-                    accent = ACCENTS[char]
-                    state = 'ACCENT'
-                elif char.isalpha():
-                    macro_name = char
-                    state = 'MACRO-NAME'
-            elif state == 'ACCENT':
-                if char == '{':
-                    state = 'ACCENT-MULTI'
-                else:
-                    accented = char
-                    state = 'ACCENT-END'
-            elif state == 'ACCENT-MULTI':
-                if char == '}':
-                    state = 'ACCENT-END'
-                else:
-                    accented += char
-            elif state == 'ACCENT-END':
-                output += unicodedata.normalize('NFC', accented + accent)
-                state = None
-            elif state == 'MACRO-NAME':
-                if char == '{':
-                    arguments = []
-                    arg_count, arg_indices = self.macros[macro_name]
-                    argument = ''
-                    state = 'MACRO-ARG'
-                else:
-                    macro_name += char
-            elif state == 'MACRO-ARG':
-                if char == '}':
-                    arguments.append(argument)
-                    argument = ''
-                    if len(arguments) == arg_count:
-                        for index in arg_indices:
-                            output += arguments[index - 1]
-                        state = 'CLOSE-BRACE'
+                    yield 'START-MACRO', char
                 elif char == '{':
-                    argument = ''
+                    yield 'OPEN-SCOPE', char
+                elif char == '}':
+                    yield 'CLOSE-SCOPE', char
+                elif char in ' \n':
+                    yield 'WHITESPACE', char
                 else:
-                    argument += char
-            elif state == 'CLOSE-BRACE':
-                assert char == '}'
-                state = None
-            elif char == '{':
-                state = 'OPEN-BRACE'
-            else:
-                output += char
+                    yield 'CHAR', char
+
+        def peek(tokens):
+            current_token = next(tokens)
+            for next_token in tokens:
+                yield current_token, next_token
+                current_token = next_token
+            yield current_token, (None, None)
+
+        def default(tokens, top_level=False):
+            output = ''
+            for (token_type, value), next_token in tokens:
+                if token_type == 'STRING':
+                    output += value
+                elif token_type == 'OPEN-SCOPE':
+                    output +=  handle_scope(tokens, top_level)
+                elif token_type == 'WHITESPACE':
+                    output += value
+                elif token_type == 'START-MACRO':
+                    output += handle_macro(tokens)
+                else:
+                    assert token_type == 'CHAR'
+                    output += value
+            return output
+
+        def handle_scope(tokens, top_level):
+            # TODO: count scope levels, pass string to self._expand_macros
+            output = '<' if top_level else ''
+            for (token_type, value), next_token in tokens:
+                if token_type == 'OPEN-SCOPE':
+                    output += handle_scope(tokens)
+                elif token_type == 'CLOSE-SCOPE':
+                    output += '>' if top_level else ''
+                    break
+                elif token_type == 'START-MACRO':
+                    output += handle_macro(tokens)
+                else:
+                    output += value
+            return output
+
+        def parse_argument(tokens):
+            (token_type, value), next_token = next(tokens)
+            while token_type == 'WHITESPACE':
+                (token_type, value), next_token = next(tokens)
+            if token_type == 'CHAR':
+                return value
+            elif token_type == 'START-MACRO':
+                return handle_macro(tokens)
+            elif token_type == 'OPEN-SCOPE':
+                return handle_scope(tokens, False)
+
+        DOTTED_CHARS = {'ı': 'i'}
+
+        def handle_macro(tokens):
+            (token_type, name), (next_token_type, next_value) = next(tokens)
+            if token_type == 'WHITESPACE':
+                return ' '
+            assert token_type == 'CHAR'
+            if name.isalpha():
+                while next_token_type == 'CHAR' and next_value.isalpha():
+                    (token_type, value), (next_token_type, next_value) = next(tokens)
+                    name += value
+                while next_token_type == 'WHITESPACE':
+                    current_token, (next_token_type, next_value) = next(tokens)
+
+            if name in ACCENTS:
+                arg = parse_argument(tokens)
+                if arg in DOTTED_CHARS:
+                    arg = DOTTED_CHARS[arg]
+                return unicodedata.normalize('NFC', arg + ACCENTS[name])
+            elif name in SPECIAL:
+                result = SPECIAL[name]
+                # if token_type == 'CHAR':
+                #     result += value
+                return result
+            raise NotImplementedError(name)
+
+        tokens = peek(tokenize(string))
+        output = default(tokens, top_level=False)
         return output
 
     def _split_name(self, name):
@@ -340,15 +370,19 @@ SPECIAL = {'oe': '\u0153',   # small ligature oe
            'AA': '\u00C5',   # capital letter A with ring above
            'o': '\u00F8',    # small letter o with stroke
            'O': '\u00D8',    # capital letter O with stroke
+           'i': '\u0131',    # LATIN SMALL LETTER DOTLESS I
            'l': '\u0142',    # small letter l with stroke
            'L': '\u0141',    # capital letter l with stroke
            'ss': '\u00DF',   # small letter sharp s
 
+           '$': '$',
            'dag': '\u2020',       # dagger
            'ddag': '\u02021',     # double dagger
            'S': '\u00A7',         # section sign
            'copyright': '\u00A9', # copyright sign
-           'pounds': '\u00A3'}    # pound sign
+           'pounds': '\u00A3',    # pound sign
+           'TeX': 'TeX',          # TeX logo
+}
 
             # '#$%&_{}' # special symbols
 
