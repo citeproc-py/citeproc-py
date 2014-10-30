@@ -293,8 +293,6 @@ class BibTeXParser(dict):
                     break
             return dispatch(token, tokens) or token.value
 
-        DOTTED_CHARS = {'ı': 'i'}
-
         def handle_macro(tokens):
             token, next_token = next(tokens)
             if token.type == 'WHITESPACE':
@@ -308,14 +306,11 @@ class BibTeXParser(dict):
                 while next_token.type == 'WHITESPACE':
                     token, next_token = next(tokens)
 
-            if name in ACCENTS:
-                arg = parse_argument(tokens)
-                if arg in DOTTED_CHARS:
-                    arg = DOTTED_CHARS[arg]
-                return unicodedata.normalize('NFC', arg + ACCENTS[name])
-            elif name in SPECIAL:
-                return SPECIAL[name]
-            else:
+            try:
+                macro = MACROS[name]
+                args = [parse_argument(tokens) for _ in range(macro.num_args)]
+                return macro.expand(args)
+            except KeyError:
                 num_args, command_body = self.macros[name]
                 args = [parse_argument(tokens) for _ in range(num_args)]
                 result = ''
@@ -337,52 +332,82 @@ class BibTeXParser(dict):
         pass
 
 
-ACCENTS = {'`': '\u0300',    # grave accent
-           "'": '\u0301',    # acute accent
-           '^': '\u0302',    # circumflex
-           '"': '\u0308',    # umlaut, trema or dieresis
-           'H': '\u030B',    # long Hungarian umlaut (double acute)
-           '~': '\u0303',    # tilde
-           'c': '\u0327',    # cedilla
-           'k': '\u0328',    # ogonek
-           '=': '\u0304',    # macron accent (a bar over the letter)
-           'b': '\u0331',    # bar under the letter
-           '.': '\u0307',    # dot over the letter
-           'd': '\u0323',    # dot under the letter
-           'r': '\u030A',    # ring over the letter
-           'u': '\u0306',    # breve over the letter
-           'v': '\u030C',    # caron/hacek ("v") over the letter
-           't': '\u035C',    # "tie" (inverted u) over the two letters}
+class Macro(object):
+    def __init__(self, num_args, format_string):
+        self.num_args = num_args
+        self.format_string = format_string
 
-           '|': '\u030D',    # vertical line above ?
-           'h': '\u0309',    # hook above
-           'G': '\u030F',    # double grave
-           'U': '\u030E'}    # double vertical line above ?
+    def expand(self, arguments):
+        assert len(arguments) == self.num_args
+        return self.format_string.format(*arguments)
 
 
-SPECIAL = {'oe': '\u0153',   # small ligature oe
-           'OE': '\u0152',   # capital ligature OE
-           'ae': '\u00E6',   # small letter ae
-           'AE': '\u00C6',   # capital letter AE
-           'aa': '\u00E5',   # small letter a with ring above
-           'AA': '\u00C5',   # capital letter A with ring above
-           'o': '\u00F8',    # small letter o with stroke
-           'O': '\u00D8',    # capital letter O with stroke
-           'i': '\u0131',    # LATIN SMALL LETTER DOTLESS I
-           'l': '\u0142',    # small letter l with stroke
-           'L': '\u0141',    # capital letter l with stroke
-           'ss': '\u00DF',   # small letter sharp s
+class SymbolMacro(Macro):
+    def __init__(self, unicode_symbol_name):
+        unicode_symbol = unicodedata.lookup(unicode_symbol_name)
+        super().__init__(0, unicode_symbol)
 
-           '$': '$',
-           '"': '"',
-           '{': '{',
 
-           'dag': '\u2020',       # dagger
-           'ddag': '\u02021',     # double dagger
-           'S': '\u00A7',         # section sign
-           'copyright': '\u00A9', # copyright sign
-           'pounds': '\u00A3',    # pound sign
-           'TeX': 'TeX',          # TeX logo
+class AccentMacro(Macro):
+    def __init__(self, unicode_accent_name):
+        unicode_accent = unicodedata.lookup('COMBINING ' + unicode_accent_name)
+        super().__init__(1, '{0}' + unicode_accent)
+
+    DOTTED_CHARS = {'ı': 'i',
+                    'ȷ': 'j'}
+
+    def expand(self, arguments):
+        arguments = [self.DOTTED_CHARS.get(arg, arg) for arg in arguments]
+        return unicodedata.normalize('NFC', super().expand(arguments))
+
+
+MACROS = {# accents
+          '`': AccentMacro('GRAVE ACCENT'),
+          "'": AccentMacro('ACUTE ACCENT'),
+          '^': AccentMacro('CIRCUMFLEX ACCENT'),
+          '"': AccentMacro('DIAERESIS'),
+          'H': AccentMacro('DOUBLE ACUTE ACCENT'),
+          '~': AccentMacro('TILDE'),
+          'c': AccentMacro('CEDILLA'),
+          'k': AccentMacro('OGONEK'),
+          '=': AccentMacro('MACRON'),
+          'b': AccentMacro('MACRON BELOW'),
+          '.': AccentMacro('DOT ABOVE'),
+          'd': AccentMacro('DOT BELOW'),
+          'r': AccentMacro('RING ABOVE'),
+          'u': AccentMacro('BREVE'),
+          'v': AccentMacro('CARON'),
+          '|': AccentMacro('VERTICAL LINE ABOVE'),
+          'h': AccentMacro('HOOK ABOVE'),
+          'G': AccentMacro('DOUBLE GRAVE ACCENT'),
+          'U': AccentMacro('DOUBLE VERTICAL LINE ABOVE'),
+
+          # symbols
+          'o': SymbolMacro('LATIN SMALL LETTER O WITH STROKE'),
+          'O': SymbolMacro('LATIN CAPITAL LETTER O WITH STROKE'),
+          'i': SymbolMacro('LATIN SMALL LETTER DOTLESS I'),
+          'l': SymbolMacro('LATIN SMALL LETTER L WITH STROKE'),
+          'L': SymbolMacro('LATIN CAPITAL LETTER L WITH STROKE'),
+          'oe': SymbolMacro('LATIN SMALL LIGATURE OE'),
+          'OE': SymbolMacro('LATIN CAPITAL LIGATURE OE'),
+          'ae': SymbolMacro('LATIN SMALL LETTER AE'),
+          'AE': SymbolMacro('LATIN CAPITAL LETTER AE'),
+          'aa': SymbolMacro('LATIN SMALL LETTER A WITH RING ABOVE'),
+          'AA': SymbolMacro('LATIN CAPITAL LETTER A WITH RING ABOVE'),
+          'ss': SymbolMacro('LATIN SMALL LETTER SHARP S'),
+          'dag': SymbolMacro('DAGGER'),
+          'ddag': SymbolMacro('DOUBLE DAGGER'),
+          'S': SymbolMacro('SECTION SIGN'),
+          'copyright': SymbolMacro('COPYRIGHT SIGN'),
+          'pounds': SymbolMacro('POUND SIGN'),
+
+          'TeX': Macro(0, 'TeX'),
+          't': Macro(1, '{0}\u0361{1}'),
+
+          # escaped characters
+          '$': SymbolMacro('DOLLAR SIGN'),
+          '{': SymbolMacro('LEFT CURLY BRACKET'),
+          # '"': SymbolMacro('QUOTATION MARK'),
 }
 
             # '#$%&_{}' # special symbols
