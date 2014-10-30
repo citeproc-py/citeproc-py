@@ -6,6 +6,9 @@ from citeproc.py2compat import *
 
 import unicodedata
 
+from collections import namedtuple
+
+
 # http://maverick.inria.fr/~Xavier.Decoret/resources/xdkbibtex/bibtex_summary.html
 # http://www.lsv.ens-cachan.fr/~markey/bibla.php?lang=en
 
@@ -243,18 +246,22 @@ class BibTeXParser(dict):
                 macro_name = ''
 
     def _expand_macros(self, string):
+        Token = namedtuple('Token', ['type', 'value'])
+
         def tokenize(input_string):
             for char in input_string:
                 if char == '\\':
-                    yield 'START-MACRO', char
+                    yield Token('START-MACRO', char)
                 elif char == '{':
-                    yield 'OPEN-SCOPE', char
+                    yield Token('OPEN-SCOPE', char)
                 elif char == '}':
-                    yield 'CLOSE-SCOPE', char
+                    yield Token('CLOSE-SCOPE', char)
                 elif char in ' \n':
-                    yield 'WHITESPACE', char
+                    yield Token('WHITESPACE', char)
+                # elif char == '$':
+                #     yield Token('TOGGLE-MATH', char)
                 else:
-                    yield 'CHAR', char
+                    yield Token('CHAR', char)
 
         def peek(tokens):
             current_token = next(tokens)
@@ -264,21 +271,17 @@ class BibTeXParser(dict):
             yield current_token, (None, None)
 
         def dispatch(token, tokens, top_level=False):
-            token_type, value = token
-            if token_type == 'OPEN-SCOPE':
+            if token.type == 'OPEN-SCOPE':
                 return handle_scope(tokens, top_level)
-            elif token_type == 'WHITESPACE':
-                return value
-            elif token_type == 'START-MACRO':
+            elif token.type == 'START-MACRO':
                 return handle_macro(tokens)
 
         def handle_scope(tokens, top_level):
             output = ''
             for token, next_token in tokens:
-                token_type, value = token
-                if token_type == 'CLOSE-SCOPE':
+                if token.type == 'CLOSE-SCOPE':
                     break
-                result = dispatch(token, tokens) or value
+                result = dispatch(token, tokens) or token.value
                 output += result
             if top_level:
                 output = '<' + output + '>'
@@ -286,24 +289,24 @@ class BibTeXParser(dict):
 
         def parse_argument(tokens):
             for token, next_token in tokens:
-                token_type, value = token
-                if token_type != 'WHITESPACE':
+                if token.type != 'WHITESPACE':
                     break
-            return dispatch(token, tokens) or value
+            return dispatch(token, tokens) or token.value
 
         DOTTED_CHARS = {'ı': 'i'}
 
         def handle_macro(tokens):
-            (token_type, name), (next_token_type, next_value) = next(tokens)
-            if token_type == 'WHITESPACE':
+            token, next_token = next(tokens)
+            if token.type == 'WHITESPACE':
                 return ' '
-            assert token_type == 'CHAR'
+            assert token.type == 'CHAR'
+            name = token.value
             if name.isalpha():
-                while next_token_type == 'CHAR' and next_value.isalpha():
-                    (token_type, value), (next_token_type, next_value) = next(tokens)
-                    name += value
-                while next_token_type == 'WHITESPACE':
-                    current_token, (next_token_type, next_value) = next(tokens)
+                while next_token.type == 'CHAR' and next_token.value.isalpha():
+                    token, next_token = next(tokens)
+                    name += token.value
+                while next_token.type == 'WHITESPACE':
+                    token, next_token = next(tokens)
 
             if name in ACCENTS:
                 arg = parse_argument(tokens)
@@ -311,20 +314,17 @@ class BibTeXParser(dict):
                     arg = DOTTED_CHARS[arg]
                 return unicodedata.normalize('NFC', arg + ACCENTS[name])
             elif name in SPECIAL:
-                result = SPECIAL[name]
-                # if token_type == 'CHAR':
-                #     result += value
+                return SPECIAL[name]
                 return result
             raise NotImplementedError(name)
 
         output = ''
         tokens = peek(tokenize(string))
         for token, next_token in tokens:
-            token_type, value = token
             result = dispatch(token, tokens, top_level=False)
             if result is None:
-                assert token_type == 'CHAR'
-                result = value
+                assert token.type in ('CHAR', 'WHITESPACE')
+                result = token.value
             output += result
         return output
 
