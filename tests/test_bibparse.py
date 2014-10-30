@@ -58,13 +58,34 @@ class TestBibTeXParser(TestCase):
                     r"Your serial number is \AA  1102."),
               ('$22.50 plus $ 4.07 tax.', r"\$22.50 plus \$ 4.07 tax."),
               ('Crève Cœur, Missouri', r"Cr\`eve C\oe ur, Missouri"),
-              ('Pëtr, meet Françoise', r"P\"etr, meet Fran\c coise")]
+              ('Pëtr, meet Françoise', r"P\"etr, meet Fran\c coise"),
+
+              ('Pëtr Pëtr Pëtr', r'P\" etr P\"  etr ' 'P\\"\tetr'),
+              ]
 
     ACCENT_MACROS = [('très élevé', r"tr\`es \'elev\'e"),
                      ('übel Föhn', r'\"ubel F\"ohn'),
                      ('Andō Tokutarō', r"And\=o Tokutar\=o"),
                      ('García Lorca', r"Garc\'\i a Lorca"),
-                     ('naïve', r'na\"\i ve')]
+                     ('naïve', r'na\"\i ve'),
+
+                     ('hát hàt hȧt hät hāt', r"h\'at h\`at h\.at h\"at h\=at"),
+                     ('hãt  hât  ha̧t  ha̱t', r"h\~at  h\^at  h\c at  h\b at"),
+                     ('hạt  hǎt  hăt  ha̋t', r"h\d at  h\v at  h\u at  h\H at"),
+                     # ('haat', r"h\t aat"),
+
+                     ('øre', r"\o re"),
+                     ('Øre', r"\O re"),
+                     ('łódka', r"\l\'odka"),
+                     ('Łodz', r"\L odz"),
+                     ('Altstraße', r"Altstra\ss e"),
+                     # ('¿Que pasa?', r"?'Que pasa?"),
+                     ('æsthete', r"\ae sthete"),
+                     ('Ålm', r"\AA lm"),
+                     # ('', r"{\it\$}5"),
+                     # ('¡Que!', r"!'Que!"),
+                     ('Œuvre', r"\OE uvre"),
+                     ]
 
     # nested macros
     NESTED_MACROS = [('Escobar, María José', r"Escobar, Mar{\'\i}a Jos{\'e}"),

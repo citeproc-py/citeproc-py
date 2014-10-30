@@ -256,7 +256,7 @@ class BibTeXParser(dict):
                     yield Token('OPEN-SCOPE', char)
                 elif char == '}':
                     yield Token('CLOSE-SCOPE', char)
-                elif char in ' \n':
+                elif char in ' \t\n':
                     yield Token('WHITESPACE', char)
                 # elif char == '$':
                 #     yield Token('TOGGLE-MATH', char)
