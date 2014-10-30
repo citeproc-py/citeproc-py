@@ -263,47 +263,33 @@ class BibTeXParser(dict):
                 current_token = next_token
             yield current_token, (None, None)
 
-        def default(tokens, top_level=False):
-            output = ''
-            for (token_type, value), next_token in tokens:
-                if token_type == 'STRING':
-                    output += value
-                elif token_type == 'OPEN-SCOPE':
-                    output +=  handle_scope(tokens, top_level)
-                elif token_type == 'WHITESPACE':
-                    output += value
-                elif token_type == 'START-MACRO':
-                    output += handle_macro(tokens)
-                else:
-                    assert token_type == 'CHAR'
-                    output += value
-            return output
-
-        def handle_scope(tokens, top_level):
-            # TODO: count scope levels, pass string to self._expand_macros
-            output = '<' if top_level else ''
-            for (token_type, value), next_token in tokens:
-                if token_type == 'OPEN-SCOPE':
-                    output += handle_scope(tokens)
-                elif token_type == 'CLOSE-SCOPE':
-                    output += '>' if top_level else ''
-                    break
-                elif token_type == 'START-MACRO':
-                    output += handle_macro(tokens)
-                else:
-                    output += value
-            return output
-
-        def parse_argument(tokens):
-            (token_type, value), next_token = next(tokens)
-            while token_type == 'WHITESPACE':
-                (token_type, value), next_token = next(tokens)
-            if token_type == 'CHAR':
+        def dispatch(token, tokens, top_level=False):
+            token_type, value = token
+            if token_type == 'OPEN-SCOPE':
+                return handle_scope(tokens, top_level)
+            elif token_type == 'WHITESPACE':
                 return value
             elif token_type == 'START-MACRO':
                 return handle_macro(tokens)
-            elif token_type == 'OPEN-SCOPE':
-                return handle_scope(tokens, False)
+
+        def handle_scope(tokens, top_level):
+            output = ''
+            for token, next_token in tokens:
+                token_type, value = token
+                if token_type == 'CLOSE-SCOPE':
+                    break
+                result = dispatch(token, tokens) or value
+                output += result
+            if top_level:
+                output = '<' + output + '>'
+            return output
+
+        def parse_argument(tokens):
+            for token, next_token in tokens:
+                token_type, value = token
+                if token_type != 'WHITESPACE':
+                    break
+            return dispatch(token, tokens) or value
 
         DOTTED_CHARS = {'ı': 'i'}
 
@@ -331,8 +317,15 @@ class BibTeXParser(dict):
                 return result
             raise NotImplementedError(name)
 
+        output = ''
         tokens = peek(tokenize(string))
-        output = default(tokens, top_level=False)
+        for token, next_token in tokens:
+            token_type, value = token
+            result = dispatch(token, tokens, top_level=False)
+            if result is None:
+                assert token_type == 'CHAR'
+                result = value
+            output += result
         return output
 
     def _split_name(self, name):
@@ -376,6 +369,9 @@ SPECIAL = {'oe': '\u0153',   # small ligature oe
            'ss': '\u00DF',   # small letter sharp s
 
            '$': '$',
+           '"': '"',
+           '{': '{',
+
            'dag': '\u2020',       # dagger
            'ddag': '\u02021',     # double dagger
            'S': '\u00A7',         # section sign
