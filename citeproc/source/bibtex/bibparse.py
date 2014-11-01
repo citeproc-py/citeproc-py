@@ -258,8 +258,8 @@ class BibTeXParser(dict):
                     yield Token('CLOSE-SCOPE', char)
                 elif char in ' \t\n':
                     yield Token('WHITESPACE', char)
-                # elif char == '$':
-                #     yield Token('TOGGLE-MATH', char)
+                elif char == '$':
+                    yield Token('TOGGLE-MATH', char)
                 else:
                     yield Token('CHAR', char)
 
@@ -275,6 +275,8 @@ class BibTeXParser(dict):
                 return handle_scope(tokens, top_level)
             elif token.type == 'START-MACRO':
                 return handle_macro(tokens)
+            elif token.type == 'TOGGLE-MATH':
+                return handle_math(tokens)
 
         def handle_scope(tokens, top_level):
             output = ''
@@ -297,7 +299,7 @@ class BibTeXParser(dict):
             token, next_token = next(tokens)
             if token.type == 'WHITESPACE':
                 return ' '
-            assert token.type == 'CHAR'
+            assert token.type in ('CHAR', 'TOGGLE-MATH')
             name = token.value
             if name.isalpha():
                 while next_token.type == 'CHAR' and next_token.value.isalpha():
@@ -317,6 +319,17 @@ class BibTeXParser(dict):
                 for arg_index in command_body:
                     result += args[arg_index - 1]
                 return result
+
+        def handle_math(tokens):
+            output = ''
+            for token, next_token in tokens:
+                if token.type == 'START-MACRO':
+                    output += token.value
+                    token, next_token = next(tokens)
+                elif token.type == 'TOGGLE-MATH':
+                    break
+                output += token.value
+            return '$' + output + '$'
 
         output = ''
         tokens = peek(tokenize(string))

@@ -91,12 +91,17 @@ class TestBibTeXParser(TestCase):
     NESTED_MACROS = [('Escobar, María José', r"Escobar, Mar{\'\i}a Jos{\'e}"),
                      ('Escobar, María-José', r"Escobar, Mar\'{\i}a-Jos\'{e}")]
 
+    MATH = [(r'An $O(n \log n / \! \log\log n)$ Sorting Algorithm',
+             r"An $O(n \log n / \! \log\log n)$ Sorting Algorithm")]
+
     def test__expand_macros(self):
         for reference, name in self.MACROS:
             self.assertEqual(reference, self.parser._expand_macros(name))
         for reference, name in self.ACCENT_MACROS:
             self.assertEqual(reference, self.parser._expand_macros(name))
         for reference, name in self.NESTED_MACROS:
+            self.assertEqual(reference, self.parser._expand_macros(name))
+        for reference, name in self.MATH:
             self.assertEqual(reference, self.parser._expand_macros(name))
 
     # def test__split_name(self):
