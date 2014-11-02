@@ -85,9 +85,10 @@ class TestBibTeXParser(TestCase):
                      ('Œuvre', r"\OE uvre"),
                      ]
 
-    # nested macros
-    NESTED_MACROS = [('Escobar, María José', r"Escobar, Mar{\'\i}a Jos{\'e}"),
-                     ('Escobar, María-José', r"Escobar, Mar\'{\i}a-Jos\'{e}")]
+    ASSORTED = [('Escobar, María José', r"Escobar, Mar{\'\i}a Jos{\'e}"),
+                ('Escobar, María-José', r"Escobar, Mar\'{\i}a-Jos\'{e}"),
+                ('Åke José Édouard Gödel',
+                      r"\AA{ke} {Jos{\'{e}} {\'{E}douard} G{\"o}del")]
 
     MATH = [(r'An $O(n \log n / \! \log\log n)$ Sorting Algorithm',
              r"An $O(n \log n / \! \log\log n)$ Sorting Algorithm")]
@@ -97,7 +98,7 @@ class TestBibTeXParser(TestCase):
             self.assertEqual(reference, self.parser._expand_macros(name))
         for reference, name in self.ACCENT_MACROS:
             self.assertEqual(reference, self.parser._expand_macros(name))
-        for reference, name in self.NESTED_MACROS:
+        for reference, name in self.ASSORTED:
             self.assertEqual(reference, self.parser._expand_macros(name))
         for reference, name in self.MATH:
             self.assertEqual(reference, self.parser._expand_macros(name))
