@@ -28,7 +28,7 @@ class SymbolByName(Macro):
         super().__init__(0, unicode_symbol)
 
 
-class Accent(Macro):
+class Combining(Macro):
     def __init__(self, unicode_accent_name):
         unicode_accent = unicodedata.lookup('COMBINING ' + unicode_accent_name)
         super().__init__(1, '{0}' + unicode_accent)
@@ -43,25 +43,26 @@ class Accent(Macro):
 
 MACROS = {
     # accents
-    '`': Accent('GRAVE ACCENT'),
-    "'": Accent('ACUTE ACCENT'),
-    '^': Accent('CIRCUMFLEX ACCENT'),
-    '"': Accent('DIAERESIS'),
-    'H': Accent('DOUBLE ACUTE ACCENT'),
-    '~': Accent('TILDE'),
-    'c': Accent('CEDILLA'),
-    'k': Accent('OGONEK'),
-    '=': Accent('MACRON'),
-    'b': Accent('MACRON BELOW'),
-    '.': Accent('DOT ABOVE'),
-    'd': Accent('DOT BELOW'),
-    'r': Accent('RING ABOVE'),
-    'u': Accent('BREVE'),
-    'v': Accent('CARON'),
-    '|': Accent('VERTICAL LINE ABOVE'),
-    'h': Accent('HOOK ABOVE'),
-    'G': Accent('DOUBLE GRAVE ACCENT'),
-    'U': Accent('DOUBLE VERTICAL LINE ABOVE'),
+    '`': Combining('GRAVE ACCENT'),
+    "'": Combining('ACUTE ACCENT'),
+    '^': Combining('CIRCUMFLEX ACCENT'),
+    '"': Combining('DIAERESIS'),
+    'H': Combining('DOUBLE ACUTE ACCENT'),
+    '~': Combining('TILDE'),
+    'c': Combining('CEDILLA'),
+    'k': Combining('OGONEK'),
+    '=': Combining('MACRON'),
+    'b': Combining('MACRON BELOW'),
+    '.': Combining('DOT ABOVE'),
+    'd': Combining('DOT BELOW'),
+    'r': Combining('RING ABOVE'),
+    'u': Combining('BREVE'),
+    'v': Combining('CARON'),
+    '|': Combining('VERTICAL LINE ABOVE'),
+    'h': Combining('HOOK ABOVE'),
+    'G': Combining('DOUBLE GRAVE ACCENT'),
+    'U': Combining('DOUBLE VERTICAL LINE ABOVE'),
+    'textcircled': Combining('ENCLOSING CIRCLE'),
 
     # symbols
     'o': SymbolByName('LATIN SMALL LETTER O WITH STROKE'),
