@@ -119,10 +119,10 @@ class BibTeXParser(dict):
             char = file.read(1)
         return name.strip().lower()
 
-    def _parse_value(self, file, expand_macros=True):
+    def _parse_value(self, file):
         char = self._eat_whitespace(file)
         if char in '{"':
-            value = self._parse_string(file, char, expand_macros)
+            value = self._parse_string(file, char)
         elif char.isalpha():
             value = self._parse_variable(file, char)
         else:
@@ -136,7 +136,7 @@ class BibTeXParser(dict):
             file.seek(restore_position)
         return value
 
-    def _parse_string(self, file, opening_character, expand_macros):
+    def _parse_string(self, file, opening_character):
         closing_character = '"' if opening_character == '"' else '}'
         string = ''
         depth = 0
