@@ -79,11 +79,9 @@ class TestBibTeXParser(TestCase):
                      ('łódka', r"\l\'odka"),
                      ('Łodz', r"\L odz"),
                      ('Altstraße', r"Altstra\ss e"),
-                     # ('¿Que pasa?', r"?'Que pasa?"),
                      ('æsthete', r"\ae sthete"),
                      ('Ålm', r"\AA lm"),
                      # ('', r"{\it\$}5"),
-                     # ('¡Que!', r"!'Que!"),
                      ('Œuvre', r"\OE uvre"),
                      ]
 
@@ -103,6 +101,13 @@ class TestBibTeXParser(TestCase):
             self.assertEqual(reference, self.parser._expand_macros(name))
         for reference, name in self.MATH:
             self.assertEqual(reference, self.parser._expand_macros(name))
+
+    LIGATURES = [('¿Que pasa?', "?`Que pasa?"),
+                 ('¡Que!', "!`Que!")]
+
+    def test__substitute_ligatures(self):
+        for reference, name in self.LIGATURES:
+            self.assertEqual(reference, self.parser._substitute_ligatures(name))
 
     # def test__split_name(self):
     #     self.fail()

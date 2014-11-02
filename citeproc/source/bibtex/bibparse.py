@@ -56,7 +56,8 @@ class BibTeXParser(dict):
         for key, entry in self.items():
             for attribute, value in entry.items():
                 if isinstance(value, str):
-                    entry[attribute] = self._expand_macros(value)
+                    expanded = self._expand_macros(value)
+                    entry[attribute] = self._substitute_ligatures(expanded)
 
     def _parse_entry(self, file):
         while True:
@@ -341,6 +342,11 @@ class BibTeXParser(dict):
             output += result
         return output
 
+    def _substitute_ligatures(self, string):
+        for chars, ligature in CM_LIGATURES.items():
+            string = string.replace(chars, unicodedata.lookup(ligature))
+        return string
+
     def _split_name(self, name):
         pass
 
@@ -433,6 +439,17 @@ MACROS = {# accents
 }
 
             # '#$%&_{}' # special symbols
+
+CM_LIGATURES = {"--": 'EN DASH',
+                "---": 'EM DASH',
+                "''": 'RIGHT DOUBLE QUOTATION MARK',
+                "``": 'LEFT DOUBLE QUOTATION MARK',
+                "!`": 'INVERTED EXCLAMATION MARK',
+                "?`": 'INVERTED QUESTION MARK',
+                ",,": 'DOUBLE LOW-9 QUOTATION MARK',
+                "<<": 'LEFT-POINTING DOUBLE ANGLE QUOTATION MARK',
+                ">>": 'RIGHT-POINTING DOUBLE ANGLE QUOTATION MARK',
+}
 
 
 sample = r"""
