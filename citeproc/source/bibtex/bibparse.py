@@ -355,6 +355,11 @@ class Macro(object):
         return self.format_string.format(*arguments)
 
 
+class EscapeMacro(Macro):
+    def __init__(self, escaped_character):
+        super().__init__(0, escaped_character)
+
+
 class SymbolMacro(Macro):
     def __init__(self, unicode_symbol_name):
         unicode_symbol = unicodedata.lookup(unicode_symbol_name)
@@ -418,9 +423,13 @@ MACROS = {# accents
           't': Macro(1, '{0}\u0361{1}'),
 
           # escaped characters
-          '$': SymbolMacro('DOLLAR SIGN'),
-          '{': SymbolMacro('LEFT CURLY BRACKET'),
-          # '"': SymbolMacro('QUOTATION MARK'),
+          '&': EscapeMacro('&'),
+          '$': EscapeMacro('$'),
+          '{': EscapeMacro('{'),
+          '}': EscapeMacro('}'),
+          '%': EscapeMacro('%'),
+          '#': EscapeMacro('#'),
+          '_': EscapeMacro('_'),
 }
 
             # '#$%&_{}' # special symbols
