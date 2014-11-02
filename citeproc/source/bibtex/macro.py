@@ -37,8 +37,10 @@ class Combining(Macro):
                     'ȷ': 'j'}
 
     def expand(self, arguments):
-        arguments = [self.DOTTED_CHARS.get(arg, arg) for arg in arguments]
-        return unicodedata.normalize('NFC', super().expand(arguments))
+        assert len(arguments) == self.num_args
+        accented, rest = arguments[0][0], arguments[0][1:]
+        accented = self.DOTTED_CHARS.get(accented, accented)
+        return unicodedata.normalize('NFC', super().expand([accented])) + rest
 
 
 MACROS = {
@@ -62,6 +64,7 @@ MACROS = {
     'h': Combining('HOOK ABOVE'),
     'G': Combining('DOUBLE GRAVE ACCENT'),
     'U': Combining('DOUBLE VERTICAL LINE ABOVE'),
+    't': Combining('DOUBLE INVERTED BREVE'),
     'textcircled': Combining('ENCLOSING CIRCLE'),
 
     # symbols
@@ -135,7 +138,6 @@ MACROS = {
     'textvisiblespace': SymbolByName('OPEN BOX'),
 
     'TeX': Macro(0, 'TeX'),
-    't': Macro(1, '{0}\u0361{1}'),
 
     # escaped characters
     '&': Symbol('&'),

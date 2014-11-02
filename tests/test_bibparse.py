@@ -72,7 +72,7 @@ class TestBibTeXParser(TestCase):
                      ('hát hàt hȧt hät hāt', r"h\'at h\`at h\.at h\"at h\=at"),
                      ('hãt  hât  ha̧t  ha̱t', r"h\~at  h\^at  h\c at  h\b at"),
                      ('hạt  hǎt  hăt  ha̋t', r"h\d at  h\v at  h\u at  h\H at"),
-                     # ('haat', r"h\t aat"),
+                     ('ha͡at', r"h\t aat"),
 
                      ('øre', r"\o re"),
                      ('Øre', r"\O re"),
