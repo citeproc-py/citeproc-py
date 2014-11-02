@@ -1,49 +1,11 @@
 # coding=utf-8
 
-from io import StringIO
 from unittest import TestCase
 
-from citeproc.source.bibtex.bibparse import BibTeXParser
+from citeproc.source.bibtex.latex import parse_latex, substitute_ligatures
 
 
-class TestBibTeXParser(TestCase):
-    def setUp(self):
-        file = StringIO()
-        self.parser = BibTeXParser(file)
-
-    # def test__parse(self):
-    #     self.fail()
-    #
-    # def test__parse_entry(self):
-    #     self.fail()
-    #
-    # def test__parse_key(self):
-    #     self.fail()
-    #
-    # def test__parse_name(self):
-    #     self.fail()
-    #
-    # def test__parse_value(self):
-    #     self.fail()
-    #
-    # def test__parse_string(self):
-    #     self.fail()
-    #
-    # def test__parse_variable(self):
-    #     self.fail()
-    #
-    # def test__parse_integer(self):
-    #     self.fail()
-    #
-    # def test__eat_whitespace(self):
-    #     self.fail()
-    #
-    # def test__jump_to_next_line(self):
-    #     self.fail()
-    #
-    # def test__parse_preamble(self):
-    #     self.fail()
-
+class TestLatex(TestCase):
     # from "A TEX Primer for Scientists" (sections 5.2 and 5.3)
     # by Stanley A. Sawyer, Steven G. Krantz
     MACROS = [("Æsop's fables", r"\AE sop's fables"),
@@ -85,6 +47,7 @@ class TestBibTeXParser(TestCase):
                      ('Œuvre', r"\OE uvre"),
                      ]
 
+    # assorted string with macros
     ASSORTED = [('Escobar, María José', r"Escobar, Mar{\'\i}a Jos{\'e}"),
                 ('Escobar, María-José', r"Escobar, Mar\'{\i}a-Jos\'{e}"),
                 ('Åke José Édouard Gödel',
@@ -93,22 +56,19 @@ class TestBibTeXParser(TestCase):
     MATH = [(r'An $O(n \log n / \! \log\log n)$ Sorting Algorithm',
              r"An $O(n \log n / \! \log\log n)$ Sorting Algorithm")]
 
-    def test__expand_macros(self):
-        for reference, name in self.MACROS:
-            self.assertEqual(reference, self.parser._expand_macros(name))
-        for reference, name in self.ACCENT_MACROS:
-            self.assertEqual(reference, self.parser._expand_macros(name))
-        for reference, name in self.ASSORTED:
-            self.assertEqual(reference, self.parser._expand_macros(name))
-        for reference, name in self.MATH:
-            self.assertEqual(reference, self.parser._expand_macros(name))
+    def test_parse_latex(self):
+        for reference, string in self.MACROS:
+            self.assertEqual(reference, parse_latex(string))
+        for reference, string in self.ACCENT_MACROS:
+            self.assertEqual(reference, parse_latex(string))
+        for reference, string in self.ASSORTED:
+            self.assertEqual(reference, parse_latex(string))
+        for reference, string in self.MATH:
+            self.assertEqual(reference, parse_latex(string))
 
     LIGATURES = [('¿Que pasa?', "?`Que pasa?"),
                  ('¡Que!', "!`Que!")]
 
-    def test__substitute_ligatures(self):
-        for reference, name in self.LIGATURES:
-            self.assertEqual(reference, self.parser._substitute_ligatures(name))
-
-    # def test__split_name(self):
-    #     self.fail()
+    def test_substitute_ligatures(self):
+        for reference, string in self.LIGATURES:
+            self.assertEqual(reference, substitute_ligatures(string))

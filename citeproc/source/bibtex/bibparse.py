@@ -3,13 +3,7 @@ from __future__ import (absolute_import, division, print_function,
                         unicode_literals)
 from citeproc.py2compat import *
 
-
-import unicodedata
-
-from collections import namedtuple
-
-from .macro import MACROS
-
+from .latex import parse_latex
 
 # http://maverick.inria.fr/~Xavier.Decoret/resources/xdkbibtex/bibtex_summary.html
 # http://www.lsv.ens-cachan.fr/~markey/bibla.php?lang=en
@@ -58,8 +52,7 @@ class BibTeXParser(dict):
         for key, entry in self.items():
             for attribute, value in entry.items():
                 if isinstance(value, str):
-                    expanded = self._expand_macros(value)
-                    entry[attribute] = self._substitute_ligatures(expanded)
+                    entry[attribute] = parse_latex(value, self.macros)
 
     def _parse_entry(self, file):
         while True:
@@ -248,121 +241,8 @@ class BibTeXParser(dict):
                 state = 'MACRO'
                 macro_name = ''
 
-    def _expand_macros(self, string):
-        Token = namedtuple('Token', ['type', 'value'])
-
-        def tokenize(input_string):
-            for char in input_string:
-                if char == '\\':
-                    yield Token('START-MACRO', char)
-                elif char == '{':
-                    yield Token('OPEN-SCOPE', char)
-                elif char == '}':
-                    yield Token('CLOSE-SCOPE', char)
-                elif char in ' \t\n':
-                    yield Token('WHITESPACE', char)
-                elif char == '$':
-                    yield Token('TOGGLE-MATH', char)
-                else:
-                    yield Token('CHAR', char)
-
-        def peek(tokens):
-            current_token = next(tokens)
-            for next_token in tokens:
-                yield current_token, next_token
-                current_token = next_token
-            yield current_token, (None, None)
-
-        def dispatch(token, tokens, top_level=False):
-            if token.type == 'OPEN-SCOPE':
-                return handle_scope(tokens, top_level)
-            elif token.type == 'START-MACRO':
-                return handle_macro(tokens)
-            elif token.type == 'TOGGLE-MATH':
-                return handle_math(tokens)
-
-        def handle_scope(tokens, top_level):
-            output = ''
-            for token, next_token in tokens:
-                if token.type == 'CLOSE-SCOPE':
-                    break
-                result = dispatch(token, tokens) or token.value
-                output += result
-            if top_level:
-                output = '<' + output + '>'
-            return output
-
-        def parse_argument(tokens):
-            for token, next_token in tokens:
-                if token.type != 'WHITESPACE':
-                    break
-            return dispatch(token, tokens) or token.value
-
-        def handle_macro(tokens):
-            token, next_token = next(tokens)
-            if token.type == 'WHITESPACE':
-                return ' '
-            assert token.type in ('CHAR', 'TOGGLE-MATH')
-            name = token.value
-            if name.isalpha():
-                while next_token.type == 'CHAR' and next_token.value.isalpha():
-                    token, next_token = next(tokens)
-                    name += token.value
-                while next_token.type == 'WHITESPACE':
-                    token, next_token = next(tokens)
-
-            try:
-                macro = MACROS[name]
-                args = [parse_argument(tokens) for _ in range(macro.num_args)]
-                return macro.expand(args)
-            except KeyError:
-                num_args, command_body = self.macros[name]
-                args = [parse_argument(tokens) for _ in range(num_args)]
-                result = ''
-                for arg_index in command_body:
-                    result += args[arg_index - 1]
-                return result
-
-        def handle_math(tokens):
-            output = ''
-            for token, next_token in tokens:
-                if token.type == 'START-MACRO':
-                    output += token.value
-                    token, next_token = next(tokens)
-                elif token.type == 'TOGGLE-MATH':
-                    break
-                output += token.value
-            return '$' + output + '$'
-
-        output = ''
-        tokens = peek(tokenize(string))
-        for token, next_token in tokens:
-            result = dispatch(token, tokens, top_level=False)
-            if result is None:
-                assert token.type in ('CHAR', 'WHITESPACE')
-                result = token.value
-            output += result
-        return output
-
-    def _substitute_ligatures(self, string):
-        for chars, ligature in CM_LIGATURES.items():
-            string = string.replace(chars, unicodedata.lookup(ligature))
-        return string
-
     def _split_name(self, name):
         pass
-
-
-CM_LIGATURES = {"--": 'EN DASH',
-                "---": 'EM DASH',
-                "''": 'RIGHT DOUBLE QUOTATION MARK',
-                "``": 'LEFT DOUBLE QUOTATION MARK',
-                "!`": 'INVERTED EXCLAMATION MARK',
-                "?`": 'INVERTED QUESTION MARK',
-                ",,": 'DOUBLE LOW-9 QUOTATION MARK',
-                "<<": 'LEFT-POINTING DOUBLE ANGLE QUOTATION MARK',
-                ">>": 'RIGHT-POINTING DOUBLE ANGLE QUOTATION MARK',
-}
 
 
 sample = r"""
