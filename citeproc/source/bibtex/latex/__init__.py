@@ -16,8 +16,8 @@ __all__ = ['parse_latex', 'substitute_ligatures']
 
 def parse_latex(string, macros={}):
     output = ''
-    tokens = peek(tokenize(string))
-    for token, next_token in tokens:
+    tokens = Tokenizer(string)
+    for token in tokens:
         result = dispatch(token, tokens, macros, top_level=False)
         if result is None:
             assert token.type in (CHARACTER, WHITESPACE)
@@ -37,28 +37,44 @@ START_MACRO = 'START-MACRO'
 CHARACTER = 'CHARACTER'
 
 
-def tokenize(input_string):
-    for char in input_string:
-        if char == '\\':
-            yield Token(START_MACRO, char)
-        elif char == '{':
-            yield Token(OPEN_SCOPE, char)
-        elif char == '}':
-            yield Token(CLOSE_SCOPE, char)
-        elif char in ' \t\n':
-            yield Token(WHITESPACE, char)
-        elif char == '$':
-            yield Token(TOGGLE_MATH, char)
+class Tokenizer(object):
+    def __init__(self, string):
+        self._tokens = self.tokenize(string)
+        self._next_token = None
+
+    @staticmethod
+    def tokenize(input_string):
+        for char in input_string:
+            if char == '\\':
+                yield Token(START_MACRO, char)
+            elif char == '{':
+                yield Token(OPEN_SCOPE, char)
+            elif char == '}':
+                yield Token(CLOSE_SCOPE, char)
+            elif char in ' \t\n':
+                yield Token(WHITESPACE, char)
+            elif char == '$':
+                yield Token(TOGGLE_MATH, char)
+            else:
+                yield Token(CHARACTER, char)
+
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        if self._next_token:
+            token = self._next_token
+            self._next_token = None
         else:
-            yield Token(CHARACTER, char)
+            token = next(self._tokens)
+        return token
 
+    next = __next__
 
-def peek(tokens):
-    current_token = next(tokens)
-    for next_token in tokens:
-        yield current_token, next_token
-        current_token = next_token
-    yield current_token, (None, None)
+    def peek(self):
+        if not self._next_token:
+            self._next_token = next(self._tokens)
+        return self._next_token
 
 
 def dispatch(token, tokens, macros, top_level=False):
@@ -72,7 +88,7 @@ def dispatch(token, tokens, macros, top_level=False):
 
 def handle_scope(tokens, macros, top_level):
     output = ''
-    for token, next_token in tokens:
+    for token in tokens:
         if token.type == CLOSE_SCOPE:
             break
         result = dispatch(token, tokens, macros) or token.value
@@ -83,24 +99,24 @@ def handle_scope(tokens, macros, top_level):
 
 
 def parse_argument(tokens, macros):
-    for token, next_token in tokens:
+    for token in tokens:
         if token.type != WHITESPACE:
             break
     return dispatch(token, tokens, macros) or token.value
 
 
 def handle_macro(tokens, macros):
-    token, next_token = next(tokens)
+    token = next(tokens)
     if token.type == WHITESPACE:
         return ' '
     assert token.type in (CHARACTER, TOGGLE_MATH)
     name = token.value
+
     if name.isalpha():
-        while next_token.type == CHARACTER and next_token.value.isalpha():
-            token, next_token = next(tokens)
-            name += token.value
-        while next_token.type == WHITESPACE:
-            token, next_token = next(tokens)
+        while tokens.peek().type == CHARACTER and tokens.peek().value.isalpha():
+            name += next(tokens).value
+        while tokens.peek().type == WHITESPACE:
+            next(tokens)
 
     try:
         macro = MACROS[name]
@@ -117,10 +133,10 @@ def handle_macro(tokens, macros):
 
 def handle_math(tokens):
     output = ''
-    for token, next_token in tokens:
+    for token in tokens:
         if token.type == START_MACRO:
             output += token.value
-            token, next_token = next(tokens)
+            token = next(tokens)
         elif token.type == TOGGLE_MATH:
             break
         output += token.value
