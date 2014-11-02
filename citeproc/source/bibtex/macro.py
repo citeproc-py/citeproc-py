@@ -17,18 +17,18 @@ class Macro(object):
         return self.format_string.format(*arguments)
 
 
-class EscapeMacro(Macro):
-    def __init__(self, escaped_character):
-        super().__init__(0, escaped_character)
+class Symbol(Macro):
+    def __init__(self, symbol):
+        super().__init__(0, symbol)
 
 
-class SymbolMacro(Macro):
+class SymbolByName(Macro):
     def __init__(self, unicode_symbol_name):
         unicode_symbol = unicodedata.lookup(unicode_symbol_name)
         super().__init__(0, unicode_symbol)
 
 
-class AccentMacro(Macro):
+class Accent(Macro):
     def __init__(self, unicode_accent_name):
         unicode_accent = unicodedata.lookup('COMBINING ' + unicode_accent_name)
         super().__init__(1, '{0}' + unicode_accent)
@@ -41,91 +41,92 @@ class AccentMacro(Macro):
         return unicodedata.normalize('NFC', super().expand(arguments))
 
 
-MACROS = {# accents
-          '`': AccentMacro('GRAVE ACCENT'),
-          "'": AccentMacro('ACUTE ACCENT'),
-          '^': AccentMacro('CIRCUMFLEX ACCENT'),
-          '"': AccentMacro('DIAERESIS'),
-          'H': AccentMacro('DOUBLE ACUTE ACCENT'),
-          '~': AccentMacro('TILDE'),
-          'c': AccentMacro('CEDILLA'),
-          'k': AccentMacro('OGONEK'),
-          '=': AccentMacro('MACRON'),
-          'b': AccentMacro('MACRON BELOW'),
-          '.': AccentMacro('DOT ABOVE'),
-          'd': AccentMacro('DOT BELOW'),
-          'r': AccentMacro('RING ABOVE'),
-          'u': AccentMacro('BREVE'),
-          'v': AccentMacro('CARON'),
-          '|': AccentMacro('VERTICAL LINE ABOVE'),
-          'h': AccentMacro('HOOK ABOVE'),
-          'G': AccentMacro('DOUBLE GRAVE ACCENT'),
-          'U': AccentMacro('DOUBLE VERTICAL LINE ABOVE'),
+MACROS = {
+    # accents
+    '`': Accent('GRAVE ACCENT'),
+    "'": Accent('ACUTE ACCENT'),
+    '^': Accent('CIRCUMFLEX ACCENT'),
+    '"': Accent('DIAERESIS'),
+    'H': Accent('DOUBLE ACUTE ACCENT'),
+    '~': Accent('TILDE'),
+    'c': Accent('CEDILLA'),
+    'k': Accent('OGONEK'),
+    '=': Accent('MACRON'),
+    'b': Accent('MACRON BELOW'),
+    '.': Accent('DOT ABOVE'),
+    'd': Accent('DOT BELOW'),
+    'r': Accent('RING ABOVE'),
+    'u': Accent('BREVE'),
+    'v': Accent('CARON'),
+    '|': Accent('VERTICAL LINE ABOVE'),
+    'h': Accent('HOOK ABOVE'),
+    'G': Accent('DOUBLE GRAVE ACCENT'),
+    'U': Accent('DOUBLE VERTICAL LINE ABOVE'),
 
-          # symbols
-          'o': SymbolMacro('LATIN SMALL LETTER O WITH STROKE'),
-          'O': SymbolMacro('LATIN CAPITAL LETTER O WITH STROKE'),
-          'i': SymbolMacro('LATIN SMALL LETTER DOTLESS I'),
-          'l': SymbolMacro('LATIN SMALL LETTER L WITH STROKE'),
-          'L': SymbolMacro('LATIN CAPITAL LETTER L WITH STROKE'),
-          'oe': SymbolMacro('LATIN SMALL LIGATURE OE'),
-          'OE': SymbolMacro('LATIN CAPITAL LIGATURE OE'),
-          'ae': SymbolMacro('LATIN SMALL LETTER AE'),
-          'AE': SymbolMacro('LATIN CAPITAL LETTER AE'),
-          'aa': SymbolMacro('LATIN SMALL LETTER A WITH RING ABOVE'),
-          'AA': SymbolMacro('LATIN CAPITAL LETTER A WITH RING ABOVE'),
-          'ss': SymbolMacro('LATIN SMALL LETTER SHARP S'),
-          'dag': SymbolMacro('DAGGER'),
-          'ddag': SymbolMacro('DOUBLE DAGGER'),
-          'dots': SymbolMacro('HORIZONTAL ELLIPSIS'),
-          'P': SymbolMacro('PILCROW SIGN'),
-          'S': SymbolMacro('SECTION SIGN'),
-          'copyright': SymbolMacro('COPYRIGHT SIGN'),
-          'pounds': SymbolMacro('POUND SIGN'),
+    # symbols
+    'o': SymbolByName('LATIN SMALL LETTER O WITH STROKE'),
+    'O': SymbolByName('LATIN CAPITAL LETTER O WITH STROKE'),
+    'i': SymbolByName('LATIN SMALL LETTER DOTLESS I'),
+    'l': SymbolByName('LATIN SMALL LETTER L WITH STROKE'),
+    'L': SymbolByName('LATIN CAPITAL LETTER L WITH STROKE'),
+    'oe': SymbolByName('LATIN SMALL LIGATURE OE'),
+    'OE': SymbolByName('LATIN CAPITAL LIGATURE OE'),
+    'ae': SymbolByName('LATIN SMALL LETTER AE'),
+    'AE': SymbolByName('LATIN CAPITAL LETTER AE'),
+    'aa': SymbolByName('LATIN SMALL LETTER A WITH RING ABOVE'),
+    'AA': SymbolByName('LATIN CAPITAL LETTER A WITH RING ABOVE'),
+    'ss': SymbolByName('LATIN SMALL LETTER SHARP S'),
+    'dag': SymbolByName('DAGGER'),
+    'ddag': SymbolByName('DOUBLE DAGGER'),
+    'dots': SymbolByName('HORIZONTAL ELLIPSIS'),
+    'P': SymbolByName('PILCROW SIGN'),
+    'S': SymbolByName('SECTION SIGN'),
+    'copyright': SymbolByName('COPYRIGHT SIGN'),
+    'pounds': SymbolByName('POUND SIGN'),
 
-          'textasciicircum': EscapeMacro('^'),
-          'textasciitilde': EscapeMacro('~'),
-          'textasteriskcentered': EscapeMacro('*'),
-          'textbackslash': EscapeMacro('\\'),
-          'textbar': EscapeMacro('|'),
-          'textbraceleft': EscapeMacro('{'),
-          'textbraceright': EscapeMacro('}'),
-          'textbullet': SymbolMacro('BULLET'),
-          'textcopyright': SymbolMacro('COPYRIGHT SIGN'),
-          'textdagger': SymbolMacro('DAGGER'),
-          'textdaggerdbl': SymbolMacro('DOUBLE DAGGER'),
-          'textdollar': EscapeMacro('$'),
-          'textellipsis': SymbolMacro('HORIZONTAL ELLIPSIS'),
-          'textemdash': SymbolMacro('EM DASH'),
-          'textendash': SymbolMacro('EN DASH'),
-          'textexclamdown': SymbolMacro('INVERTED EXCLAMATION MARK'),
-          'textgreater': EscapeMacro('>'),
-          'textless': EscapeMacro('<'),
-          'textordfeminine': SymbolMacro('FEMININE ORDINAL INDICATOR'),
-          'textordmasculine': SymbolMacro('MASCULINE ORDINAL INDICATOR'),
-          'textparagraph': SymbolMacro('PILCROW SIGN'),
-          'textperiodcentered': SymbolMacro('MIDDLE DOT'),
-          'textquestiondown': SymbolMacro('INVERTED QUESTION MARK'),
-          'textquotedblleft': SymbolMacro('LEFT DOUBLE QUOTATION MARK'),
-          'textquotedblright': SymbolMacro('RIGHT DOUBLE QUOTATION MARK'),
-          'textquoteleft': SymbolMacro('LEFT SINGLE QUOTATION MARK'),
-          'textquoteright': SymbolMacro('RIGHT SINGLE QUOTATION MARK'),
-          'textregistered': SymbolMacro('REGISTERED SIGN'),
-          'textsection': SymbolMacro('SECTION SIGN'),
-          'textsterling': SymbolMacro('POUND SIGN'),
-          'texttrademark': SymbolMacro('TRADE MARK SIGN'),
-          'textunderscore': EscapeMacro('_'),
-          'textvisiblespace': SymbolMacro('OPEN BOX'),
+    'textasciicircum': Symbol('^'),
+    'textasciitilde': Symbol('~'),
+    'textasteriskcentered': Symbol('*'),
+    'textbackslash': Symbol('\\'),
+    'textbar': Symbol('|'),
+    'textbraceleft': Symbol('{'),
+    'textbraceright': Symbol('}'),
+    'textbullet': SymbolByName('BULLET'),
+    'textcopyright': SymbolByName('COPYRIGHT SIGN'),
+    'textdagger': SymbolByName('DAGGER'),
+    'textdaggerdbl': SymbolByName('DOUBLE DAGGER'),
+    'textdollar': Symbol('$'),
+    'textellipsis': SymbolByName('HORIZONTAL ELLIPSIS'),
+    'textemdash': SymbolByName('EM DASH'),
+    'textendash': SymbolByName('EN DASH'),
+    'textexclamdown': SymbolByName('INVERTED EXCLAMATION MARK'),
+    'textgreater': Symbol('>'),
+    'textless': Symbol('<'),
+    'textordfeminine': SymbolByName('FEMININE ORDINAL INDICATOR'),
+    'textordmasculine': SymbolByName('MASCULINE ORDINAL INDICATOR'),
+    'textparagraph': SymbolByName('PILCROW SIGN'),
+    'textperiodcentered': SymbolByName('MIDDLE DOT'),
+    'textquestiondown': SymbolByName('INVERTED QUESTION MARK'),
+    'textquotedblleft': SymbolByName('LEFT DOUBLE QUOTATION MARK'),
+    'textquotedblright': SymbolByName('RIGHT DOUBLE QUOTATION MARK'),
+    'textquoteleft': SymbolByName('LEFT SINGLE QUOTATION MARK'),
+    'textquoteright': SymbolByName('RIGHT SINGLE QUOTATION MARK'),
+    'textregistered': SymbolByName('REGISTERED SIGN'),
+    'textsection': SymbolByName('SECTION SIGN'),
+    'textsterling': SymbolByName('POUND SIGN'),
+    'texttrademark': SymbolByName('TRADE MARK SIGN'),
+    'textunderscore': Symbol('_'),
+    'textvisiblespace': SymbolByName('OPEN BOX'),
 
-          'TeX': Macro(0, 'TeX'),
-          't': Macro(1, '{0}\u0361{1}'),
+    'TeX': Macro(0, 'TeX'),
+    't': Macro(1, '{0}\u0361{1}'),
 
-          # escaped characters
-          '&': EscapeMacro('&'),
-          '$': EscapeMacro('$'),
-          '{': EscapeMacro('{'),
-          '}': EscapeMacro('}'),
-          '%': EscapeMacro('%'),
-          '#': EscapeMacro('#'),
-          '_': EscapeMacro('_'),
+    # escaped characters
+    '&': Symbol('&'),
+    '$': Symbol('$'),
+    '{': Symbol('{'),
+    '}': Symbol('}'),
+    '%': Symbol('%'),
+    '#': Symbol('#'),
+    '_': Symbol('_'),
 }
