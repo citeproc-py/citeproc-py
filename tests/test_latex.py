@@ -50,11 +50,11 @@ class TestLatex(TestCase):
     # assorted string with macros
     ASSORTED = [('Escobar, María José', r"Escobar, Mar{\'\i}a Jos{\'e}"),
                 ('Escobar, María-José', r"Escobar, Mar\'{\i}a-Jos\'{e}"),
-                ('Åke José Édouard Gödel',
+                ('Åke José Édouard Gödel',      # unbalanced parenthesis
                       r"\AA{ke} {Jos{\'{e}} {\'{E}douard} G{\"o}del")]
 
     MATH = [(r'An $O(n \log n / \! \log\log n)$ Sorting Algorithm',
-             r"An $O(n \log n / \! \log\log n)$ Sorting Algorithm")]
+                  r"An $O(n \log n / \! \log\log n)$ Sorting Algorithm")]
 
     def test_parse_latex(self):
         for reference, string in self.MACROS:

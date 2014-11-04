@@ -7,19 +7,16 @@ from citeproc.py2compat import *
 import unicodedata
 
 from collections import namedtuple
+from warnings import warn
 
 
 __all__ = ['parse_latex', 'substitute_ligatures']
 
 
 def parse_latex(string, macros={}):
-    output = ''
     tokens = Tokenizer(string)
-    for token in tokens:
-        result = dispatch(token, tokens, macros, top_level=False)
-        if result is None:
-            assert token.type in (CHARACTER, WHITESPACE)
-            result = token.value
+    output = ''
+    for result in dispatch(tokens, macros):
         output += result
     return substitute_ligatures(output)
 
@@ -37,6 +34,7 @@ CHARACTER = 'CHARACTER'
 
 class Tokenizer(object):
     def __init__(self, string):
+        self.string = string
         self._tokens = self.tokenize(string)
         self._next_token = None
 
@@ -70,7 +68,7 @@ class Tokenizer(object):
     next = __next__
 
     def peek(self):
-        if not self._next_token:
+        if self._next_token is None:
             self._next_token = next(self._tokens)
         return self._next_token
 
@@ -80,37 +78,49 @@ def eat_whitespace(tokens):
         next(tokens)
 
 
-def dispatch(token, tokens, macros, top_level=False):
-    # TODO: rewrite to use tokens.peek()
-    if token.type == OPEN_SCOPE:
-        return handle_scope(tokens, macros, top_level)
-    elif token.type == START_MACRO:
-        return handle_macro(tokens, macros)
-    elif token.type == TOGGLE_MATH:
-        return handle_math(tokens)
-    else:
-        return token.value
+class ScopeClosing(Exception):
+    pass
 
 
-def handle_scope(tokens, macros, top_level):
-    output = ''
-    for token in tokens:
-        if token.type == CLOSE_SCOPE:
+def dispatch(tokens, macros, level=0):
+    while True:
+        try:
+            next_token = tokens.peek()
+        except StopIteration:
+            if level > 0:
+                warn("Unbalanced parenthesis in '{}'".format(tokens.string))
             break
-        result = dispatch(token, tokens, macros)
-        output += result
-    if top_level:
-        output = '<' + output + '>'
+        if next_token.type == OPEN_SCOPE:
+            yield handle_scope(tokens, macros, level)
+        elif next_token.type == CLOSE_SCOPE:
+            raise ScopeClosing
+        elif next_token.type == START_MACRO:
+            yield handle_macro(tokens, macros)
+        elif next_token.type == TOGGLE_MATH:
+            yield handle_math(tokens)
+        else:
+            assert next_token.type in (CHARACTER, WHITESPACE)
+            yield next(tokens).value
+
+
+def handle_scope(tokens, macros, level):
+    assert next(tokens).type == OPEN_SCOPE
+    output = ''
+    try:
+        for result in dispatch(tokens, macros, level + 1):
+            output += result
+    except ScopeClosing:
+        assert next(tokens).type == CLOSE_SCOPE
     return output
 
 
-def parse_argument(tokens, macros):
+def parse_argument(tokens, macros, level=0):
     eat_whitespace(tokens)
-    token = next(tokens)
-    return dispatch(token, tokens, macros)
+    return next(dispatch(tokens, macros, level))
 
 
 def handle_macro(tokens, macros):
+    assert next(tokens).type == START_MACRO
     name = parse_macro_name(tokens)
     try:
         macro = MACROS[name]
@@ -131,6 +141,7 @@ def parse_macro_name(tokens):
 
 
 def handle_math(tokens):
+    assert next(tokens).type == TOGGLE_MATH
     output = ''
     for token in tokens:
         if token.type == START_MACRO:
