@@ -3,9 +3,6 @@ from __future__ import (absolute_import, division, print_function,
                         unicode_literals)
 from citeproc.py2compat import *
 
-from .latex import parse_latex
-from .latex.macro import NewCommand
-
 # http://maverick.inria.fr/~Xavier.Decoret/resources/xdkbibtex/bibtex_summary.html
 # http://www.lsv.ens-cachan.fr/~markey/bibla.php?lang=en
 
@@ -35,8 +32,7 @@ class BibTeXParser(dict):
         except TypeError:
             self.file = file_or_filename
         self.variables = {}
-        self._macros = {}
-        self._preamble = ''
+        self.preamble = ''
         self._parse(self.file)
         self.file.close()
 
@@ -49,11 +45,6 @@ class BibTeXParser(dict):
                     self[key] = BibTeXEntry(entry_type, attributes)
             except EOFError:
                 break
-        self._parse_preamble(self._preamble)
-        for key, entry in self.items():
-            for attribute, value in entry.items():
-                if isinstance(value, str):
-                    entry[attribute] = parse_latex(value, self._macros)
 
     def _parse_entry(self, file):
         while True:
@@ -80,7 +71,7 @@ class BibTeXParser(dict):
             assert self._eat_whitespace(file) == sentinel
             return None
         elif entry_type == 'preamble':
-            self._preamble += self._parse_value(file)
+            self.preamble += self._parse_value(file)
             assert self._eat_whitespace(file) == sentinel
             return None
         key = self._parse_key(file)
@@ -189,9 +180,6 @@ class BibTeXParser(dict):
             restore_point = file.tell()
             char = file.read(1)
         file.seek(restore_point)
-
-    def _parse_preamble(self, preamble):
-        return parse_latex(preamble, {'newcommand': NewCommand(self._macros)})
 
     def _split_name(self, name):
         pass
