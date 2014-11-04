@@ -154,21 +154,23 @@ def handle_math(tokens):
 
 
 def substitute_ligatures(string):
-    for chars, ligature in CM_LIGATURES.items():
+    for chars, ligature in SUBSTITUTIONS.items():
         string = string.replace(chars, unicodedata.lookup(ligature))
     return string
 
 
-# ligatures defined in Computer Modern that provide shortcuts for some symbols
-CM_LIGATURES = {"--": 'EN DASH',
-                "---": 'EM DASH',
-                "''": 'RIGHT DOUBLE QUOTATION MARK',
-                "``": 'LEFT DOUBLE QUOTATION MARK',
-                "!`": 'INVERTED EXCLAMATION MARK',
-                "?`": 'INVERTED QUESTION MARK',
-                ",,": 'DOUBLE LOW-9 QUOTATION MARK',
-                "<<": 'LEFT-POINTING DOUBLE ANGLE QUOTATION MARK',
-                ">>": 'RIGHT-POINTING DOUBLE ANGLE QUOTATION MARK',
+SUBSTITUTIONS = {"~": 'NO-BREAK SPACE',
+
+                 # ligatures defined in Computer Modern (symbol shortcuts)
+                 "--": 'EN DASH',
+                 "---": 'EM DASH',
+                 "''": 'RIGHT DOUBLE QUOTATION MARK',
+                 "``": 'LEFT DOUBLE QUOTATION MARK',
+                 "!`": 'INVERTED EXCLAMATION MARK',
+                 "?`": 'INVERTED QUESTION MARK',
+                 ",,": 'DOUBLE LOW-9 QUOTATION MARK',
+                 "<<": 'LEFT-POINTING DOUBLE ANGLE QUOTATION MARK',
+                 ">>": 'RIGHT-POINTING DOUBLE ANGLE QUOTATION MARK',
 }
 
 
