@@ -62,7 +62,8 @@ class NewCommand(MacroBase):
         num_args = self._parse_optional_arguments(tokens, macros)
         definition = parse_argument(tokens, macros)
         for i in range(10):
-            definition.replace('#{}'.format(i + 1), '{' + str(i) + '}')
+            definition = definition.replace('#{}'.format(i + 1),
+                                            '{' + str(i) + '}')
         self.macros[name] = Macro(num_args, definition)
         return ''
 
