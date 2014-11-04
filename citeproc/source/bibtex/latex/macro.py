@@ -6,11 +6,75 @@ from citeproc.py2compat import *
 
 import unicodedata
 
+from . import (parse_argument, eat_whitespace, parse_macro_name,
+               OPEN_SCOPE, CLOSE_SCOPE, START_MACRO)
+
+
+__all__ = ['MACROS', 'NewCommand', 'Macro']
+
+
+class MacroBase(object):
+    def parse_arguments(self, tokens):
+        raise NotImplementedError
+
+    def parse_arguments_and_expand(self, tokens):
+        raise NotImplementedError
+
+
+
+class NewCommand(MacroBase):
+    r""" \newcommand{cmd}[args]{def} """
+
+    def __init__(self, macros):
+        self.macros = macros
+
+    @staticmethod
+    def _parse_macro_name(tokens):
+        eat_whitespace(tokens)
+        token = next(tokens)
+        in_group = token.type == OPEN_SCOPE
+        if in_group:
+            eat_whitespace(tokens)
+            token = next(tokens)
+        assert token.type == START_MACRO
+        name = parse_macro_name(tokens)
+        if in_group:
+            eat_whitespace(tokens)
+            assert next(tokens).type == CLOSE_SCOPE
+        return name
+
+    @staticmethod
+    def _parse_optional_arguments(tokens, macros):
+        eat_whitespace(tokens)
+        if tokens.peek().value == '[':
+            next(tokens)
+            num_args = ''
+            for token in tokens:
+                if token.value == ']':
+                    break
+                num_args += token.value
+        else:
+            num_args = 0
+        return int(num_args)
+
+    def parse_arguments_and_expand(self, tokens, macros):
+        name = self._parse_macro_name(tokens)
+        num_args = self._parse_optional_arguments(tokens, macros)
+        definition = parse_argument(tokens, macros)
+        for i in range(10):
+            definition.replace('#{}'.format(i + 1), '{' + str(i) + '}')
+        self.macros[name] = Macro(num_args, definition)
+        return ''
+
 
 class Macro(object):
     def __init__(self, num_args, format_string):
         self.num_args = num_args
         self.format_string = format_string
+
+    def parse_arguments_and_expand(self, tokens, macros):
+        args = [parse_argument(tokens, macros) for _ in range(self.num_args)]
+        return self.expand(args)
 
     def expand(self, arguments):
         assert len(arguments) == self.num_args
@@ -101,7 +165,6 @@ MACROS = {
     'guilsinglright': SymbolByName('SINGLE RIGHT-POINTING ANGLE QUOTATION MARK'),
     'quotedblbase': SymbolByName('DOUBLE LOW-9 QUOTATION MARK'),
     'quotesinglbase': SymbolByName('SINGLE LOW-9 QUOTATION MARK'),
-    'textquotedbl': Symbol('"'),
 
     'textasciicircum': Symbol('^'),
     'textasciitilde': Symbol('~'),
@@ -126,6 +189,7 @@ MACROS = {
     'textparagraph': SymbolByName('PILCROW SIGN'),
     'textperiodcentered': SymbolByName('MIDDLE DOT'),
     'textquestiondown': SymbolByName('INVERTED QUESTION MARK'),
+    'textquotedbl': Symbol('"'),
     'textquotedblleft': SymbolByName('LEFT DOUBLE QUOTATION MARK'),
     'textquotedblright': SymbolByName('RIGHT DOUBLE QUOTATION MARK'),
     'textquoteleft': SymbolByName('LEFT SINGLE QUOTATION MARK'),
@@ -140,6 +204,7 @@ MACROS = {
     'TeX': Macro(0, 'TeX'),
 
     # escaped characters
+    ' ': Symbol(' '),
     '&': Symbol('&'),
     '$': Symbol('$'),
     '{': Symbol('{'),

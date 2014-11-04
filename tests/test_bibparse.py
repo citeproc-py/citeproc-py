@@ -14,8 +14,6 @@ class TestBibTeXParser(TestCase):
             for name, value in entry.items():
                 print('   {}: {}'.format(name, value))
         # TODO: perform useful checks
-        print(bib.macros)
-        print(bib.variables)
 
 
 # based on the sample BibTeX database by Xavier Décoret

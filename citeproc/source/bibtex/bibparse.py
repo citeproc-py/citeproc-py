@@ -4,6 +4,7 @@ from __future__ import (absolute_import, division, print_function,
 from citeproc.py2compat import *
 
 from .latex import parse_latex
+from .latex.macro import NewCommand
 
 # http://maverick.inria.fr/~Xavier.Decoret/resources/xdkbibtex/bibtex_summary.html
 # http://www.lsv.ens-cachan.fr/~markey/bibla.php?lang=en
@@ -52,7 +53,7 @@ class BibTeXParser(dict):
         for key, entry in self.items():
             for attribute, value in entry.items():
                 if isinstance(value, str):
-                    entry[attribute] = parse_latex(value, self.macros)
+                    entry[attribute] = parse_latex(value, self._macros)
 
     def _parse_entry(self, file):
         while True:
@@ -79,7 +80,7 @@ class BibTeXParser(dict):
             assert self._eat_whitespace(file) == sentinel
             return None
         elif entry_type == 'preamble':
-            self._preamble += self._parse_value(file, False)
+            self._preamble += self._parse_value(file)
             assert self._eat_whitespace(file) == sentinel
             return None
         key = self._parse_key(file)
@@ -190,56 +191,7 @@ class BibTeXParser(dict):
         file.seek(restore_point)
 
     def _parse_preamble(self, preamble):
-        self.macros = {}
-        state = None
-        for char in preamble:
-            if state == 'MACRO':
-                if char == '{':
-                    state = 'MACRO-BODY'
-                elif char in ' \t\n\r':
-                    state = None
-                else:
-                    macro_name += char
-            elif state == 'MACRO-BODY':
-                if macro_name.lower() == 'newcommand':
-                    state = 'NEWCOMMAND'
-                    assert char == '\\'
-                    command_name = ''
-                else:
-                    raise NotImplementedError
-            elif state == 'NEWCOMMAND':
-                if char == '}':
-                    state = None
-                    macro_name = None
-                    state = 'NEWCOMMAND-ARGCOUNT'
-                else:
-                    command_name += char
-            elif state == 'NEWCOMMAND-ARGCOUNT':
-                if char == '[':
-                    command_argcount = ''
-                elif char == ']':
-                    argument_index = None
-                    state = 'NEWCOMMAND-BODY'
-                else:
-                    command_argcount += char
-            elif state == 'NEWCOMMAND-BODY':
-                if char == '{':
-                    command_body = []
-                elif char == '}':
-                    if argument_index:
-                        command_body.append(int(argument_index))
-                    self.macros[command_name] = (int(command_argcount),
-                                                 command_body)
-                    state = None
-                elif char == '#':
-                    if argument_index:
-                        command_body.append(int(argument_index))
-                    argument_index = ''
-                else:
-                    argument_index += char
-            elif char == '\\':
-                state = 'MACRO'
-                macro_name = ''
+        return parse_latex(preamble, {'newcommand': NewCommand(self._macros)})
 
     def _split_name(self, name):
         pass

@@ -8,8 +8,6 @@ import unicodedata
 
 from collections import namedtuple
 
-from .macro import MACROS
-
 
 __all__ = ['parse_latex', 'substitute_ligatures']
 
@@ -77,13 +75,21 @@ class Tokenizer(object):
         return self._next_token
 
 
+def eat_whitespace(tokens):
+    while tokens.peek().type == WHITESPACE:
+        next(tokens)
+
+
 def dispatch(token, tokens, macros, top_level=False):
+    # TODO: rewrite to use tokens.peek()
     if token.type == OPEN_SCOPE:
         return handle_scope(tokens, macros, top_level)
     elif token.type == START_MACRO:
         return handle_macro(tokens, macros)
     elif token.type == TOGGLE_MATH:
         return handle_math(tokens)
+    else:
+        return token.value
 
 
 def handle_scope(tokens, macros, top_level):
@@ -91,7 +97,7 @@ def handle_scope(tokens, macros, top_level):
     for token in tokens:
         if token.type == CLOSE_SCOPE:
             break
-        result = dispatch(token, tokens, macros) or token.value
+        result = dispatch(token, tokens, macros)
         output += result
     if top_level:
         output = '<' + output + '>'
@@ -99,36 +105,29 @@ def handle_scope(tokens, macros, top_level):
 
 
 def parse_argument(tokens, macros):
-    for token in tokens:
-        if token.type != WHITESPACE:
-            break
-    return dispatch(token, tokens, macros) or token.value
+    eat_whitespace(tokens)
+    token = next(tokens)
+    return dispatch(token, tokens, macros)
 
 
 def handle_macro(tokens, macros):
-    token = next(tokens)
-    if token.type == WHITESPACE:
-        return ' '
-    assert token.type in (CHARACTER, TOGGLE_MATH)
-    name = token.value
+    name = parse_macro_name(tokens)
+    try:
+        macro = MACROS[name]
+    except KeyError:
+        macro = macros[name]
+    return macro.parse_arguments_and_expand(tokens, macros)
 
+
+def parse_macro_name(tokens):
+    token = next(tokens)
+    assert token.type in (CHARACTER, TOGGLE_MATH, WHITESPACE)
+    name = token.value
     if name.isalpha():
         while tokens.peek().type == CHARACTER and tokens.peek().value.isalpha():
             name += next(tokens).value
-        while tokens.peek().type == WHITESPACE:
-            next(tokens)
-
-    try:
-        macro = MACROS[name]
-        args = [parse_argument(tokens, macros) for _ in range(macro.num_args)]
-        return macro.expand(args)
-    except KeyError:
-        num_args, command_body = macros[name]
-        args = [parse_argument(tokens, macros) for _ in range(num_args)]
-        result = ''
-        for arg_index in command_body:
-            result += args[arg_index - 1]
-        return result
+        eat_whitespace(tokens)
+    return name
 
 
 def handle_math(tokens):
@@ -149,6 +148,7 @@ def substitute_ligatures(string):
     return string
 
 
+# ligatures defined in Computer Modern that provide shortcuts for some symbols
 CM_LIGATURES = {"--": 'EN DASH',
                 "---": 'EM DASH',
                 "''": 'RIGHT DOUBLE QUOTATION MARK',
@@ -159,3 +159,6 @@ CM_LIGATURES = {"--": 'EN DASH',
                 "<<": 'LEFT-POINTING DOUBLE ANGLE QUOTATION MARK',
                 ">>": 'RIGHT-POINTING DOUBLE ANGLE QUOTATION MARK',
 }
+
+
+from .macro import MACROS
