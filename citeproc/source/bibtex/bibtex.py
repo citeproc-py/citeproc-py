@@ -4,6 +4,7 @@ from __future__ import (absolute_import, division, print_function,
 from citeproc.py2compat import *
 
 import re
+import unicodedata
 
 from warnings import warn
 
@@ -12,6 +13,8 @@ from ...types import (ARTICLE, ARTICLE_JOURNAL, BOOK, CHAPTER, MANUSCRIPT,
 from ...string import String, MixedString, NoCase
 from .. import BibliographySource, Reference, Name, Date, DateRange, Pages
 from .bibparse import BibTeXParser
+from .latex import parse_latex
+from .latex.macro import NewCommand, Macro
 
 
 class BibTeX(BibliographySource):
@@ -58,7 +61,13 @@ class BibTeX(BibliographySource):
              'unpublished': MANUSCRIPT}
 
     def __init__(self, filename):
-        for key, entry in BibTeXParser(filename).items():
+        bibtex_database = BibTeXParser(filename)
+        self.preamble_macros = {}
+        parse_latex(bibtex_database.preamble,
+                    {'newcommand': NewCommand(self.preamble_macros),
+                     'mbox': Macro(1, '{0}'),
+                     'cite': Macro(1, 'CITE({0})')})
+        for key, entry in bibtex_database.items():
             self.add(self.create_reference(key, entry))
 
     def _bibtex_to_csl(self, bibtex_entry):
@@ -85,7 +94,7 @@ class BibTeX(BibliographySource):
                 value = [name for name in self._parse_author(value)]
             else:
                 try:
-                    value = self._parse_title(value)
+                    value = self._parse_string(value)
                 except TypeError:
                     value = str(value)
             csl_dict[csl_field] = value
@@ -108,14 +117,17 @@ class BibTeX(BibliographySource):
             return DateRange(begin=Date(**begin_dict), end=Date(**end_dict))
 
     def _parse_year(self, year):
-        year = str(year).replace('--', '-')
-        if '-' in year:
-            begin_year, end_year = year.split('-')
+        try:
+            year_str = parse_latex(year, self.preamble_macros)
+        except TypeError:
+            year_str = str(year)
+        if EN_DASH in year_str:
+            begin_year, end_year = year_str.split(EN_DASH)
             begin_len, end_len = len(begin_year), len(end_year)
             if end_len < begin_len:
                 end_year = begin_year[:begin_len - end_len] + end_year
         else:
-            begin_year = end_year = int(year)
+            begin_year = end_year = int(year_str)
         return begin_year, end_year
 
     months = ('jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep',
@@ -139,59 +151,34 @@ class BibTeX(BibliographySource):
         end['month'] = self.months.index(end['month'][:3].lower())
         return begin, end
 
-    math_map = {'mu': 'µ'}
+    def _parse_string(self, title):
+        def make_string(string, top_level_group=False):
+            unlatexed = parse_latex(string, self.preamble_macros)
+            fixed_case = top_level_group and not string.startswith('\\')
+            string_cls = NoCase if fixed_case else String
+            return string_cls(unlatexed)
 
-    def _parse_title(self, title):
         output = MixedString()
-        escape = False
-        math = False
-        math_escape = False
-        math_escape_string = None
         level = 0
         string = ''
-        for i, char in enumerate(title):
-            if escape:
-                string += char
-                escape = False
-            elif math:
-                if char == ' ':
-                    if math_escape_string:
-                        string += self.math_map[math_escape_string]
-                elif char == '$':
-                    if math_escape_string:
-                        string += self.math_map[math_escape_string]
-                    math = False
-                else:
-                    if char == '\\':
-                        if math_escape_string:
-                            string += self.math_map[math_escape_string]
-                        math_escape = True
-                        math_escape_string = ''
-                    else:
-                        string += char
-            elif char == '$':
-                math = True
-                math_string = ''
-            elif char == '\\':
-                escape = True
-            elif char == '{':
+        for char in title:
+            if char == '{':
                 if level == 0:
                     if string:
-                        output += String(string)
+                        output += make_string(string)
                         string = ''
                 level += 1
             elif char == '}':
                 level -= 1
                 if level == 0:
-                    output += NoCase(string)
+                    output += make_string(string, True)
                     string = ''
             else:
                 string += char
-            prev_char = char
         if level != 0:
             raise SyntaxError('Non-matching braces in "{}"'.format(title))
         if string:
-            output += String(string)
+            output += make_string(string)
         return output
 
     def _parse_author(self, authors):
@@ -217,3 +204,6 @@ class BibTeX(BibliographySource):
         if csl_date:
             csl_fields['issued'] = csl_date
         return Reference(key, csl_type, **csl_fields)
+
+
+EN_DASH = unicodedata.lookup('EN DASH')
