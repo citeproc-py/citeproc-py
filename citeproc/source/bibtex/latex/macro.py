@@ -1,3 +1,4 @@
+# coding: utf-8
 
 from __future__ import (absolute_import, division, print_function,
                         unicode_literals)
@@ -84,19 +85,19 @@ class Macro(object):
 
 class Symbol(Macro):
     def __init__(self, symbol):
-        super().__init__(0, symbol)
+        super(Symbol, self).__init__(0, symbol)
 
 
 class SymbolByName(Macro):
     def __init__(self, unicode_symbol_name):
         unicode_symbol = unicodedata.lookup(unicode_symbol_name)
-        super().__init__(0, unicode_symbol)
+        super(SymbolByName, self).__init__(0, unicode_symbol)
 
 
 class Combining(Macro):
     def __init__(self, unicode_accent_name):
         unicode_accent = unicodedata.lookup('COMBINING ' + unicode_accent_name)
-        super().__init__(1, '{0}' + unicode_accent)
+        super(Combining, self).__init__(1, '{0}' + unicode_accent)
 
     DOTTED_CHARS = {'ı': 'i',
                     'ȷ': 'j'}
@@ -105,7 +106,8 @@ class Combining(Macro):
         assert len(arguments) == self.num_args
         accented, rest = arguments[0][0], arguments[0][1:]
         accented = self.DOTTED_CHARS.get(accented, accented)
-        return unicodedata.normalize('NFC', super().expand([accented])) + rest
+        expanded = super(Combining, self).expand([accented])
+        return unicodedata.normalize('NFC', expanded) + rest
 
 
 MACROS = {

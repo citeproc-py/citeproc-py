@@ -1,4 +1,8 @@
-# coding=utf-8
+# coding: utf-8
+
+from __future__ import (absolute_import, division, print_function,
+                        unicode_literals)
+from citeproc.py2compat import *
 
 from unittest import TestCase
 
@@ -33,8 +37,8 @@ class TestLatex(TestCase):
 
                      ('hát hàt hȧt hät hāt', r"h\'at h\`at h\.at h\"at h\=at"),
                      ('hãt  hât  ha̧t  ha̱t', r"h\~at  h\^at  h\c at  h\b at"),
-                     ('hạt  hǎt  hăt  ha̋t', r"h\d at  h\v at  h\u at  h\H at"),
-                     ('ha͡at', r"h\t aat"),
+                     ('hạt  hǎt  ha̋t', "h\\d at  h\\v at  h\\H at"),
+                     ('hăt  ha͡at', "h\\u at  h\\t aat"),
 
                      ('øre', r"\o re"),
                      ('Øre', r"\O re"),
