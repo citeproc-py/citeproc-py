@@ -216,6 +216,28 @@ class BibTeX(BibliographySource):
 #  - Tame the BeaST by Nicolas Markey
 #    (http://tug.ctan.org/info/bibtex/tamethebeast/ttb_en.pdf)
 
+AND = ' and '
+
+def split_names(string):
+    """Split a string of names separated by 'and' into a list of names."""
+    brace_level = 0
+    names = []
+    last_index = 0
+    for i in range(len(string)):
+        char = string[i]
+        if brace_level == 0 and string[i:].startswith(AND):
+            names.append(string[last_index:i])
+            last_index = i + len(AND)
+        elif char == '{':
+            brace_level += 1
+        elif char == '}':
+            brace_level -= 1
+    last_name = string[last_index:]
+    if last_name:
+        names.append(last_name)
+    return names
+
+
 def parse_name(name):
     """Parse a BibTeX name string and split it into First, von, Last and Jr
     parts.

@@ -1,11 +1,16 @@
 from unittest import TestCase
 
-from citeproc.source.bibtex.bibtex import split_name, parse_name
+from citeproc.source.bibtex.bibtex import split_names, split_name, parse_name
 
 
 class TestBibTeX(TestCase):
+    def test_split_names(self):
+        for names, parts in SPLIT_NAMES:
+            print(names, split_names(names))
+            self.assertEqual(split_names(names), parts)
+
     def test_split_name(self):
-        for name, parts in SPLIT_NAMES:
+        for name, parts in SPLIT_NAME:
             self.assertEqual(split_name(name), parts)
 
     def test_parse_name(self):
@@ -23,6 +28,14 @@ class TestBibTeX(TestCase):
 
 
 SPLIT_NAMES = [
+    ('AA BB', ['AA BB']),
+    ('AA and BB', ['AA', 'BB']),
+    ('AA{ and }BB', ['AA{ and }BB']),
+    ('AA{ }and BB', ['AA{ }and BB']),
+]
+
+
+SPLIT_NAME = [
     ('aa bb cc', [['aa', 'bb', 'cc']]),
     ('aa{ }bb cc', [['aa{ }bb', 'cc']]),
     ('aa{, }bb cc', [['aa{, }bb', 'cc']]),
