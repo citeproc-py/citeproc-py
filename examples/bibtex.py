@@ -41,11 +41,16 @@ bibliography = CitationStylesBibliography(bib_style, bib_source,
 
 citation1 = Citation([CitationItem('whole-collection')])
 citation2 = Citation([CitationItem('whole-set'), CitationItem('misc-full')])
-citation3 = Citation([CitationItem('techreport-minimal')])
+citation3 = Citation([CitationItem('techreport-full')])
+citation4 = Citation([CitationItem('mastersthesis-minimal')])
+citation5 = Citation([CitationItem('inproceedings-full'),
+                      CitationItem('unpublished-full')])
 
 bibliography.register(citation1)
 bibliography.register(citation2)
 bibliography.register(citation3)
+bibliography.register(citation4)
+bibliography.register(citation5)
 
 
 # In the second pass, CitationStylesBibliography can generate citations.
@@ -64,6 +69,8 @@ print('---------')
 print(bibliography.cite(citation1, warn))
 print(bibliography.cite(citation2, warn))
 print(bibliography.cite(citation3, warn))
+print(bibliography.cite(citation4, warn))
+print(bibliography.cite(citation5, warn))
 
 
 # And finally, the bibliography can be rendered.
