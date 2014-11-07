@@ -206,4 +206,112 @@ class BibTeX(BibliographySource):
         return Reference(key, csl_type, **csl_fields)
 
 
+# BibTeX name handling
+#
+# references
+#  - BibTeXing by Oren Patashnik (Feb 8, 1988), 4. Helpful Hints, item 18
+#    (BibTeX 0.99d - http://www.ctan.org/tex-archive/biblio/bibtex/base/btxdoc.pdf)
+#  - A summary of BibTex by Xavier Décoret
+#    (http://maverick.inria.fr/~Xavier.Decoret/resources/xdkbibtex/bibtex_summary.html)
+#  - Tame the BeaST by Nicolas Markey
+#    (http://tug.ctan.org/info/bibtex/tamethebeast/ttb_en.pdf)
+
+def parse_name(name):
+    """Parse a BibTeX name string and split it into First, von, Last and Jr
+    parts.
+    """
+    parts = split_name(name)
+    if len(parts) == 1:       # First von Last
+        first_von_last, = parts
+        index = 0
+        first, jr = [], []
+        for word in first_von_last[:-1]:
+            if is_capitalized(word) not in (True, None):
+                break
+            first.append(word)
+            index += 1
+        von_last = first_von_last[index:]
+    elif len(parts) == 2:     # von Last, First
+        jr = []
+        von_last, first = parts
+    elif len(parts) == 3:     # von Last, Jr, First
+        von_last, jr, first = parts
+    von, last = split_von_last(von_last)
+    join = ' '.join
+    return join(first) or None, join(von) or None, join(last), join(jr) or None
+
+
+def split_name(name):
+    """Split a name in into parts delimited by commas (at brace-level 0), and
+    each part into words.
+
+    Returns a list of of lists of words.
+    """
+    brace_level = 0
+    parts = []
+    current_part = []
+    word = ''
+    for char in name:
+        if char in ' \t,':
+            if brace_level == 0:
+                if word:
+                    current_part.append(word)
+                    word = ''
+                if char == ',':
+                    parts.append(current_part)
+                    current_part = []
+                continue
+        elif char == '{':
+            brace_level += 1
+        elif char == '}':
+            brace_level -= 1
+        word += char
+    if word:
+        current_part.append(word)
+        parts.append(current_part)
+    return parts
+
+
+def is_capitalized(string):
+    """Check if a BibTeX substring is capitalized.
+
+    A string can be "case-less", in which case `None` is returned.
+    """
+    brace_level = 0
+    special_char = False
+    for char, next_char in lookahead_iter(string):
+        if (brace_level == 0 or special_char) and char.isalpha():
+            return char.isupper()
+        elif char == '{':
+            brace_level += 1
+            if brace_level == 1 and next_char == '\\':
+                special_char = True
+        elif char == '}':
+            brace_level -= 1
+            if brace_level == 0:
+                special_char = False
+    return None  # case-less
+
+
+def split_von_last(words):
+    """Split "von Last" name into von and Last parts."""
+    if len(words) > 1 and is_capitalized(words[0]) is False:
+        for j, word in enumerate(reversed(words[:-1])):
+            if is_capitalized(word) not in (True, None):
+                return words[:-j - 1], words[-j - 1:]
+    return [], words
+
+
+def lookahead_iter(iterable):
+    """Iterator that also yields the next item along with each item. The next
+    item is `None` when yielding the last item.
+    """
+    items = iter(iterable)
+    item = next(items)
+    for next_item in items:
+        yield item, next_item
+        item = next_item
+    yield item, None
+
+
 EN_DASH = unicodedata.lookup('EN DASH')
