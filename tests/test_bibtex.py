@@ -231,6 +231,7 @@ PYBTEX_NAMES = [
 
 
 EXTRA_NAMES = [
+    ('others', (None, None, 'others', None)),
     ('Charles Louis Xavier Joseph de la Vall{\’e}e Poussin',
       ('Charles Louis Xavier Joseph', 'de la', 'Vall{\’e}e Poussin', None)),
     # the following name of the Pybtex tests doesn't agree with BibTeX's output

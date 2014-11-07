@@ -182,18 +182,18 @@ class BibTeX(BibliographySource):
         return output
 
     def _parse_author(self, authors):
-        # TODO: implement proper parsing
         csl_authors = []
-        for author in authors.split(' and '):
-            if ',' in author:
-                family, given = [a.strip() for a in  author.split(',', 1)]
-                name = Name(family=family, given=given)
-            elif ' ' in author:
-                given, family = [a.strip() for a in author.rsplit(' ', 1)]
-                name = Name(family=family, given=given)
-            else:
-                # TODO: handle 'others'
-                name = Name(name=author)
+        for author in split_names(authors):
+            first, von, last, jr = parse_name(author)
+            csl_parts = {}
+            for part, csl_label in [(first, 'given'),
+                                    (von, 'non-dropping-particle'),
+                                    (last, 'family'),
+                                    (jr, 'suffix')]:
+                if part is not None:
+                    csl_parts[csl_label] = parse_latex(part,
+                                                       self.preamble_macros)
+            name = Name(**csl_parts)
             csl_authors.append(name)
         return csl_authors
 
