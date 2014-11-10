@@ -761,6 +761,12 @@ class Text(CitationStylesElement, Formatted, Affixed, Quoted, TextCased,
     def markup(self, text, language):
         if text:
             tmp = self.format(self.case(self.strip_periods(text), language))
+            
+            if 'variable' in self.attrib:
+                variables = {'class':self.get('variable')}
+                formatter = self.get_formatter()
+                tmp = formatter.TagWrapper(tmp, attributes=variables)
+            
             return self.wrap(self.quote(tmp))
         else:
             return None
