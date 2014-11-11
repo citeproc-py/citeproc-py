@@ -39,12 +39,14 @@ class TagWrapper(str):
     def __new__(cls, text, attributes=None):
         return super(TagWrapper, cls).__new__(cls, cls._wrap(text, attributes))
 
+class Span(TagWrapper):
+    pass
+
 class Italic(TagWrapper):
     tag = 'i'
 
 class Oblique(Italic):
     pass
-
 
 class Bold(TagWrapper):
     tag = 'b'

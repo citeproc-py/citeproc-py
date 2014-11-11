@@ -765,7 +765,7 @@ class Text(CitationStylesElement, Formatted, Affixed, Quoted, TextCased,
             if 'variable' in self.attrib:
                 variables = {'class':self.get('variable')}
                 formatter = self.get_formatter()
-                tmp = formatter.TagWrapper(tmp, attributes=variables)
+                tmp = formatter.Span(tmp, attributes=variables)
             
             return self.wrap(self.quote(tmp))
         else:
@@ -962,7 +962,7 @@ class Date_Part(CitationStylesElement, Formatted, Affixed, TextCased,
             if 'variable' in self.attrib:
                 variables = {'class': self.get('variable')}
                 formatter = self.get_formatter()
-                tmp = formatter.TagWrapper(tmp, attributes=variables)
+                tmp = formatter.Span(tmp, attributes=variables)
 
             return self.wrap(tmp)
         else:
@@ -1221,7 +1221,7 @@ class Name(CitationStylesElement, Formatted, Affixed, Delimited):
                 if variable: # role has been passed through, indicates author/editor
                     variables = {'class': variable}
                     formatter = self.get_formatter()
-                    text = formatter.TagWrapper(text, attributes=variables)
+                    text = formatter.Span(text, attributes=variables)
 
                 output.append(text)
 
@@ -1281,7 +1281,7 @@ class Name(CitationStylesElement, Formatted, Affixed, Delimited):
             if 'variable' in self.attrib:
                 variables = {'class': self.get('variable')}
                 formatter = self.get_formatter()
-                tmp = formatter.TagWrapper(tmp, attributes=variables)
+                tmp = formatter.Span(tmp, attributes=variables)
             
             return self.wrap(tmp)
         else:
