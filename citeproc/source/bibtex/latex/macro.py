@@ -203,6 +203,7 @@ MACROS = {
     'texttrademark': SymbolByName('TRADE MARK SIGN'),
     'textunderscore': Symbol('_'),
     'textvisiblespace': SymbolByName('OPEN BOX'),
+    'backslash': SymbolByName('REVERSE SOLIDUS'),
 
     'TeX': Macro(0, 'TeX'),
 

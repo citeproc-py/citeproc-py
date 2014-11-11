@@ -18,26 +18,35 @@ class TagWrapper(str):
     attributes = None
 
     @classmethod
-    def _wrap(cls, text):
+    def _wrap(cls, text, attributes=None):
+        if attributes == None:
+            attributes = {}
+            
         if cls.attributes:
+            attributes.update(cls.attributes)
+        
+        if attributes:
             attrib = ' ' + ' '.join(['{}="{}"'.format(key, value)
-                                     for key, value in cls.attributes.items()])
+                                     for key, value in attributes.items()])
         else:
             attrib = ''
-        return '<{tag}{attrib}>{text}</{tag}>'.format(tag=cls.tag,
+        
+        tag = cls.tag or 'span'
+        
+        return '<{tag}{attrib}>{text}</{tag}>'.format(tag=tag,
                                                       attrib=attrib,text=text)
 
-    def __new__(cls, text):
-        return super(TagWrapper, cls).__new__(cls, cls._wrap(text))
+    def __new__(cls, text, attributes=None):
+        return super(TagWrapper, cls).__new__(cls, cls._wrap(text, attributes))
 
+class Span(TagWrapper):
+    pass
 
 class Italic(TagWrapper):
     tag = 'i'
 
-
 class Oblique(Italic):
     pass
-
 
 class Bold(TagWrapper):
     tag = 'b'

@@ -2,6 +2,8 @@
 
 from __future__ import (absolute_import, division, print_function,
                         unicode_literals)
+import sys
+sys.path.insert(0, '../')
 from citeproc.py2compat import *
 
 # The references are parsed from a BibTeX database, so we import the
@@ -30,7 +32,7 @@ bib_style = CitationStylesStyle('harvard1', validate=False)
 # * a formatter (plain, html, or you can write a custom formatter)
 
 bibliography = CitationStylesBibliography(bib_style, bib_source,
-                                          formatter.plain)
+                                          formatter.html)
 
 
 # Processing citations in a document needs to be done in two passes as for some

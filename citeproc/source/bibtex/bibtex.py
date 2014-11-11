@@ -56,8 +56,10 @@ class BibTeX(BibliographySource):
              'mastersthesis': THESIS,
              'misc': ARTICLE,
              'phdthesis': THESIS,
+             'thesis': THESIS,
              'proceedings': BOOK,
              'techreport': REPORT,
+             'report': REPORT,
              'unpublished': MANUSCRIPT}
 
     def __init__(self, filename):
@@ -88,8 +90,11 @@ class BibTeX(BibliographySource):
                 if value.endswith('+'):
                     value = Pages(first=int(value[:-1]))
                 else:
-                    first, last = value.replace(' ', '').split('--')
-                    value = Pages(first=int(first), last=int(last))
+                    try:
+                        first, last = value.replace(' ', '').split('--')
+                        value = Pages(first=int(first), last=int(last))
+                    except ValueError:
+                        pass
             elif field in ('author', 'editor'):
                 value = [name for name in self._parse_author(value)]
             else:
@@ -103,7 +108,10 @@ class BibTeX(BibliographySource):
     def _bibtex_to_csl_date(self, bibtex_entry):
         is_range = False
         if 'month' in bibtex_entry:
-            begin_dict, end_dict = self._parse_month(bibtex_entry['month'])
+            try:
+                begin_dict, end_dict = self._parse_month(bibtex_entry['month'])
+            except ValueError:
+                begin_dict, end_dict = {}, {}
         else:
             begin_dict, end_dict = {}, {}
         if 'year' in bibtex_entry:
