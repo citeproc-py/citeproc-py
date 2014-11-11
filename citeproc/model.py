@@ -958,7 +958,13 @@ class Date_Part(CitationStylesElement, Formatted, Affixed, TextCased,
 
     def markup(self, text):
         if text:
-            return self.wrap(self.format(self.case(self.strip_periods(text))))
+            tmp = self.format(self.case(self.strip_periods(text)))
+            if 'variable' in self.attrib:
+                variables = {'class': self.get('variable')}
+                formatter = self.get_formatter()
+                tmp = formatter.TagWrapper(tmp, attributes=variables)
+
+            return self.wrap(tmp)
         else:
             return None
 
@@ -1211,6 +1217,11 @@ class Name(CitationStylesElement, Formatted, Affixed, Delimited):
                     family = ' '.join([n for n in (ndp, family) if n])
                     given, family = format_name_parts(given, family)
                     text = family
+                
+                if variable: # role has been passed through, indicates author/editor
+                    variables = {'class': variable}
+                    formatter = self.get_formatter()
+                    text = formatter.TagWrapper(text, attributes=variables)
 
                 output.append(text)
 
@@ -1266,7 +1277,13 @@ class Name(CitationStylesElement, Formatted, Affixed, Delimited):
 
     def markup(self, text):
         if text:
-            return self.wrap(self.format(text))
+            tmp = self.format(text)
+            if 'variable' in self.attrib:
+                variables = {'class': self.get('variable')}
+                formatter = self.get_formatter()
+                tmp = formatter.TagWrapper(tmp, attributes=variables)
+            
+            return self.wrap(tmp)
         else:
             return None
 
