@@ -323,9 +323,11 @@ class Formatted(object):
 
 class Affixed(object):
     def wrap(self, string):
-        prefix = self.get('prefix', '')
-        suffix = self.get('suffix', '')
-        return prefix + string + suffix
+        if string is not None:
+            prefix = self.get('prefix', '')
+            suffix = self.get('suffix', '')
+            return prefix + string + suffix
+        return None
 
 
 class Delimited(object):
