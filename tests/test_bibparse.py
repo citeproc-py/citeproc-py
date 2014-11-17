@@ -14,11 +14,19 @@ class TestBibTeXParser(TestCase):
     def test_parse(self):
         file = StringIO(sample)
         bib = BibTeXParser(file)
+        self.print_entries(bib)
+        # TODO: perform useful checks
+
+    def test_parse_file(self):
+        test_bib = BibTeXParser('test.bib')
+        self.print_entries(test_bib)
+
+    @staticmethod
+    def print_entries(bib):
         for key, entry in bib.items():
             print(key)
             for name, value in entry.items():
                 print('   {}: {}'.format(name, value))
-        # TODO: perform useful checks
 
 
 # based on the sample BibTeX database by Xavier Décoret
