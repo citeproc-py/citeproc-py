@@ -2,11 +2,14 @@
 
 from __future__ import (absolute_import, division, print_function,
                         unicode_literals)
+import sys
+sys.path.insert(0, '../')
 from citeproc.py2compat import *
 
 from unittest import TestCase
 
 from citeproc.source.bibtex.bibtex import split_names, split_name, parse_name
+from citeproc.source.bibtex.bibtex import BibTeX
 
 
 class TestBibTeX(TestCase):
@@ -31,7 +34,13 @@ class TestBibTeX(TestCase):
         for name, reference in EXTRA_NAMES:
             print('{:24}  {}'.format(name, parse_name(name)))
             self.assertEqual(parse_name(name), reference)
-
+    
+    def test_date_months(self):
+        for january in ['jan', 'JAN', '01']:
+            parser = BibTeX('month-test.bib')   
+            # the contents of that file are actually unnecessary, 
+            # but need to instantiate the parser to test this method for now
+            self.assertEqual(parser._parse_month(january), ({'month': 0}, {'month':0}))
 
 SPLIT_NAMES = [
     ('AA BB', ['AA BB']),
