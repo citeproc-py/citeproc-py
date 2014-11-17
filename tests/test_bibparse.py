@@ -2,6 +2,8 @@
 
 from __future__ import (absolute_import, division, print_function,
                         unicode_literals)
+import sys
+sys.path.insert(0, '../')
 from citeproc.py2compat import *
 
 from io import StringIO
@@ -19,6 +21,10 @@ class TestBibTeXParser(TestCase):
             for name, value in entry.items():
                 print('   {}: {}'.format(name, value))
         # TODO: perform useful checks
+    
+    def test_parse_file(self):
+        filename = 'test.bib'   # file that contains a non-ascii character
+        bib_source = BibTeXParser(filename)
 
 
 # based on the sample BibTeX database by Xavier Décoret
@@ -47,7 +53,7 @@ Some {{comments} with unbalanced braces
 ....and a "commented" entry...
 
 Book{landru21,
-  author =	 {Landru, Henri D\'esir\'e},
+  author =	 {Landru, Henri Desir’e},
   title =	 {A hundred recipes for you wife},
   publisher =	 {Culinary Expert Series},
   year =	 1921
