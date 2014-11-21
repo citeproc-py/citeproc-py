@@ -13,8 +13,12 @@ from setuptools import setup, find_packages
 
 
 PACKAGE = 'citeproc'
-PACKAGE_ABSPATH = os.path.abspath(PACKAGE)
-VERSION_FILE = PACKAGE + '/version.py'
+BASE_PATH = os.path.dirname(os.path.abspath(__file__))
+PACKAGE_ABSPATH = os.path.join(BASE_PATH, PACKAGE)
+VERSION_FILE = os.path.join(PACKAGE_ABSPATH, 'version.py')
+
+# All external commands are relative to BASE_PATH
+os.chdir(BASE_PATH)
 
 # retrieve the version number from git or VERSION_FILE
 # inspired by http://dcreager.net/2010/02/10/setuptools-git-version-numbers/
@@ -37,7 +41,7 @@ except OSError as e:
         code = compile(version_file.read(), VERSION_FILE, 'exec')
         exec(code)
 
-with open('README.rst') as file:
+with open(os.path.join(BASE_PATH, 'README.rst')) as file:
     README = file.read()
 
 
