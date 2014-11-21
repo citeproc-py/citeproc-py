@@ -7,7 +7,7 @@ from citeproc.py2compat import *
 from io import StringIO
 from unittest import TestCase
 
-from citeproc.source.bibtex.bibparse import BibTeXParser
+from citeproc.source.bibtex.bibparse import BibTeXParser, BibTeXDecodeError
 
 
 class TestBibTeXParser(TestCase):
@@ -18,8 +18,15 @@ class TestBibTeXParser(TestCase):
         # TODO: perform useful checks
 
     def test_parse_file(self):
-        test_bib = BibTeXParser('test.bib')
+        test_bib = BibTeXParser('test.bib', encoding='utf-8')
         self.print_entries(test_bib)
+
+    def test_parse_file_bad_encoding(self):
+        try:
+            BibTeXParser('test.bib')
+            self.assertTrue(False)
+        except BibTeXDecodeError:
+            self.assertTrue(True)
 
     @staticmethod
     def print_entries(bib):

@@ -12,6 +12,18 @@ class BibTeXEntry(dict):
         self.document_type = document_type
 
 
+class BibTeXDecodeError(Exception):
+    """Exception raised when the encoding passed to BibTeXParser cannot decode
+    the BibTeX database file."""
+    def __init__(self, decode_error, line_number):
+        msg = ("'{}' decode error on line {}: {}. Please specify the BibTeX's "
+               "database character encoding when instantiating BibTeXParser."
+               .format(decode_error.encoding, line_number, decode_error.reason))
+        super(BibTeXDecodeError, self).__init__(msg)
+        self.line_number = line_number
+        self.decode_error = decode_error
+
+
 class BibTeXParser(dict):
     standard_variables = {'jan': 'January',
                           'feb': 'February',
@@ -26,9 +38,9 @@ class BibTeXParser(dict):
                           'nov': 'November',
                           'dec': 'December'}
 
-    def __init__(self, file_or_filename):
+    def __init__(self, file_or_filename, encoding='ascii'):
         try:
-            self.file = open(file_or_filename, 'rt', encoding='ascii')
+            self.file = open(file_or_filename, 'rt', encoding=encoding)
         except TypeError:
             self.file = file_or_filename
         self.variables = {}
@@ -43,6 +55,15 @@ class BibTeXParser(dict):
                 if entry is not None:
                     entry_type, key, attributes = entry
                     self[key] = BibTeXEntry(entry_type, attributes)
+            except UnicodeDecodeError as decode_error:
+                # I'm not convinced the following is robust
+                safe_part = decode_error.object[:decode_error.start]
+                line_number = len(safe_part.splitlines())
+                offset = file.tell() - len(decode_error.object)
+                if offset > 0:
+                    file.seek(0)
+                    line_number += file.read(offset).count(file.newlines)
+                raise BibTeXDecodeError(decode_error, line_number)
             except EOFError:
                 break
 
