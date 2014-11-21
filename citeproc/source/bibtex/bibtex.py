@@ -101,7 +101,6 @@ class BibTeX(BibliographySource):
         return csl_dict
 
     def _bibtex_to_csl_date(self, bibtex_entry):
-        is_range = False
         if 'month' in bibtex_entry:
             begin_dict, end_dict = self._parse_month(bibtex_entry['month'])
         else:
@@ -130,10 +129,13 @@ class BibTeX(BibliographySource):
             begin_year = end_year = int(year_str)
         return begin_year, end_year
 
-    months = ('jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep',
-              'oct', 'nov', 'dec')
+    months = ('jan', 'feb', 'mar', 'apr', 'may', 'jun',
+              'jul', 'aug', 'sep', 'oct', 'nov', 'dec')
 
     def _parse_month(self, month):
+        def month_name_to_index(name):
+            return self.months.index(name[:3].lower()) + 1
+
         begin = {}
         end = {}
         month = month.strip()
@@ -147,8 +149,8 @@ class BibTeX(BibliographySource):
             m = re.match('(?P<day>\d+)[ ~]*(?P<month>\w+)', month)
             begin['day'] = end['day'] = m.group('day')
             begin['month'] = end['month'] = m.group('month')
-        begin['month'] = self.months.index(begin['month'][:3].lower())
-        end['month'] = self.months.index(end['month'][:3].lower())
+        begin['month'] = month_name_to_index(begin['month'])
+        end['month'] = month_name_to_index(end['month'])
         return begin, end
 
     def _parse_string(self, title):
