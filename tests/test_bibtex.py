@@ -31,7 +31,18 @@ class TestBibTeX(TestCase):
         for name, reference in EXTRA_NAMES:
             print('{:24}  {}'.format(name, parse_name(name)))
             self.assertEqual(parse_name(name), reference)
-
+    
+    def test_date_months(self):
+        parser = BibTeX('month-test.bib')   
+        # the contents of that file are actually unnecessary, 
+        # but need to instantiate the parser to test this method for now
+        for january in ['jan', 'JAN', '01']:
+            self.assertEqual(parser._parse_month(january), ({'month': 0}, {'month':0}))
+    
+    def test_pages(self):
+        parser = BibTeX('pages-test.bib')
+        # TODO: should confirm that the correct pages lenth is parsed
+        # but in the meantime, this test checks for error handling
 
 SPLIT_NAMES = [
     ('AA BB', ['AA BB']),
