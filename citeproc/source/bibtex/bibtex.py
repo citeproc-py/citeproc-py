@@ -45,7 +45,8 @@ class BibTeX(BibliographySource):
               'isbn': 'ISBN',
               'issn': 'ISSN'}
 
-    types = {'article': ARTICLE_JOURNAL,
+    types = {# standard entry types
+             'article': ARTICLE_JOURNAL,
              'book': BOOK,
              'booklet': PAMPHLET,
              'conference': PAPER_CONFERENCE,
@@ -58,7 +59,12 @@ class BibTeX(BibliographySource):
              'phdthesis': THESIS,
              'proceedings': BOOK,
              'techreport': REPORT,
-             'unpublished': MANUSCRIPT}
+             'unpublished': MANUSCRIPT,
+
+             # non-standard entry types
+             'thesis': THESIS,
+             'report': REPORT,
+             }
 
     def __init__(self, filename, encoding='ascii'):
         bibtex_database = BibTeXParser(filename, encoding)
