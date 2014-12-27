@@ -1,0 +1,3 @@
+[submodule "citeproc/data/schema"]
+	path = citeproc/data/schema
+	url = git@github.com:citation-style-language/schema.git
