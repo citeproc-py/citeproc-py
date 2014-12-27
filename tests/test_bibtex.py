@@ -6,6 +6,7 @@ from citeproc.py2compat import *
 
 from unittest import TestCase
 
+from citeproc.source.bibtex import BibTeX
 from citeproc.source.bibtex.bibtex import split_names, split_name, parse_name
 
 
@@ -31,6 +32,14 @@ class TestBibTeX(TestCase):
         for name, reference in EXTRA_NAMES:
             print('{:24}  {}'.format(name, parse_name(name)))
             self.assertEqual(parse_name(name), reference)
+
+    def test_date_months(self):
+        for january in ['jan', 'JAN', '01']:
+            self.assertEqual(BibTeX._parse_month(january), ({'month': 1}, ) * 2)
+        self.assertEqual(BibTeX._parse_month("10~jan"),
+                         ({'month': 1, 'day': 10}, ) * 2)
+        self.assertEqual(BibTeX._parse_month("jul~4"),
+                         ({'month': 7, 'day': 4}, ) * 2)
 
 
 SPLIT_NAMES = [

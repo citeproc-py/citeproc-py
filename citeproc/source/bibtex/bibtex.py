@@ -129,25 +129,35 @@ class BibTeX(BibliographySource):
             begin_year = end_year = int(year_str)
         return begin_year, end_year
 
-    months = ('jan', 'feb', 'mar', 'apr', 'may', 'jun',
+    MONTHS = ('jan', 'feb', 'mar', 'apr', 'may', 'jun',
               'jul', 'aug', 'sep', 'oct', 'nov', 'dec')
+    RE_DAY = '(?P<day>\d+)'
+    RE_MONTH = '(?P<month>\w+)'
 
-    def _parse_month(self, month):
+    @staticmethod
+    def _parse_month(month):
         def month_name_to_index(name):
-            return self.months.index(name[:3].lower()) + 1
+            try:
+                return BibTeX.MONTHS.index(name[:3].lower()) + 1
+            except ValueError:
+                return int(name)
 
         begin = {}
         end = {}
         month = month.strip()
         month = month.replace(', ', '-')
-        if month.replace('-', '').isalpha():
+        if month.isdecimal():
+            begin['month'] = end['month'] = month
+        elif month.replace('-', '').isalpha():
             if '-' in month:
                 begin['month'], end['month'] = month.split('-')
             else:
                 begin['month'] = end['month'] = month
         else:
-            m = re.match('(?P<day>\d+)[ ~]*(?P<month>\w+)', month)
-            begin['day'] = end['day'] = m.group('day')
+            m = re.match(BibTeX.RE_DAY + '[ ~]*' + BibTeX.RE_MONTH, month)
+            if m is None:
+                m = re.match(BibTeX.RE_MONTH + '[ ~]*' + BibTeX.RE_DAY, month)
+            begin['day'] = end['day'] = int(m.group('day'))
             begin['month'] = end['month'] = m.group('month')
         begin['month'] = month_name_to_index(begin['month'])
         end['month'] = month_name_to_index(end['month'])
