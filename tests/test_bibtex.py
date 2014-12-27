@@ -8,6 +8,7 @@ from unittest import TestCase
 
 from citeproc.source.bibtex import BibTeX
 from citeproc.source.bibtex.bibtex import split_names, split_name, parse_name
+from citeproc.source import Pages
 
 
 class TestBibTeX(TestCase):
@@ -40,6 +41,14 @@ class TestBibTeX(TestCase):
                          ({'month': 1, 'day': 10}, ) * 2)
         self.assertEqual(BibTeX._parse_month("jul~4"),
                          ({'month': 7, 'day': 4}, ) * 2)
+
+    def test_pages(self):
+        self.assertEqual(BibTeX._bibtex_to_csl_pages('313'), Pages(first=313))
+        self.assertEqual(BibTeX._bibtex_to_csl_pages('12+'), Pages(first=12))
+        self.assertEqual(BibTeX._bibtex_to_csl_pages('1--3'), Pages(first=1,
+                                                                    last=3))
+        self.assertEqual(BibTeX._bibtex_to_csl_pages('1-3'), Pages(first=1,
+                                                                   last=3))
 
 
 SPLIT_NAMES = [

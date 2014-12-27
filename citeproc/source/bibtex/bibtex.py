@@ -85,11 +85,7 @@ class BibTeX(BibliographySource):
                 except ValueError:
                     pass
             elif field == 'pages':
-                if value.endswith('+'):
-                    value = Pages(first=int(value[:-1]))
-                else:
-                    first, last = value.replace(' ', '').split('--')
-                    value = Pages(first=int(first), last=int(last))
+                value = self._bibtex_to_csl_pages(value)
             elif field in ('author', 'editor'):
                 value = [name for name in self._parse_author(value)]
             else:
@@ -99,6 +95,20 @@ class BibTeX(BibliographySource):
                     value = str(value)
             csl_dict[csl_field] = value
         return csl_dict
+
+    @staticmethod
+    def _bibtex_to_csl_pages(value):
+        value = value.replace(' ', '')
+        if '-' in value:
+            try:
+                first, last = value.split('--')
+            except ValueError:
+                first, last = value.split('-')
+            pages = Pages(first=int(first), last=int(last))
+        else:
+            decimal = value[:-1] if value.endswith('+') else value
+            pages = Pages(first=int(decimal))
+        return pages
 
     def _bibtex_to_csl_date(self, bibtex_entry):
         if 'month' in bibtex_entry:
