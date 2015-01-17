@@ -20,11 +20,28 @@ should not expect to see any major API changes soon.
 Requirements
 ------------
 
-citeproc-py has been developed for Python 3 but also runs on Python
-2.6+. It depends on `lxml`_ for parsing and navigating the CSL style and
-locale files.
+citeproc-py was originally developed for Python 3 but now also runs on Python
+2.6+. It depends on `lxml`_ for parsing and navigating the CSL style and locale
+files.
 
 .. _lxml: http://lxml.de/
+
+
+Installation
+------------
+
+The recommended way of installing citeproc-py is by using `pip`_::
+
+   pip install citeproc-py
+
+If lxml isn't installed, pip will try to install it for you.
+
+.. _pip: https://pip.pypa.io/en/latest/
+
+If you insist, you can manually install citeproc-py from distribution packages
+hosted at `PyPI`_. Please ignore the release archives offered by GitHub.
+
+.. _PyPI: https://pypi.python.org/pypi/citeproc-py/
 
 
 Getting Started
