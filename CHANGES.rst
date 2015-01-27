@@ -1,13 +1,8 @@
-=======================
- citeproc-py changelog
-=======================
-
-This document summarizes the major changes for each release.
-
-.. contents::
+Changelog
+---------
 
 Release 0.3.0 (2014-11-07)
-==========================
+~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Major improvements to the BibTeX parser:
 
@@ -22,7 +17,7 @@ Other changes:
 * disable RelaxNG validation of CSL styles by default (API change)
 
 Release 0.2.0 (2014-10-25)
-==========================
+~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * bad cite callback function can determine how a bad cite is displayed (hetsch)
 * added option to disable RelaxNG validation (Jasper Op de Coul)

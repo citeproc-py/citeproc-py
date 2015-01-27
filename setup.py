@@ -41,8 +41,14 @@ except OSError as e:
         code = compile(version_file.read(), VERSION_FILE, 'exec')
         exec(code)
 
-with open(os.path.join(BASE_PATH, 'README.rst')) as file:
-    README = file.read()
+
+def long_description():
+    with open(os.path.join(BASE_PATH, 'README.rst')) as readme:
+        result = readme.read()
+    result += '\n\n'
+    with open(os.path.join(BASE_PATH, 'CHANGES.rst')) as changes:
+        result += changes.read()
+    return result
 
 
 setup(
@@ -60,7 +66,7 @@ setup(
     author='Brecht Machiels',
     author_email='brecht@mos6581.org',
     description='Citations and bibliography formatter',
-    long_description=README,
+    long_description=long_description(),
     url='https://github.com/brechtm/citeproc-py',
     keywords='csl citation html rst bibtex xml',
     license='2-clause BSD License',
