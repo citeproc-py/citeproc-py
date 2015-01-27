@@ -13,7 +13,7 @@ number is still at 0, meaning the API is not yet stable. However, you
 should not expect to see any major API changes soon.
 
 .. _CSL: http://citationstyles.org/
-.. _CSL 1.0.1 specification: http://citationstyles.org/documentation/
+.. _CSL 1.0.1 specification: http://citationstyles.org/downloads/specification.html
 .. _semantic versioning: http://semver.org/
 
 
