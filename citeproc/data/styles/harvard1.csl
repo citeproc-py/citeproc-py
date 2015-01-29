@@ -128,7 +128,7 @@
     </sort>
     <layout>
       <text macro="author" suffix=","/>
-      <date variable="issued" prefix=" " suffix=".">
+      <date variable="issued" prefix=" (" suffix=").">
         <date-part name="year"/>
       </date>
       <choose>
@@ -168,7 +168,7 @@
           </group>
           <group prefix=" " suffix=".">
             <text variable="container-title" font-style="italic"/>
-            <group prefix=", ">
+            <group prefix="">
               <text variable="volume"/>
               <text variable="issue" prefix="(" suffix=")"/>
             </group>
