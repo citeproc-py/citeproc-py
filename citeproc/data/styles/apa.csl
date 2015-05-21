@@ -197,6 +197,11 @@
   </macro>
   <macro name="publisher">
     <choose>
+      <if type="article-journal" match="any">
+  <group delimiter=": ">
+          <text variable="publisher"/>
+        </group>
+      </if>
       <if type="report" match="any">
         <group delimiter=": ">
           <text variable="publisher-place"/>
@@ -480,13 +485,13 @@
           <text macro="author"/>
           <text macro="issued"/>
           <text macro="title-plus-extra"/>
+  <text macro="publisher"/>
           <text macro="container"/>
         </group>
         <text macro="legal-cites"/>
         <text macro="locators"/>
         <group delimiter=", " prefix=". ">
           <text macro="event"/>
-          <text macro="publisher"/>
         </group>
       </group>
       <text macro="access" prefix=" "/>

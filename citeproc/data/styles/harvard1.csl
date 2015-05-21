@@ -166,6 +166,9 @@
             <text macro="title" prefix=" "/>
             <text macro="editor" prefix=" "/>
           </group>
+   <group prefix=" " suffix=".">
+   <text variable="publisher" />
+   </group>
           <group prefix=" " suffix=".">
             <text variable="container-title" font-style="italic"/>
             <group prefix="">
