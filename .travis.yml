@@ -1,0 +1,29 @@
+language: python
+
+sudo: false
+
+python:
+  - '2.7'
+  - '3.3'
+  - '3.4'
+  - '3.5'
+
+addons:
+  apt:
+    packages:
+      - trang
+
+install:
+  - pip install lxml
+
+  - cd ..
+  - git clone --depth 1 https://github.com/jayvdb/citeproc-test -b python3 --single-branch citeproc-test
+  - cd citeproc-test
+  - python processor.py -g
+  - cd ..
+
+  - cd citeproc-py
+  - trang -I rnc -O rng citeproc/data/schema/csl.rnc citeproc/data/schema/csl.rng
+
+script:
+  - PYTHONPATH="." python tests/citeproc-test.py
