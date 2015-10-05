@@ -5,3 +5,4 @@ __pycache__
 /MANIFEST
 /citeproc_py.egg-info
 /citeproc/version.py
+/.tox
