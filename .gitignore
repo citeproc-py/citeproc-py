@@ -6,3 +6,4 @@ __pycache__
 /citeproc_py.egg-info
 /citeproc/version.py
 /.tox
+/.python-version
