@@ -27,11 +27,8 @@ class TestBibTeXParser(TestCase):
         self.print_entries(test_bib)
 
     def test_parse_file_bad_encoding(self):
-        try:
+        with self.assertRaises(BibTeXDecodeError):
             BibTeXParser(TEST_BIB)
-            self.assertTrue(False)
-        except BibTeXDecodeError:
-            self.assertTrue(True)
 
     @staticmethod
     def print_entries(bib):
