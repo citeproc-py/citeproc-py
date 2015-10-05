@@ -15,6 +15,7 @@ addons:
 
 install:
   - pip install lxml
+  - pip install nose
 
   - cd ..
   - git clone --depth 1 https://github.com/jayvdb/citeproc-test -b python3 --single-branch citeproc-test
@@ -26,4 +27,5 @@ install:
   - trang -I rnc -O rng citeproc/data/schema/csl.rnc citeproc/data/schema/csl.rng
 
 script:
+  - nosetests
   - PYTHONPATH="." python tests/citeproc-test.py

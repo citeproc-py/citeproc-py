@@ -4,10 +4,15 @@ from __future__ import (absolute_import, division, print_function,
                         unicode_literals)
 from citeproc.py2compat import *
 
+import os
+
 from io import StringIO
 from unittest import TestCase
 
 from citeproc.source.bibtex.bibparse import BibTeXParser, BibTeXDecodeError
+
+
+TEST_BIB = os.path.join(os.path.dirname(__file__), 'test.bib')
 
 
 class TestBibTeXParser(TestCase):
@@ -18,12 +23,12 @@ class TestBibTeXParser(TestCase):
         # TODO: perform useful checks
 
     def test_parse_file(self):
-        test_bib = BibTeXParser('test.bib', encoding='utf-8')
+        test_bib = BibTeXParser(TEST_BIB, encoding='utf-8')
         self.print_entries(test_bib)
 
     def test_parse_file_bad_encoding(self):
         try:
-            BibTeXParser('test.bib')
+            BibTeXParser(TEST_BIB)
             self.assertTrue(False)
         except BibTeXDecodeError:
             self.assertTrue(True)
