@@ -19,7 +19,7 @@ install:
   - pip install nose
 
   - cd ..
-  - git clone --depth 1 https://github.com/jayvdb/citeproc-test -b python3 --single-branch citeproc-test
+  - hg clone https://bitbucket.org/bdarcus/citeproc-test
   - cd citeproc-test
   - python processor.py -g
   - cd ..
