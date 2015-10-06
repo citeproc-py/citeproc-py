@@ -20,10 +20,6 @@ from citeproc.source import Citation, CitationItem, Locator
 from citeproc.source.json import CiteProcJSON
 
 
-if sys.version_info[0] < 3:
-    str = unicode
-
-
 TESTS_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__),
                                           os.path.pardir, os.path.pardir,
                                           'citeproc-test', 'processor-tests',
