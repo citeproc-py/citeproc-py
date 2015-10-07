@@ -318,7 +318,8 @@ if __name__ == '__main__':
                     out('<<< FAILED\n')
             del t
         except Exception as e:
-            out('Exception in', os.path.basename(filename))
+            if options.verbose:
+                out('Exception in', os.path.basename(filename))
             if options.catch_exceptions:
                 if options.verbose:
                     traceback.print_exc()
