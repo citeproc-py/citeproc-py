@@ -167,8 +167,8 @@ class FailedTests(object):
             self.lines = file.readlines()
         self.now_failing = []
 
-    def mark_failure(self, test_name):
-        self.now_failing.append(test_name)
+    def mark_failure(self, test_name, reason=None):
+        self.now_failing.append((test_name, reason))
 
     def update_file(self):
         was_failing = set()
@@ -184,9 +184,11 @@ class FailedTests(object):
                     continue
                 was_failing.add(test_name)
                 file.write(line)
-            for test_name in sorted(self.now_failing):
+            for test_name, reason in sorted(self.now_failing):
                 if test_name not in was_failing:
-                    print(test_name, file=file)
+                    line = ('{:<66} # {}'.format(test_name, reason) if reason
+                            else test_name)
+                    print(line, file=file)
                     new_failing_tests.append(test_name)
         return new_failing_tests, new_fixed_tests
 
@@ -303,6 +305,7 @@ if __name__ == '__main__':
         if count == max_tests:
             break
 
+        reason = None
         try:
             if test_name not in IGNORED_RESULS:
                 total_count[category] = total_count.get(category, 0) + 1
@@ -333,6 +336,7 @@ if __name__ == '__main__':
                     out('<<< FAILED\n')
             del t
         except Exception as e:
+            reason = 'uncaught exception'
             if options.verbose:
                 out('Exception in', os.path.basename(filename))
             if options.catch_exceptions:
@@ -341,7 +345,7 @@ if __name__ == '__main__':
             else:
                 raise
         if test_name not in IGNORED_RESULS:
-            failed_tests.mark_failure(test_name)
+            failed_tests.mark_failure(test_name, reason)
 
     success = True
     if sum(total_count.values()) == 0:
