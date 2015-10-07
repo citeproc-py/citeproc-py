@@ -228,6 +228,8 @@ if __name__ == '__main__':
     parser = OptionParser(usage)
     parser.add_option('-m', '--max', dest='max', default=-1,
                       help='run maximally MAX tests', metavar='MAX')
+    parser.add_option('-v', '--verbose', dest='verbose', action='store_true',
+                      default=False, help='print results for each test')
     parser.add_option('-r', '--raise', dest='catch_exceptions', default=True,
                       action='store_false',
                       help='exceptions are not caught (aborts program)')
@@ -235,6 +237,7 @@ if __name__ == '__main__':
                       help='write output to FILE', metavar='FILE')
     (options, args) = parser.parse_args()
 
+    max_tests = int(options.max)
     try:
         destination = open(options.file, 'wt', encoding='utf-8')
         class UnicodeWriter(object):
@@ -243,6 +246,7 @@ if __name__ == '__main__':
         sys.stderr = UnicodeWriter()
     except TypeError:
         destination = sys.stdout
+
     def out(*args):
         if not args:
             destination.write('\n')
@@ -273,8 +277,6 @@ if __name__ == '__main__':
     passed_count = {}
     failed_tests = FailedTests(os.path.join(os.path.dirname(__file__),
                                             'failing_tests.txt'))
-    max_tests = int(options.max)
-
     count = 0
     test_files = os.path.join(TESTS_PATH, '{}.txt'.format(glob_pattern))
     for filename in sorted(glob.glob(test_files)):
@@ -292,27 +294,32 @@ if __name__ == '__main__':
             if filter_tests and (t.data['mode'] == 'bibliography-header' or
                                  t.data['bibsection']):
                 continue
-            out('>>> Testing {}'.format(os.path.basename(filename)))
-            out('EXP: ' + '\n     '.join(t.expected))
+            if options.verbose:
+                out('>>> Testing {}'.format(os.path.basename(filename)))
+                out('EXP: ' + '\n     '.join(t.expected))
 
             results = t.execute()
             results = reduce(lambda x, y: x+y,
                              [item.split('\n') for item in results])
             results = [item.replace('&amp;', '&#38;')
                        for item in results]
-            out('RES: ' + '\n     '.join(results))
+            if options.verbose:
+                out('RES: ' + '\n     '.join(results))
             if results == t.expected:
                 if test_name not in IGNORED_RESULS:
                     passed_count[category] += 1
-                out('<<< SUCCESS\n')
+                if options.verbose:
+                    out('<<< SUCCESS\n')
                 continue
             else:
-                out('<<< FAILED\n')
+                if options.verbose:
+                    out('<<< FAILED\n')
             del t
         except Exception as e:
             out('Exception in', os.path.basename(filename))
             if options.catch_exceptions:
-                traceback.print_exc()
+                if options.verbose:
+                    traceback.print_exc()
             else:
                 raise
         if test_name not in IGNORED_RESULS:
