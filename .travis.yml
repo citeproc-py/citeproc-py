@@ -15,11 +15,8 @@ addons:
       - trang
 
 install:
-  - pip install lxml
-  - pip install nose
-
+  - pip install tox-travis
   - trang -I rnc -O rng citeproc/data/schema/csl.rnc citeproc/data/schema/csl.rng
 
 script:
-  - nosetests
-  - PYTHONPATH="." python tests/citeproc-test.py
+  - tox
