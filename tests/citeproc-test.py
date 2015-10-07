@@ -242,12 +242,12 @@ if __name__ == '__main__':
              'runs only test fixtures that have "Sort" in the filename')
     parser = OptionParser(usage)
     parser.add_option('-m', '--max', dest='max', default=-1,
-                      help='run maximally MAX tests', metavar='MAX')
+                      help='run up to MAX tests', metavar='MAX')
     parser.add_option('-v', '--verbose', dest='verbose', action='store_true',
                       default=False, help='print results for each test')
     parser.add_option('-r', '--raise', dest='catch_exceptions', default=True,
                       action='store_false',
-                      help='exceptions are not caught (aborts program)')
+                      help='do not catch exceptions (aborts program)')
     parser.add_option('-s', '--summary', dest='summary', action='store_true',
                       default=False, help='print a summary of the test results')
     parser.add_option('-f', '--file', dest='file', default=None,
