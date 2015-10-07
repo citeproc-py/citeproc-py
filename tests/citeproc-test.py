@@ -200,8 +200,8 @@ def execute_hg_command(args, echo=False):
     process = Popen(command, stdin=PIPE, stdout=PIPE, stderr=PIPE)
     out, err = process.communicate()
     if process.returncode:
-        print('Calling Mercurial failed. Make sure Mercurial (hg) '
-              'is installed. Aborting.')
+        print('Calling Mercurial failed. Make sure Mercurial (hg) is \n'
+              'installed. Aborting.')
         sys.exit(1)
     return out, err
 
@@ -216,11 +216,17 @@ def clone_citeproc_test():
         execute_hg_command(hg_clone, echo=True)
     else:
         hg_id = ['-R', CITEPROC_TEST_PATH, 'id', '--id']
-        out, err = execute_hg_command(hg_id)
-        if out.strip() != CITEPROC_TEST_COMMIT.encode('ascii'):
-            print('The checked-out commit of citeproc-test does not match '
+        commit_id, _ = execute_hg_command(hg_id)
+        if commit_id.strip() != CITEPROC_TEST_COMMIT.encode('ascii'):
+            print('The checked-out commit of citeproc-test does not match \n'
                   'the one recorded in this test script. Aborting.')
             sys.exit(1)
+        hg_pull = ['-R', CITEPROC_TEST_PATH, 'pull']
+        execute_hg_command(hg_pull)
+    hg_tip_id = ['-R', CITEPROC_TEST_PATH, 'id', '--id', '--rev', 'tip']
+    tip_commit_id, _ = execute_hg_command(hg_tip_id)
+    has_updates = tip_commit_id.strip() != CITEPROC_TEST_COMMIT.encode('ascii')
+    return has_updates
 
 
 RED = '\033[91m'
@@ -271,7 +277,7 @@ if __name__ == '__main__':
         glob_pattern = '*'
         filter_tests = True
 
-    clone_citeproc_test()
+    test_repo_has_updates = clone_citeproc_test()
 
     # import the text fixture parser included with citeproc-test
     try:  # Python 3.3+
@@ -362,6 +368,11 @@ if __name__ == '__main__':
             out()
             out('You need to fix the newly failing tests and may commit the \n'
                 'removal of the fixed tests from {}'.format(FAILING_TESTS_FILE))
+
+        if test_repo_has_updates:
+            out()
+            out(BOLD + 'The citeproc-test repository has updates! Consider '
+                       'updating the test script.' + END)
 
         if options.summary:
             out()
