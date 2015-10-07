@@ -233,6 +233,8 @@ if __name__ == '__main__':
     parser.add_option('-r', '--raise', dest='catch_exceptions', default=True,
                       action='store_false',
                       help='exceptions are not caught (aborts program)')
+    parser.add_option('-s', '--summary', dest='summary', action='store_true',
+                      default=False, help='print a summary of the test results')
     parser.add_option('-f', '--file', dest='file', default=None,
                       help='write output to FILE', metavar='FILE')
     (options, args) = parser.parse_args()
@@ -336,12 +338,13 @@ if __name__ == '__main__':
         for test_name in failed_tests.now_failing:
             out(' ' + test_name)
 
-        out()
-        out('Summary:')
-        for category in sorted(total_count.keys()):
-            print_result(category, passed_count[category], total_count[category])
-        out()
-        print_result('total', sum(passed_count.values()), sum(total_count.values()))
+        if options.summary:
+            out()
+            out('Summary:')
+            for category in sorted(total_count.keys()):
+                print_result(category, passed_count[category], total_count[category])
+            out()
+            print_result('total', sum(passed_count.values()), sum(total_count.values()))
         if new_failing or new_fixed:
             sys.exit(1)
     try:
