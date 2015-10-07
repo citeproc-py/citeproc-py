@@ -20,9 +20,6 @@ install:
 
   - cd ..
   - hg clone https://bitbucket.org/bdarcus/citeproc-test
-  - cd citeproc-test
-  - python processor.py -g
-  - cd ..
 
   - cd citeproc-py
   - trang -I rnc -O rng citeproc/data/schema/csl.rnc citeproc/data/schema/csl.rng
