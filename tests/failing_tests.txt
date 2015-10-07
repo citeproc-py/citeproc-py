@@ -1,0 +1,3 @@
+# This file contains a list of the test fixtures that are known to fail.
+# It is used to check for regressions.
+

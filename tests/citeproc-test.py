@@ -149,6 +149,32 @@ class ProcessorTest(object):
         return CitationItem(reference_key, **options)
 
 
+class FailedTests(object):
+    def __init__(self, filename):
+        self.filename = filename
+        with open(filename, 'r') as file:
+            self.lines = file.readlines()
+        self.now_failing = []
+
+    def mark_failure(self, test_name):
+        self.now_failing.append(test_name)
+
+    def update_file(self):
+        was_failing = set()
+        with open(self.filename, 'w') as file:
+            for line in self.lines:
+                test_name, comment = (line.split('#') if '#' in line
+                                      else (line, None))
+                test_name = test_name.strip()
+                if test_name and test_name not in self.now_failing:
+                    continue
+                was_failing.add(test_name)
+                file.write(line)
+            for test_name in sorted(self.now_failing):
+                if test_name not in was_failing:
+                    print(test_name, file=file)
+
+
 def main():
     usage = ('usage: %prog [options] glob_pattern\n\n'
              'glob_pattern limits the tests that are executed, for example:\n'
@@ -187,14 +213,15 @@ def main():
 
     total_count = {}
     passed_count = {}
-    failed = []
+    failed_tests = FailedTests(os.path.join(os.path.dirname(__file__),
+                                            'failing_tests.txt'))
     max_tests = int(options.max)
 
     count = 0
-    for filename in glob.glob(os.path.join(TESTS_PATH,
-                                           '{}.json'.format(glob_pattern))):
-        test_name = os.path.basename(filename).split('.json')[0]
-        category = os.path.basename(filename).split('_')[0]
+    test_files = os.path.join(TESTS_PATH, '{}.json'.format(glob_pattern))
+    for filename in sorted(glob.glob(test_files)):
+        test_name, _ = os.path.basename(filename).split('.json')
+        category, _ = os.path.basename(filename).split('_')
         passed_count.setdefault(category, 0)
         if count == max_tests:
             break
@@ -231,7 +258,7 @@ def main():
             else:
                 raise
         if test_name not in IGNORED_RESULS:
-            failed.append(test_name)
+            failed_tests.mark_failure(test_name)
 
     if sum(total_count.values()) == 0:
         print('<no tests found>: check README.md file for instructions')
@@ -239,9 +266,9 @@ def main():
         def print_result(name, passed, total):
             out(' {:<13} {:>3} / {:>3} ({:>4.0%})'.format(name, passed, total,
                                                           passed / total))
-
+        failed_tests.update_file()
         out('Failed tests:')
-        for test_name in failed:
+        for test_name in failed_tests.now_failing:
             out(' ' + test_name)
 
         out()
