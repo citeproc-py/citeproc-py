@@ -44,6 +44,8 @@ IGNORED_RESULS = {
 
 
 class ProcessorTest(object):
+    """Parses atest fixture and provides a method for processing the tests
+    defined in it."""
     bib_prefix = '<div class="csl-bib-body">'
     bib_suffix = '</div>'
     item_prefix = '  <div class="csl-entry">'
@@ -123,7 +125,6 @@ class ProcessorTest(object):
                 text = self.item_prefix + str(entry) + self.item_suffix
                 results.append(text)
             results.append(self.bib_suffix)
-
         return results
 
     def parse_citation(self, citation_data):
@@ -131,7 +132,6 @@ class ProcessorTest(object):
         for item in citation_data:
             citation_item = self.parse_citation_item(item)
             citation_items.append(citation_item)
-
         return Citation(citation_items)
 
     def parse_citation_item(self, citation_item_data):
@@ -152,11 +152,12 @@ class ProcessorTest(object):
                 pass
             else:
                 options[python_key] = value
-
         return CitationItem(reference_key, **options)
 
 
 class FailedTests(object):
+    """Read the known failed tests from a file and update the file with the
+    results from a new test run."""
     def __init__(self, filename):
         self.filename = filename
         with open(filename, 'r') as file:
@@ -183,6 +184,8 @@ class FailedTests(object):
 
 
 def execute_hg_command(args, echo=False):
+    """Execute a mercurial command, exiting this script when it returns a
+    non-zero error code."""
     command = ['hg'] + args
     if echo:
         print(' '.join(command))
@@ -196,6 +199,8 @@ def execute_hg_command(args, echo=False):
 
 
 def clone_citeproc_test():
+    """Clone the citeproc-test repository if it is not present. Otherwise, check
+    whether the correct commit is checked out."""
     if not os.path.exists(CITEPROC_TEST_PATH):
         hg_clone = ['clone', '--rev', CITEPROC_TEST_COMMIT,
                     CITEPROC_TEST_REPOSITORY, CITEPROC_TEST_PATH]
@@ -210,7 +215,7 @@ def clone_citeproc_test():
             sys.exit(1)
 
 
-def main():
+if __name__ == '__main__':
     usage = ('usage: %prog [options] glob_pattern\n\n'
              'glob_pattern limits the tests that are executed, for example:\n'
              '  %prog *Sort*\n'
@@ -329,7 +334,3 @@ def main():
         destination.close()
     except AttributeError:
         pass
-
-
-if __name__ == '__main__':
-    main()
