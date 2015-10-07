@@ -28,6 +28,9 @@ CITEPROC_TEST_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__),
 TEST_PARSER_PATH = os.path.join(CITEPROC_TEST_PATH, 'processor.py')
 TESTS_PATH = os.path.join(CITEPROC_TEST_PATH, 'processor-tests', 'humans')
 
+FAILING_TESTS_FILE = 'failing_tests.txt'
+
+
 # The results of the following tests are ignored, since they don't test CSL
 # features, but citeproc-js specific features
 
@@ -278,7 +281,7 @@ if __name__ == '__main__':
     total_count = {}
     passed_count = {}
     failed_tests = FailedTests(os.path.join(os.path.dirname(__file__),
-                                            'failing_tests.txt'))
+                                            FAILING_TESTS_FILE))
     count = 0
     test_files = os.path.join(TESTS_PATH, '{}.txt'.format(glob_pattern))
     for filename in sorted(glob.glob(test_files)):
@@ -328,6 +331,7 @@ if __name__ == '__main__':
         if test_name not in IGNORED_RESULS:
             failed_tests.mark_failure(test_name)
 
+    success = True
     if sum(total_count.values()) == 0:
         print('<no tests found>: check README.md file for instructions')
     else:
@@ -335,20 +339,35 @@ if __name__ == '__main__':
             out(' {:<13} {:>3} / {:>3} ({:>4.0%})'.format(name, passed, total,
                                                           passed / total))
         new_failing, new_fixed = failed_tests.update_file()
-        out('Failed tests:')
-        for test_name in failed_tests.now_failing:
-            out(' ' + test_name)
+        success = not (new_failing or new_fixed)
+
+        if new_failing:
+            out('New failing tests:')
+            for test_name in new_failing:
+                out(' ' + test_name)
+        if new_failing and new_fixed:
+            out()
+        else:
+            out('All is well.')
+        if new_fixed:
+            out('Fixed tests:')
+            for test_name in new_fixed:
+                out(' ' + test_name)
+            out()
+            out('You need to fix the newly failing tests and may commit the \n'
+                'removal of the fixed tests from {}'.format(FAILING_TESTS_FILE))
 
         if options.summary:
             out()
             out('Summary:')
             for category in sorted(total_count.keys()):
-                print_result(category, passed_count[category], total_count[category])
+                print_result(category, passed_count[category],
+                             total_count[category])
             out()
-            print_result('total', sum(passed_count.values()), sum(total_count.values()))
-        if new_failing or new_fixed:
-            sys.exit(1)
+            print_result('total', sum(passed_count.values()),
+                         sum(total_count.values()))
     try:
         destination.close()
     except AttributeError:
         pass
+    sys.exit(0 if success else 1)
