@@ -85,9 +85,7 @@ Running the Tests
 -----------------
 
 First clone the `citeproc-test suite`_ so that it sits next to the
-citeproc-py directory. Then run the ``processor.py`` script to generate
-the test fixtures (using Python 2.x). After that, you can run
-``citeproc-test.py`` (in the ``tests`` directory). Run
-``citeproc-test.py --help`` to see its usage information.
+citeproc-py directory. Now you can run ``citeproc-test.py`` (in the ``tests``
+directory). Run ``citeproc-test.py --help`` to see its usage information.
 
 .. _citeproc-test suite: https://bitbucket.org/bdarcus/citeproc-test

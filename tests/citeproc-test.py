@@ -6,7 +6,6 @@ from citeproc.py2compat import *
 
 import glob
 import io
-import json
 import os
 import sys
 import traceback
@@ -20,10 +19,11 @@ from citeproc.source import Citation, CitationItem, Locator
 from citeproc.source.json import CiteProcJSON
 
 
-TESTS_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__),
-                                          os.path.pardir, os.path.pardir,
-                                          'citeproc-test', 'processor-tests',
-                                          'machines'))
+CITEPROC_TEST_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__),
+                                     os.path.pardir, os.path.pardir,
+                                     'citeproc-test'))
+TEST_PARSER_PATH = os.path.join(CITEPROC_TEST_PATH, 'processor.py')
+TESTS_PATH = os.path.join(CITEPROC_TEST_PATH, 'processor-tests', 'humans')
 
 # The results of the following tests are ignored, since they don't test CSL
 # features, but citeproc-js specific features
@@ -40,6 +40,14 @@ IGNORED_RESULS = {
 }
 
 
+try:    # Python 3.3+
+    from importlib.machinery import SourceFileLoader
+    processor = SourceFileLoader('processor', TEST_PARSER_PATH).load_module()
+except ImportError:
+    from imp import load_source
+    processor = load_source('processor', TEST_PARSER_PATH)
+
+
 class ProcessorTest(object):
     bib_prefix = '<div class="csl-bib-body">'
     bib_suffix = '</div>'
@@ -47,17 +55,21 @@ class ProcessorTest(object):
     item_suffix = '</div>'
 
     def __init__(self, filename):
-        with open(filename, 'rt', encoding='UTF-8') as f:
-            self.json_data = json.load(f)
-
-        csl_io = io.BytesIO(utf_8_encode(self.json_data['csl'])[0])
+        self.csl_test = processor.CslTest({}, None, (filename, ),
+                                          os.path.basename(filename))
+        self.csl_test.parse()
+        csl_io = io.BytesIO(utf_8_encode(self.data['csl'])[0])
         self.style = CitationStylesStyle(csl_io)
-        self._fix_input(self.json_data['input'])
-        self.references = [item['id'] for item in self.json_data['input']]
-        self.references_dict = CiteProcJSON(self.json_data['input'])
+        self._fix_input(self.data['input'])
+        self.references = [item['id'] for item in self.data['input']]
+        self.references_dict = CiteProcJSON(self.data['input'])
         self.bibliography = CitationStylesBibliography(self.style,
                                                        self.references_dict)
-        self.expected = self.json_data['result'].splitlines()
+        self.expected = self.data['result'].splitlines()
+
+    @property
+    def data(self):
+        return self.csl_test.data
 
     @staticmethod
     def _fix_input(input_data):
@@ -68,12 +80,12 @@ class ProcessorTest(object):
                 ref['type'] = 'book'
 
     def execute(self):
-        if self.json_data['citation_items']:
+        if self.data['citation_items']:
             citations = [self.parse_citation(item)
-                         for item in self.json_data['citation_items']]
-        elif self.json_data['citations']:
+                         for item in self.data['citation_items']]
+        elif self.data['citations']:
             citations = []
-            for cit in self.json_data['citations']:
+            for cit in self.data['citations']:
                 cit = cit[0]
                 citation_items = [self.parse_citation_item(cititem)
                                   for cititem in cit['citationItems']]
@@ -81,9 +93,9 @@ class ProcessorTest(object):
                 citation.key = cit['citationID']
                 citation.note_index = cit['properties']['noteIndex']
                 citations.append(citation)
-        elif self.json_data['bibentries']:
+        elif self.data['bibentries']:
             citation_items = [self.parse_citation_item({'id': entry})
-                              for entry in self.json_data['bibentries'][-1]]
+                              for entry in self.data['bibentries'][-1]]
             citations = [Citation(citation_items)]
         else:
             citation_items = [self.parse_citation_item({'id': ref})
@@ -98,8 +110,8 @@ class ProcessorTest(object):
 
         results = []
         do_nothing = lambda x: None     # callback passed to cite()
-        if self.json_data['mode'] == 'citation':
-            if self.json_data['citations']:
+        if self.data['mode'] == 'citation':
+            if self.data['citations']:
                 for i, citation in enumerate(citations):
                     if i == len(citations) - 1:
                         dots_or_other = '>>'
@@ -110,7 +122,7 @@ class ProcessorTest(object):
             else:
                 for citation in citations:
                     results.append(self.bibliography.cite(citation, do_nothing))
-        elif self.json_data['mode'] in ('bibliography', 'bibliography-nosort'):
+        elif self.data['mode'] in ('bibliography', 'bibliography-nosort'):
             results.append(self.bib_prefix)
             for entry in self.bibliography.bibliography():
                 text = self.item_prefix + str(entry) + self.item_suffix
@@ -218,9 +230,9 @@ def main():
     max_tests = int(options.max)
 
     count = 0
-    test_files = os.path.join(TESTS_PATH, '{}.json'.format(glob_pattern))
+    test_files = os.path.join(TESTS_PATH, '{}.txt'.format(glob_pattern))
     for filename in sorted(glob.glob(test_files)):
-        test_name, _ = os.path.basename(filename).split('.json')
+        test_name, _ = os.path.basename(filename).split('.txt')
         category, _ = os.path.basename(filename).split('_')
         passed_count.setdefault(category, 0)
         if count == max_tests:
@@ -231,8 +243,8 @@ def main():
                 total_count[category] = total_count.get(category, 0) + 1
                 count += 1
             t = ProcessorTest(filename)
-            if filter_tests and (t.json_data['mode'] == 'bibliography-header' or
-                                 t.json_data['bibsection']):
+            if filter_tests and (t.data['mode'] == 'bibliography-header' or
+                                 t.data['bibsection']):
                 continue
             out('>>> Testing {}'.format(os.path.basename(filename)))
             out('EXP: ' + '\n     '.join(t.expected))
