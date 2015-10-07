@@ -223,6 +223,12 @@ def clone_citeproc_test():
             sys.exit(1)
 
 
+RED = '\033[91m'
+GREEN = '\033[92m'
+BOLD = '\033[1m'
+END = '\033[0m'
+
+
 if __name__ == '__main__':
     usage = ('usage: %prog [options] glob_pattern\n\n'
              'glob_pattern limits the tests that are executed, for example:\n'
@@ -342,24 +348,24 @@ if __name__ == '__main__':
         success = not (new_failing or new_fixed)
 
         if new_failing:
-            out('New failing tests:')
+            out(BOLD + 'New failing tests:' + END)
             for test_name in new_failing:
-                out(' ' + test_name)
+                out(' ' + RED + test_name + END)
         if new_failing and new_fixed:
             out()
         else:
             out('All is well.')
         if new_fixed:
-            out('Fixed tests:')
+            out(BOLD + 'Fixed tests:' + END)
             for test_name in new_fixed:
-                out(' ' + test_name)
+                out(' ' + GREEN + test_name + END)
             out()
             out('You need to fix the newly failing tests and may commit the \n'
                 'removal of the fixed tests from {}'.format(FAILING_TESTS_FILE))
 
         if options.summary:
             out()
-            out('Summary:')
+            out(BOLD + 'Summary:' + END)
             for category in sorted(total_count.keys()):
                 print_result(category, passed_count[category],
                              total_count[category])
