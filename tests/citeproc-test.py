@@ -13,14 +13,17 @@ import traceback
 from codecs import utf_8_encode
 from functools import reduce
 from optparse import OptionParser
+from subprocess import Popen, PIPE
 
 from citeproc import CitationStylesStyle, CitationStylesBibliography
 from citeproc.source import Citation, CitationItem, Locator
 from citeproc.source.json import CiteProcJSON
 
 
+CITEPROC_TEST_REPOSITORY = 'https://bitbucket.org/bdarcus/citeproc-test'
+CITEPROC_TEST_COMMIT = 'b15130259c4c'
+
 CITEPROC_TEST_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__),
-                                     os.path.pardir, os.path.pardir,
                                      'citeproc-test'))
 TEST_PARSER_PATH = os.path.join(CITEPROC_TEST_PATH, 'processor.py')
 TESTS_PATH = os.path.join(CITEPROC_TEST_PATH, 'processor-tests', 'humans')
@@ -40,14 +43,6 @@ IGNORED_RESULS = {
 }
 
 
-try:    # Python 3.3+
-    from importlib.machinery import SourceFileLoader
-    processor = SourceFileLoader('processor', TEST_PARSER_PATH).load_module()
-except ImportError:
-    from imp import load_source
-    processor = load_source('processor', TEST_PARSER_PATH)
-
-
 class ProcessorTest(object):
     bib_prefix = '<div class="csl-bib-body">'
     bib_suffix = '</div>'
@@ -55,8 +50,8 @@ class ProcessorTest(object):
     item_suffix = '</div>'
 
     def __init__(self, filename):
-        self.csl_test = processor.CslTest({}, None, (filename, ),
-                                          os.path.basename(filename))
+        self.csl_test = CslTest({}, None, (filename, ),
+                                os.path.basename(filename))
         self.csl_test.parse()
         csl_io = io.BytesIO(utf_8_encode(self.data['csl'])[0])
         self.style = CitationStylesStyle(csl_io)
@@ -187,6 +182,34 @@ class FailedTests(object):
                     print(test_name, file=file)
 
 
+def execute_hg_command(args, echo=False):
+    command = ['hg'] + args
+    if echo:
+        print(' '.join(command))
+    process = Popen(command, stdin=PIPE, stdout=PIPE, stderr=PIPE)
+    out, err = process.communicate()
+    if process.returncode:
+        print('Calling Mercurial failed. Make sure Mercurial (hg) '
+              'is installed. Aborting.')
+        sys.exit(1)
+    return out, err
+
+
+def clone_citeproc_test():
+    if not os.path.exists(CITEPROC_TEST_PATH):
+        hg_clone = ['clone', '--rev', CITEPROC_TEST_COMMIT,
+                    CITEPROC_TEST_REPOSITORY, CITEPROC_TEST_PATH]
+        print('Cloning the citeproc-test repository...')
+        execute_hg_command(hg_clone, echo=True)
+    else:
+        hg_id = ['-R', CITEPROC_TEST_PATH, 'id', '--id']
+        out, err = execute_hg_command(hg_id)
+        if out.strip() != CITEPROC_TEST_COMMIT.encode('ascii'):
+            print('The checked-out commit of citeproc-test does not match '
+                  'the one recorded in this test script. Aborting.')
+            sys.exit(1)
+
+
 def main():
     usage = ('usage: %prog [options] glob_pattern\n\n'
              'glob_pattern limits the tests that are executed, for example:\n'
@@ -222,6 +245,19 @@ def main():
     except IndexError:
         glob_pattern = '*'
         filter_tests = True
+
+    clone_citeproc_test()
+
+    # import the text fixture parser included with citeproc-test
+    try:  # Python 3.3+
+        from importlib.machinery import SourceFileLoader
+        loader = SourceFileLoader('processor', TEST_PARSER_PATH)
+        processor = loader.load_module()
+    except ImportError:  # older Python versions
+        from imp import load_source
+        processor = load_source('processor', TEST_PARSER_PATH)
+    from processor import CslTest
+    global CslTest
 
     total_count = {}
     passed_count = {}
