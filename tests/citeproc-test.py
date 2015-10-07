@@ -165,10 +165,10 @@ class FailedTests(object):
         self.filename = filename
         with open(filename, 'r') as file:
             self.lines = file.readlines()
-        self.now_failing = []
+        self.now_failing = {}
 
     def mark_failure(self, test_name, reason=None):
-        self.now_failing.append((test_name, reason))
+        self.now_failing[test_name] = reason
 
     def update_file(self):
         was_failing = set()
@@ -184,8 +184,9 @@ class FailedTests(object):
                     continue
                 was_failing.add(test_name)
                 file.write(line)
-            for test_name, reason in sorted(self.now_failing):
+            for test_name in sorted(self.now_failing.keys()):
                 if test_name not in was_failing:
+                    reason = self.now_failing[test_name]
                     line = ('{:<66} # {}'.format(test_name, reason) if reason
                             else test_name)
                     print(line, file=file)
