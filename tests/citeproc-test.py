@@ -169,18 +169,23 @@ class FailedTests(object):
 
     def update_file(self):
         was_failing = set()
+        new_failing_tests = []
+        new_fixed_tests = []
         with open(self.filename, 'w') as file:
             for line in self.lines:
                 test_name, comment = (line.split('#') if '#' in line
                                       else (line, None))
                 test_name = test_name.strip()
                 if test_name and test_name not in self.now_failing:
+                    new_fixed_tests.append(test_name)
                     continue
                 was_failing.add(test_name)
                 file.write(line)
             for test_name in sorted(self.now_failing):
                 if test_name not in was_failing:
                     print(test_name, file=file)
+                    new_failing_tests.append(test_name)
+        return new_failing_tests, new_fixed_tests
 
 
 def execute_hg_command(args, echo=False):
@@ -319,7 +324,7 @@ if __name__ == '__main__':
         def print_result(name, passed, total):
             out(' {:<13} {:>3} / {:>3} ({:>4.0%})'.format(name, passed, total,
                                                           passed / total))
-        failed_tests.update_file()
+        new_failing, new_fixed = failed_tests.update_file()
         out('Failed tests:')
         for test_name in failed_tests.now_failing:
             out(' ' + test_name)
@@ -330,6 +335,8 @@ if __name__ == '__main__':
             print_result(category, passed_count[category], total_count[category])
         out()
         print_result('total', sum(passed_count.values()), sum(total_count.values()))
+        if new_failing or new_fixed:
+            sys.exit(1)
     try:
         destination.close()
     except AttributeError:
