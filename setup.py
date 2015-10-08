@@ -24,11 +24,11 @@ os.chdir(BASE_PATH)
 # inspired by http://dcreager.net/2010/02/10/setuptools-git-version-numbers/
 try:
     print('Attempting to get version number from git...')
-    git = Popen(['git', 'describe', '--abbrev=4', '--dirty'],
+    git = Popen(['git', 'describe', '--always', '--abbrev=4', '--dirty'],
                 stdout=PIPE, stderr=sys.stderr)
     if git.wait() != 0:
         raise OSError
-    line = git.stdout.readlines()[0]
+    line, = git.stdout.readlines()
     __version__ = line.strip()[1:].decode('ascii')
     __release_date__ = datetime.now().strftime('%b %d %Y, %H:%M:%S')
     with open(VERSION_FILE, 'w') as version_file:
