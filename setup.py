@@ -5,6 +5,7 @@ Setup script for citeproc-py
 """
 
 import os
+import re
 import sys
 
 from datetime import datetime
@@ -16,6 +17,8 @@ PACKAGE = 'citeproc'
 BASE_PATH = os.path.dirname(os.path.abspath(__file__))
 PACKAGE_ABSPATH = os.path.join(BASE_PATH, PACKAGE)
 VERSION_FILE = os.path.join(PACKAGE_ABSPATH, 'version.py')
+
+VERSION_FORMAT = re.compile(r'v\d+\.\d+\.\d+')
 
 # All external commands are relative to BASE_PATH
 os.chdir(BASE_PATH)
@@ -29,7 +32,8 @@ try:
     if git.wait() != 0:
         raise OSError
     line, = git.stdout.readlines()
-    __version__ = line.strip()[1:].decode('ascii')
+    line = line.strip().decode('ascii')
+    __version__ = line[1:] if VERSION_FORMAT.match(line) else line
     __release_date__ = datetime.now().strftime('%b %d %Y, %H:%M:%S')
     with open(VERSION_FILE, 'w') as version_file:
         version_file.write("__version__ = '{}'\n".format(__version__))
