@@ -4,10 +4,15 @@ citeproc-py
 
 .. image:: http://img.shields.io/pypi/v/citeproc-py.svg
    :target: https://pypi.python.org/pypi/citeproc-py
+   :alt: PyPI
 
 .. image:: https://travis-ci.org/brechtm/citeproc-py.svg
    :target: https://travis-ci.org/brechtm/citeproc-py
    :alt: Build status
+
+.. image:: https://coveralls.io/repos/brechtm/citeproc-py/badge.svg?branch=master&service=github
+   :target: https://coveralls.io/github/brechtm/citeproc-py?branch=master
+   :alt: Code coverage
 
 .. image:: https://www.quantifiedcode.com/api/v1/project/61fcd880bcd04d478d659f2a8a1034ae/badge.svg
    :target: https://www.quantifiedcode.com/app/project/61fcd880bcd04d478d659f2a8a1034ae
