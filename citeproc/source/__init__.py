@@ -49,7 +49,7 @@ class Reference(CustomDict):
     def __init__(self, key, type, **args):
         self.key = key
         self.type = type
-        #required_or = [set(csl.VARIABLES)]
+        # required_or = [set(csl.VARIABLES)]
         optional = ({'uri', 'container_uri', 'contributor', 'date'} |
                     set(VARIABLES))
         super(Reference, self).__init__(args, optional=optional)

@@ -109,7 +109,6 @@ class ProcessorTest(object):
             self.bibliography.sort()
 
         results = []
-        do_nothing = lambda x: None     # callback passed to cite()
         if self.data['mode'] == 'citation':
             if self.data['citations']:
                 for i, citation in enumerate(citations):
@@ -118,10 +117,10 @@ class ProcessorTest(object):
                     else:
                         dots_or_other = '..'
                     results.append('{}[{}] '.format(dots_or_other, i) +
-                                   self.bibliography.cite(citation, do_nothing))
+                                   self.bibliography.cite(citation, lambda x: None))
             else:
                 for citation in citations:
-                    results.append(self.bibliography.cite(citation, do_nothing))
+                    results.append(self.bibliography.cite(citation, lambda x: None))
         elif self.data['mode'] in ('bibliography', 'bibliography-nosort'):
             results.append(self.bib_prefix)
             for entry in self.bibliography.bibliography():
@@ -260,9 +259,11 @@ if __name__ == '__main__':
     max_tests = int(options.max)
     try:
         destination = open(options.file, 'wt', encoding='utf-8')
+
         class UnicodeWriter(object):
             def write(self, s):
                 destination.write(str(s))
+
         sys.stderr = UnicodeWriter()
     except TypeError:
         destination = sys.stdout
@@ -320,7 +321,7 @@ if __name__ == '__main__':
                 out('EXP: ' + '\n     '.join(t.expected))
 
             results = t.execute()
-            results = reduce(lambda x, y: x+y,
+            results = reduce(lambda x, y: x + y,
                              [item.split('\n') for item in results])
             results = [item.replace('&amp;', '&#38;')
                        for item in results]

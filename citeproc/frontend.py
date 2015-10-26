@@ -25,12 +25,12 @@ class CitationStylesXML(object):
         self.parser = etree.XMLParser(remove_comments=True, encoding='UTF-8',
                                       no_network=True)
         self.parser.set_element_class_lookup(lookup)
-        self.xml = etree.parse(f, self.parser)#, base_url=".")
+        self.xml = etree.parse(f, self.parser)  # , base_url=".")
         if validate:
             self.schema = etree.RelaxNG(etree.parse(SCHEMA_PATH))
             if not self.schema.validate(self.xml):
                 err = self.schema.error_log
-                #raise Exception("XML file didn't pass schema validation:\n%s" % err)
+                # raise Exception("XML file didn't pass schema validation:\n%s" % err)
                 warn("XML file didn't pass schema validation:\n%s" % err)
                 # TODO: proper error reporting
         self.root = self.xml.getroot()

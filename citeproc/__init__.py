@@ -10,7 +10,6 @@ from warnings import warn
 
 from . import types, formatter
 
-
 DATA_PATH = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'data')
 
 SCHEMA_PATH = os.path.join(DATA_PATH, 'schema', 'csl.rng')
@@ -43,7 +42,6 @@ VARIABLES = (['abstract', 'annote', 'archive', 'archive_location',
 
 LOCALES = [os.path.basename(path)[8:-4]
            for path in glob(os.path.join(LOCALES_PATH, 'locales-*.xml'))]
-
 
 from .frontend import CitationStylesStyle, CitationStylesBibliography
 from .source import Citation, CitationItem, Locator

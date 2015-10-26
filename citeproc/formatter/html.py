@@ -25,7 +25,7 @@ class TagWrapper(str):
         else:
             attrib = ''
         return '<{tag}{attrib}>{text}</{tag}>'.format(tag=cls.tag,
-                                                      attrib=attrib,text=text)
+                                                      attrib=attrib, text=text)
 
     def __new__(cls, text):
         return super(TagWrapper, cls).__new__(cls, cls._wrap(text))

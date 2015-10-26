@@ -96,10 +96,10 @@ json_data = json.loads(json_input)
 # Process the JSON data to generate a citeproc-py BibliographySource.
 
 bib_source = CiteProcJSON(json_data)
-##for key, entry in bib_source.items():
-##    print(key)
-##    for name, value in entry.items():
-##        print('   {}: {}'.format(name, value))
+# for key, entry in bib_source.items():
+#     print(key)
+#     for name, value in entry.items():
+#         print('   {}: {}'.format(name, value))
 
 # load a CSL style (from the current directory)
 

@@ -5,3 +5,5 @@ from citeproc.py2compat import *
 
 
 from .bibtex import BibTeX
+
+__all__ = ('BibTeX', )

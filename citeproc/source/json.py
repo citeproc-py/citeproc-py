@@ -3,13 +3,12 @@ from __future__ import (absolute_import, division, print_function,
                         unicode_literals)
 from citeproc.py2compat import *
 
-import sys
 import unicodedata
 
 from . import BibliographySource, Reference
 from . import Pages, Name, Date, DateRange, LiteralDate
 from ..string import String, MixedString, NoCase
-from .. import NAMES, DATES, NUMBERS
+from .. import NAMES, DATES
 
 
 class CiteProcJSON(BibliographySource):

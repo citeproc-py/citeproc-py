@@ -15,13 +15,13 @@ class TestLatex(TestCase):
     MACROS = [("Æsop's fables", r"\AE sop's fables"),
               ('Æ is a Latin ligature', r"\AE\ is a Latin ligature"),
               ('A TeX expert is a TeXnician.',
-                    r"A \TeX\ expert is a \TeX nician."),
+               r"A \TeX\ expert is a \TeX nician."),
               ('This book is ©ed.', r"This book is \copyright ed."),
               ('Umeå, Sweden', r"Ume\aa, Sweden"),
               ('Your serial number is Å1102.',
-                    r"Your serial number is \AA1102."),
+               r"Your serial number is \AA1102."),
               ('Your serial number is Å1102.',
-                    r"Your serial number is \AA  1102."),
+               r"Your serial number is \AA  1102."),
               ('$22.50 plus $ 4.07 tax.', r"\$22.50 plus \$ 4.07 tax."),
               ('Crève Cœur, Missouri', r"Cr\`eve C\oe ur, Missouri"),
               ('Pëtr, meet Françoise', r"P\"etr, meet Fran\c coise"),
@@ -55,10 +55,10 @@ class TestLatex(TestCase):
     ASSORTED = [('Escobar, María José', r"Escobar, Mar{\'\i}a Jos{\'e}"),
                 ('Escobar, María-José', r"Escobar, Mar\'{\i}a-Jos\'{e}"),
                 ('Åke José Édouard Gödel',      # unbalanced parenthesis
-                      r"\AA{ke} {Jos{\'{e}} {\'{E}douard} G{\"o}del")]
+                 r"\AA{ke} {Jos{\'{e}} {\'{E}douard} G{\"o}del")]
 
     MATH = [(r'An $O(n \log n / \! \log\log n)$ Sorting Algorithm',
-                  r"An $O(n \log n / \! \log\log n)$ Sorting Algorithm")]
+             r'An $O(n \log n / \! \log\log n)$ Sorting Algorithm')]
 
     def test_parse_latex(self):
         for reference, string in self.MACROS:

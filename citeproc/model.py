@@ -4,7 +4,6 @@ from citeproc.py2compat import *
 
 import re
 import unicodedata
-import sys
 
 from functools import reduce, cmp_to_key
 from operator import itemgetter
@@ -66,7 +65,7 @@ class CitationStylesElement(SomewhatObjectifiedElement):
             element = self.xpath(xpath)[0]
             namespace, tag = element.tag.split('}', 1)
             attribs = ''.join(' {}="{}"'.format(key, value)
-                               for key, value in element.attrib.items())
+                              for key, value in element.attrib.items())
             tree.append('{:>4}: {}<{}{}>'.format(element.sourceline,
                                                  i * '  ', tag, attribs))
         print('\n'.join(tree))
@@ -104,7 +103,7 @@ class CitationStylesElement(SomewhatObjectifiedElement):
             for locale in self.get_root().locales:
                 try:
                     return locale.get_term(name, form)
-                except IndexError: # TODO: create custom exception
+                except IndexError:  # TODO: create custom exception
                     continue
 
     def get_date(self, form):
@@ -347,12 +346,12 @@ class Displayed(object):
 
 class Quoted(object):
     def quote(self, string):
-        piq = self.get_locale_option('punctuation-in-quote').lower() == 'true'
+        # piq = self.get_locale_option('punctuation-in-quote').lower() == 'true'
         if self.get('quotes', 'false').lower() == 'true':
             open_quote = self.get_term('open-quote').single
             close_quote = self.get_term('close-quote').single
             string = open_quote + string + close_quote
-##            quoted_string = QuotedString(string, open_quote, close_quote, piq)
+            # quoted_string = QuotedString(string, open_quote, close_quote, piq)
         return string
 
 
@@ -394,7 +393,7 @@ class TextCased(object):
                     if not text.isupper() and not word.isupper():
                         word = word.soft_lower()
                         if (str(word) not in self._stop_words or
-                            prev in (':', '.')):
+                                prev in (':', '.')):
                             word = word.capitalize_first()
                     prev = word[-1]
                     output.append(word)
@@ -442,6 +441,7 @@ class Sort(CitationStylesElement):
             lst = zip(items, *keys)
             comparers = [(itemgetter(i + 1), descending[i])
                          for i in range(len(keys))]
+
             def mycmp(left, right):
                 for getter, desc in comparers:
                     left_key, right_key = getter(left), getter(right)
@@ -593,7 +593,7 @@ class Parent(object):
 class Macro(CitationStylesElement, Parent):
     def process(self, item, context=None, sort_options=None):
         return self.process_children(item, context=context,
-                                    sort_options=sort_options)
+                                     sort_options=sort_options)
 
     def render(self, item, context=None, sort_options=None):
         return self.render_children(item, context=context,
@@ -781,7 +781,6 @@ class Date(CitationStylesElement, Parent, Formatted, Affixed, Delimited):
             return False
 
     def render_single_date(self, date, show_parts=None, context=None):
-        form = self.get('form')
         if context != self:
             parts = self.parts(date, show_parts, context)
         else:
@@ -805,12 +804,12 @@ class Date(CitationStylesElement, Parent, Formatted, Affixed, Delimited):
                 same_show_parts.append('year')
                 try:
                     if ('month' in show_parts and
-                        date_range.begin.month == date_range.end.month):
+                            date_range.begin.month == date_range.end.month):
                         show_parts.remove('month')
                         same_show_parts.append('month')
                         try:
                             if ('day' in show_parts and
-                                date_range.begin.day == date_range.end.day):
+                                    date_range.begin.day == date_range.end.day):
                                 show_parts.remove('day')
                                 same_show_parts.append('day')
                         except AttributeError:
@@ -893,7 +892,7 @@ class Date_Part(CitationStylesElement, Formatted, Affixed, TextCased,
                 StrippedPeriods):
     def process(self, date, context=None):
         name = self.get('name')
-        range_delimiter = self.get('range-delimiter', '-')
+        # range_delimiter = self.get('range-delimiter', '-')
         attrib = self.attrib
 
         if context is None:
@@ -906,10 +905,9 @@ class Date_Part(CitationStylesElement, Formatted, Affixed, TextCased,
 
         if name == 'day':
             form = self.get('form', 'numeric')
-            if (form == 'ordinal'
-                and self.get_locale_option('limit-day-ordinals-to-day-1')
-                    .lower() == 'true'
-                and date.day > 1):
+            if (form == 'ordinal' and
+                    self.get_locale_option('limit-day-ordinals-to-day-1').lower() == 'true' and
+                    date.day > 1):
                 form = 'numeric'
 
             if form == 'numeric':
@@ -920,7 +918,6 @@ class Date_Part(CitationStylesElement, Formatted, Affixed, TextCased,
                 text = to_ordinal(date.day, context)
         elif name == 'month':
             form = self.get('form', 'long')
-            strip_periods = self.get('form', False)
             try:
                 index = date.month
                 term = 'month'
@@ -1142,8 +1139,8 @@ class Name(CitationStylesElement, Formatted, Affixed, Delimited):
 
         et_al_min = get_option('et-al-min')
         et_al_use_first = get_option('et-al-use-first')
-        et_al_subseq_min = get_option('et-al-subsequent-min')
-        et_al_subseq_use_first = get_option('et-al-subsequent-use-first')
+        # et_al_subseq_min = get_option('et-al-subsequent-min')
+        # et_al_subseq_use_first = get_option('et-al-subsequent-use-first')
         et_al_use_last = get_option('et-al-use-last')
 
         initialize_with = get_option('initialize-with')
@@ -1188,7 +1185,7 @@ class Name(CitationStylesElement, Formatted, Affixed, Delimited):
 
                 if form == 'long':
                     if (name_as_sort_order == 'all' or
-                        (name_as_sort_order == 'first' and i == 0)):
+                            (name_as_sort_order == 'first' and i == 0)):
                         if demote_ndp in ('never', 'sort-only'):
                             family = ' '.join([n for n in (ndp, family) if n])
                             given = ' '.join([n for n in (given, dp) if n])
@@ -1217,7 +1214,7 @@ class Name(CitationStylesElement, Formatted, Affixed, Delimited):
                     text = self.join(output, delimiter)
                 elif (delimiter_precedes_et_al == 'always' or
                       (delimiter_precedes_et_al == 'contextual' and
-                     len(output) >= 2)):
+                       len(output) >= 2)):
                     output.append(et_al)
                     text = self.join(output, delimiter)
                 else:
@@ -1278,7 +1275,6 @@ class Name_Part(CitationStylesElement, Formatted, Affixed, TextCased):
 
 class Et_Al(CitationStylesElement, Formatted, Affixed):
     def process(self):
-        variable = self.get('term', 'et-al')
         term = self.get_term('variable')
         return term
 
@@ -1338,7 +1334,7 @@ class Label(CitationStylesElement, Formatted, Affixed, StrippedPeriods,
             term = self.get_term(variable, form)
 
         if (plural_option == 'contextual' and plural or
-            plural_option == 'always'):
+                plural_option == 'always'):
             text = term.multiple
         else:
             text = term.single
@@ -1387,7 +1383,7 @@ class Group(CitationStylesElement, Parent, Formatted, Affixed, Delimited):
                                          child.calls_variable())
             except VariableError:
                 pass
-        output = [item for item in output if item is not None]
+        output = [item_ for item_ in output if item_ is not None]
         success = not variable_called or (variable_called and variable_rendered)
         if output and success:
             return self.join(output)
@@ -1547,7 +1543,7 @@ def to_ordinal(number, context):
 def romanize(n):
     # by Kay Schluehr - from http://billmill.org/python_roman.html
     numerals = (('M', 1000), ('CM', 900), ('D', 500), ('CD', 400),
-                ('C', 100),('XC', 90),('L', 50),('XL', 40), ('X', 10),
+                ('C', 100), ('XC', 90), ('L', 50), ('XL', 40), ('X', 10),
                 ('IX', 9), ('V', 5), ('IV', 4), ('I', 1))
     roman = []
     for ltr, num in numerals:
