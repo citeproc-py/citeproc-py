@@ -34,8 +34,8 @@ bugreports_DuplicateTerminalPunctuationInBibliography
 bugreports_EtAlSubsequent
 bugreports_FourAndFour
 bugreports_FrenchApostrophe
-bugreports_GreekStyleProblems                                      # uncaught exception
-bugreports_GreekStyleTwoEditors                                    # uncaught exception
+bugreports_GreekStyleProblems
+bugreports_GreekStyleTwoEditors
 bugreports_IeeePunctuation
 bugreports_LabelsOutOfPlace
 bugreports_MovePunctuationInsideQuotesForLocator
