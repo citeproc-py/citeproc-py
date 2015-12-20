@@ -7,7 +7,7 @@ affix_SuppressDelimiterCharsWhenFullStopInSuffix                   # uncaught ex
 affix_WithCommas
 affix_WordProcessorAffixNoSpace
 api_SuppressAuthor
-bugreports_AffiliationSpoofingDemoPageFullCiteCruftOnSubsequent    # uncaught exception
+bugreports_AffiliationSpoofingDemoPageFullCiteCruftOnSubsequent
 bugreports_AllCapsLeakage
 bugreports_ApostropheOnParticle
 bugreports_AsaSpacing
@@ -24,7 +24,7 @@ bugreports_ContainerTitleShort
 bugreports_ContentPunctuationDuplicate1
 bugreports_ContextualPluralWithMainItemFields
 bugreports_CreepingAddNames
-bugreports_DemoPageFullCiteCruftOnSubsequent                       # uncaught exception
+bugreports_DemoPageFullCiteCruftOnSubsequent
 bugreports_DisambiguationAddNames
 bugreports_DisambiguationAddNamesBibliography
 bugreports_DuplicateSpaces
@@ -53,12 +53,11 @@ bugreports_ThesisUniversityAppearsTwice
 bugreports_TitleCase
 bugreports_TwoCitesPlusOneBackref
 bugreports_TwoFullStops
-bugreports_UndefinedInName                                         # uncaught exception
 bugreports_UndefinedInName3
 bugreports_UndefinedNotString
 bugreports_UndefinedStr
 bugreports_UriWrapping
-bugreports_YearSuffixInHarvard1                                    # uncaught exception
+bugreports_YearSuffixInHarvard1
 bugreports_YearSuffixLingers
 bugreports_ikeyOne
 bugreports_parenthesis
@@ -227,7 +226,7 @@ magic_SubsequentAuthorSubstitute
 magic_SubsequentAuthorSubstituteNotFooled
 magic_SubsequentAuthorSubstituteOfTitleField
 magic_SuperscriptChars
-magic_SuppressDuplicateVariableRendering                           # uncaught exception
+magic_SuppressDuplicateVariableRendering
 magic_SuppressExtraTerminalPunctuationAfterTerm                    # uncaught exception
 magic_SuppressLayoutDelimiterIfPrefixComma
 magic_TermCapitalizationWithPrefix
@@ -246,18 +245,18 @@ name_FormattingOfParticles
 name_HebrewAnd
 name_HyphenatedNonDroppingParticle1
 name_HyphenatedNonDroppingParticle2
-name_Institution                                                   # uncaught exception
-name_InstitutionDecoration                                         # uncaught exception
+name_Institution
+name_InstitutionDecoration
 name_LongAbbreviation
 name_LowercaseSurnameSuffix
-name_MixedFormatsInitialSortOrderAllWithDecorationsEtAl            # uncaught exception
-name_MixedFormatsInitialSortOrderFirstWithDecorationsEtAl          # uncaught exception
-name_MixedFormatsInitialsWithDecorationsEtAl                       # uncaught exception
-name_MixedFormatsPrimaryDecorations                                # uncaught exception
-name_MixedFormatsWithDecorationsEtAl                               # uncaught exception
-name_MixedFormatsWithDecorationsPlusAlternateEtAlDecorations       # uncaught exception
-name_MixedFormatsWithDecorationsPlusEtAlDecorations                # uncaught exception
-name_OnlyGivenname                                                 # uncaught exception
+name_MixedFormatsInitialSortOrderAllWithDecorationsEtAl
+name_MixedFormatsInitialSortOrderFirstWithDecorationsEtAl
+name_MixedFormatsInitialsWithDecorationsEtAl
+name_MixedFormatsPrimaryDecorations
+name_MixedFormatsWithDecorationsEtAl
+name_MixedFormatsWithDecorationsPlusAlternateEtAlDecorations
+name_MixedFormatsWithDecorationsPlusEtAlDecorations
+name_OnlyGivenname
 name_ParseNames
 name_ParsedCommaDelimitedDroppingParticleSortOrderingWithoutAffixes
 name_ParsedDroppingParticleWithApostrophe
@@ -323,8 +322,8 @@ sort_AuthorDateWithYearSuffix
 sort_BibliographyCitationNumberDescending
 sort_BibliographyCitationNumberDescendingViaMacro
 sort_BibliographyNosortOption
-sort_ChicagoYearSuffix1                                            # uncaught exception
-sort_ChicagoYearSuffix2                                            # uncaught exception
+sort_ChicagoYearSuffix1
+sort_ChicagoYearSuffix2
 sort_CitationEdit
 sort_CitationUnsorted
 sort_CiteGroupDelimiter
