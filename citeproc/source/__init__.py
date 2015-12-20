@@ -95,7 +95,11 @@ class Date(DateBase):
         if 'day' in args and 'month' not in args:
             raise TypeError('When specifying the day, you should also specify '
                             'the month')
-        args = {key: int(value) for key, value in args.items()}
+        for key, value in args.items():
+            try:
+                args[key] = int(value)
+            except ValueError:
+                pass
         super(Date, self).__init__(args, required, optional)
 
     def sort_key(self):
