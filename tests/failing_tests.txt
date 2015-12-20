@@ -42,7 +42,6 @@ bugreports_MovePunctuationInsideQuotesForLocator
 bugreports_NoTitle
 bugreports_NumberAffixEscape
 bugreports_NumberInMacroWithVerticalAlign
-bugreports_NumericStyleFirstRefMultipleCiteFailure                 # uncaught exception
 bugreports_OldMhraDisambiguationFailure
 bugreports_Places
 bugreports_ProcessorHang1
