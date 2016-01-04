@@ -80,6 +80,10 @@ class BibTeX(BibliographySource):
         csl_dict = {}
         for field, value in bibtex_entry.items():
             try:
+                value = value.strip()
+            except AttributeError:
+                pass
+            try:
                 csl_field = self.fields[field]
             except KeyError:
                 if field not in ('year', 'month', 'filename'):
