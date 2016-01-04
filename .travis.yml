@@ -9,14 +9,9 @@ python:
   - '3.4'
   - '3.5'
 
-addons:
-  apt:
-    packages:
-      - trang
-
 install:
-  - pip install tox-travis
-  - trang -I rnc -O rng citeproc/data/schema/csl.rnc citeproc/data/schema/csl.rng
+  - pip install rnc2rng tox-travis
+  - rnc2rng citeproc/data/schema/csl.rnc citeproc/data/schema/csl.rng
 
 script:
   - tox
