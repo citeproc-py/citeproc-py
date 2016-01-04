@@ -11,6 +11,7 @@ import sys
 from datetime import datetime
 from subprocess import Popen, PIPE
 from setuptools import setup, find_packages
+from setuptools.command.build_py import build_py
 
 
 PACKAGE = 'citeproc'
@@ -55,14 +56,31 @@ def long_description():
     return result
 
 
+def convert_rnc(filename):
+    import rnc2rng
+    filename_root, _ = os.path.splitext(filename)
+    with open(filename, 'r') as rnc:
+        root = rnc2rng.load(rnc)
+    with open(filename_root + '.rng', 'w') as rng:
+        rnc2rng.dump(root, rng)
+
+
+class custom_build_py(build_py):
+    def run(self):
+        convert_rnc('citeproc/data/schema/csl.rnc')
+        super(custom_build_py, self).run()
+
+
 setup(
     name='citeproc-py',
     version=__version__,
+    cmdclass = dict(build_py=custom_build_py),
     packages=find_packages(),
     package_data={PACKAGE: ['data/locales/*.xml',
                             'data/schema/*.rng',
                             'data/styles/*.csl']},
     scripts=['bin/csl_unsorted'],
+    setup_requires=['rnc2rng>=2.2'],
     install_requires=['lxml'],
     provides=[PACKAGE],
     #test_suite='nose.collector',
