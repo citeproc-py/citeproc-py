@@ -273,12 +273,16 @@ if __name__ == '__main__':
         else:
             print(*args, file=destination)
 
+    def print_result(name, passed, total):
+        out(' {:<13} {:>3} / {:>3} ({:>4.0%})'.format(name, passed, total,
+                                                      passed / total))
+
     try:
         glob_pattern = args[0]
-        filter_tests = False
+        run_all_tests = False
     except IndexError:
         glob_pattern = '*'
-        filter_tests = True
+        run_all_tests = True
 
     test_repo_has_updates = clone_citeproc_test()
 
@@ -312,8 +316,8 @@ if __name__ == '__main__':
                 total_count[category] = total_count.get(category, 0) + 1
                 count += 1
             t = ProcessorTest(filename)
-            if filter_tests and (t.data['mode'] == 'bibliography-header' or
-                                 t.data['bibsection']):
+            if run_all_tests and (t.data['mode'] == 'bibliography-header' or
+                                  t.data['bibsection']):
                 continue
             if options.verbose:
                 out('>>> Testing {}'.format(os.path.basename(filename)))
@@ -337,14 +341,13 @@ if __name__ == '__main__':
                     out('<<< FAILED\n')
             del t
         except Exception as e:
-            reason = 'uncaught exception'
+            if not options.catch_exceptions:
+                raise
             if options.verbose:
                 out('Exception in', os.path.basename(filename))
-            if options.catch_exceptions:
-                if options.verbose:
-                    traceback.print_exc()
-            else:
-                raise
+                traceback.print_exc()
+                out('<<< FAILED\n')
+            reason = 'uncaught exception'
         if test_name not in IGNORED_RESULS:
             failed_tests.mark_failure(test_name, reason)
 
@@ -352,33 +355,34 @@ if __name__ == '__main__':
     if sum(total_count.values()) == 0:
         print('<no tests found>: check README.md file for instructions')
     else:
-        def print_result(name, passed, total):
-            out(' {:<13} {:>3} / {:>3} ({:>4.0%})'.format(name, passed, total,
-                                                          passed / total))
-        new_failing, new_fixed = failed_tests.update_file()
-        success = not (new_failing or new_fixed)
+        if run_all_tests:
+            new_failing, new_fixed = failed_tests.update_file()
+            success = not (new_failing or new_fixed)
 
-        if new_failing:
-            out(BOLD + 'New failing tests:' + END)
-            for test_name in new_failing:
-                out(' ' + RED + test_name + END)
-        if new_failing and new_fixed:
-            out()
+            if new_failing:
+                out(BOLD + 'New failing tests:' + END)
+                for test_name in new_failing:
+                    out(' ' + RED + test_name + END)
+            if new_failing and new_fixed:
+                out()
+            else:
+                out('All is well.')
+            if new_fixed:
+                out(BOLD + 'Fixed tests:' + END)
+                for test_name in new_fixed:
+                    out(' ' + GREEN + test_name + END)
+                out()
+                out('You need to fix the newly failing tests and may commit the \n'
+                    'removal of the fixed tests from {}'.format(FAILING_TESTS_FILE))
+
+            if test_repo_has_updates:
+                out()
+                out(BOLD + 'The citeproc-test repository has updates! Consider '
+                           'updating the test script.' + END)
         else:
-            out('All is well.')
-        if new_fixed:
-            out(BOLD + 'Fixed tests:' + END)
-            for test_name in new_fixed:
-                out(' ' + GREEN + test_name + END)
-            out()
-            out('You need to fix the newly failing tests and may commit the \n'
-                'removal of the fixed tests from {}'.format(FAILING_TESTS_FILE))
-
-        if test_repo_has_updates:
-            out()
-            out(BOLD + 'The citeproc-test repository has updates! Consider '
-                       'updating the test script.' + END)
-
+            out(BOLD + 'Failing tests:' + END)
+            for test_name in sorted(failed_tests.now_failing.keys()):
+                out(' ' + RED + test_name + END)
         if options.summary:
             out()
             out(BOLD + 'Summary:' + END)
