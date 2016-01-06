@@ -360,7 +360,7 @@ if __name__ == '__main__':
         if test_name not in IGNORED_RESULS:
             failed_tests.mark_failure(test_name, reason)
 
-    success = True
+    success = False
     if sum(total_count.values()) == 0:
         print('<no tests found>: check README.md file for instructions')
     else:
@@ -391,8 +391,10 @@ if __name__ == '__main__':
                 out(BOLD + 'The citeproc-test repository has updates! Consider '
                            'updating the test script.' + END)
         else:
+            failing = sorted(failed_tests.now_failing.keys())
+            success = not failing
             out(BOLD + 'Failing tests:' + END)
-            for test_name in sorted(failed_tests.now_failing.keys()):
+            for test_name in failing:
                 out(' ' + RED + test_name + END)
         if options.summary:
             out()
