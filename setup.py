@@ -68,7 +68,7 @@ def convert_rnc(filename):
 class custom_build_py(build_py):
     def run(self):
         convert_rnc('citeproc/data/schema/csl.rnc')
-        super(custom_build_py, self).run()
+        build_py.run(self)
 
 
 setup(
