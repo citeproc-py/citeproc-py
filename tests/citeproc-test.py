@@ -166,32 +166,38 @@ class FailedTests(object):
         with open(filename, 'r') as file:
             self.lines = file.readlines()
         self.now_failing = {}
+        self.updated_lines = []
 
     def mark_failure(self, test_name, reason=None):
         self.now_failing[test_name] = reason
 
-    def update_file(self):
+    def compare(self):
+        assert not self.updated_lines
         was_failing = set()
         new_failing_tests = []
         new_fixed_tests = []
-        with open(self.filename, 'w') as file:
-            for line in self.lines:
-                test_name, comment = (line.split('#') if '#' in line
-                                      else (line, None))
-                test_name = test_name.strip()
-                if test_name and test_name not in self.now_failing:
-                    new_fixed_tests.append(test_name)
-                    continue
-                was_failing.add(test_name)
-                file.write(line)
-            for test_name in sorted(self.now_failing.keys()):
-                if test_name not in was_failing:
-                    reason = self.now_failing[test_name]
-                    line = ('{:<66} # {}'.format(test_name, reason) if reason
-                            else test_name)
-                    print(line, file=file)
-                    new_failing_tests.append(test_name)
+        for line in self.lines:
+            test_name, comment = (line.split('#') if '#' in line
+                                  else (line, None))
+            test_name = test_name.strip()
+            if test_name and test_name not in self.now_failing:
+                new_fixed_tests.append(test_name)
+                continue
+            was_failing.add(test_name)
+            self.updated_lines.append(line)
+        for test_name in sorted(self.now_failing.keys()):
+            if test_name not in was_failing:
+                reason = self.now_failing[test_name]
+                line = ('{:<66} # {}'.format(test_name, reason) if reason
+                        else test_name)
+                self.updated_lines.append(line + '\n')
+                new_failing_tests.append(test_name)
         return new_failing_tests, new_fixed_tests
+
+    def update_file(self):
+        assert self.updated_lines
+        with open(self.filename, 'w') as file:
+            file.writelines(self.updated_lines)
 
 
 def execute_hg_command(args, echo=False):
@@ -253,6 +259,9 @@ if __name__ == '__main__':
                       help='do not catch exceptions (aborts program)')
     parser.add_option('-s', '--summary', dest='summary', action='store_true',
                       default=False, help='print a summary of the test results')
+    parser.add_option('-n', '--no-update', dest='update', action='store_false',
+                      default=True, help='do not update {}'
+                                         .format(FAILING_TESTS_FILE))
     parser.add_option('-f', '--file', dest='file', default=None,
                       help='write output to FILE', metavar='FILE')
     (options, args) = parser.parse_args()
@@ -356,8 +365,10 @@ if __name__ == '__main__':
         print('<no tests found>: check README.md file for instructions')
     else:
         if run_all_tests:
-            new_failing, new_fixed = failed_tests.update_file()
+            new_failing, new_fixed = failed_tests.compare()
             success = not (new_failing or new_fixed)
+            if options.update:
+                failed_tests.update_file()
 
             if new_failing:
                 out(BOLD + 'New failing tests:' + END)
