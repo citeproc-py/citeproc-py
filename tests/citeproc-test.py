@@ -363,7 +363,7 @@ if __name__ == '__main__':
                 out(BOLD + 'New failing tests:' + END)
                 for test_name in new_failing:
                     out(' ' + RED + test_name + END)
-            if new_failing and new_fixed:
+            if new_failing or new_fixed:
                 out()
             else:
                 out('All is well.')
