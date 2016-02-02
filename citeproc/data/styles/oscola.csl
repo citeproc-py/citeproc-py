@@ -154,7 +154,8 @@
       <else-if type="legal_case legislation" match="any"/>
       <else>
         <names variable="author">
-          <name delimiter-precedes-last="never" and="text" delimiter=", " name-as-sort-order="all" initialize-with="" sort-separator=" "/>
+          <!-- MS 02-2016: removed initialize-with="" to make last names display fully -->
+          <name delimiter-precedes-last="never" and="text" delimiter=", " name-as-sort-order="all" sort-separator=" "/>
           <label form="short" prefix=" (" suffix=")" strip-periods="true"/>
           <substitute>
             <names variable="editor"/>
@@ -239,7 +240,7 @@
             <text macro="issued-year" prefix="[" suffix="]"/>
           </if>
           <else-if variable="volume">
-            <text macro="issued-year" prefix="(" suffix=")"/>
+            <text macro="issued-year" prefix="[" suffix="]"/>
           </else-if>
           <else-if variable="container-title volume number" match="any">
             <!--no year in square brackets for unreported case w/o medium neutral citation-->
@@ -349,7 +350,7 @@
       <if type="book chapter report" match="any">
         <group delimiter=" ">
           <label variable="volume" form="short" strip-periods="true"/>
-          <text variable="volume"/>
+          <text variable="volume" />
         </group>
       </if>
     </choose>
@@ -405,7 +406,8 @@
             </if>
           </choose>
           <group delimiter=" ">
-            <text variable="volume"/>
+            <!-- volume number -->
+            <text variable="volume" />
             <choose>
               <if type="legal_case">
                 <choose>
@@ -429,7 +431,8 @@
   <macro name="page-first">
     <choose>
       <if type="chapter report paper-conference" match="none">
-        <text variable="page-first"/>
+        <!-- Issue number -->
+        <text variable="page-first" prefix="(" suffix=")"/>
       </if>
     </choose>
   </macro>
@@ -623,7 +626,7 @@
                     <text macro="book-container"/>
                   </group>
                   <text macro="broadcast-container"/>
-                  <text macro="volume-book"/>
+                  <text macro="volume-book" />
                   <text macro="looseleaf-note"/>
                 </group>
                 <group delimiter=" ">
