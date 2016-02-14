@@ -114,10 +114,10 @@ class BibTeX(BibliographySource):
                 first, last = value.split('--')
             except ValueError:
                 first, last = value.split('-')
-            pages = Pages(first=int(first), last=int(last))
+            pages = Pages(first=first, last=last)
         else:
             decimal = value[:-1] if value.endswith('+') else value
-            pages = Pages(first=int(decimal))
+            pages = Pages(first=decimal)
         return pages
 
     def _bibtex_to_csl_date(self, bibtex_entry):
