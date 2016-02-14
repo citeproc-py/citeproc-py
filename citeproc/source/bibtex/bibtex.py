@@ -11,7 +11,13 @@ from warnings import warn
 from ...types import (ARTICLE, ARTICLE_JOURNAL, BOOK, CHAPTER, MANUSCRIPT,
                       PAMPHLET, PAPER_CONFERENCE, REPORT, THESIS)
 from ...string import String, MixedString, NoCase
-from .. import BibliographySource, Reference, Name, Date, DateRange, Pages
+from .. import (
+    BibliographySource,
+    Reference,
+    Name,
+    Date, DateRange, LiteralDate,
+    Pages,
+)
 from .bibparse import BibTeXParser
 from .latex import parse_latex
 from .latex.macro import NewCommand, Macro
@@ -123,13 +129,26 @@ class BibTeX(BibliographySource):
     def _bibtex_to_csl_date(self, bibtex_entry):
         if 'month' in bibtex_entry:
             begin_dict, end_dict = self._parse_month(bibtex_entry['month'])
+            assert 'year' in bibtex_entry
         else:
             begin_dict, end_dict = {}, {}
+
         if 'year' in bibtex_entry:
             begin_dict['year'], end_dict['year'] \
                 = self._parse_year(bibtex_entry['year'])
         if not begin_dict:
             return None
+        try:
+            begin_dict['year'] = int(begin_dict['year'])
+            end_dict['year'] = int(end_dict['year'])
+        except ValueError:
+            if 'month' in bibtex_entry:
+                literal = '{0} {1}'.format(bibtex_entry['month'],
+                                           bibtex_entry['year'])
+            else:
+                literal = '{0}'.format(bibtex_entry['year'])
+            return LiteralDate(text=literal)
+
         if begin_dict == end_dict:
             return Date(**begin_dict)
         else:
@@ -146,7 +165,7 @@ class BibTeX(BibliographySource):
             if end_len < begin_len:
                 end_year = begin_year[:begin_len - end_len] + end_year
         else:
-            begin_year = end_year = int(year_str)
+            begin_year = end_year = year_str
         return begin_year, end_year
 
     MONTHS = ('jan', 'feb', 'mar', 'apr', 'may', 'jun',
