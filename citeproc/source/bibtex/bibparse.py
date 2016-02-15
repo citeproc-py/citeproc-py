@@ -120,6 +120,8 @@ class BibTeXParser(dict):
         while char != ',':
             key += char
             char = file.read(1)
+            if not char:
+                raise ValueError('End of file while parsing key')
         return key.strip().lower()
 
     def _parse_name(self, file):
@@ -155,6 +157,8 @@ class BibTeXParser(dict):
         depth = 0
         while True:
             char = file.read(1)
+            if not char:
+                raise ValueError('End of file while parsing string value')
             if char == '{':
                 depth += 1
             elif depth == 0 and char == closing_character:
