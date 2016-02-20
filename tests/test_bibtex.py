@@ -49,6 +49,13 @@ class TestBibTeX(TestCase):
                                                                     last=3))
         self.assertEqual(BibTeX._bibtex_to_csl_pages('1-3'), Pages(first=1,
                                                                    last=3))
+        self.assertEqual(BibTeX._bibtex_to_csl_pages('i-iv'),
+                         Pages(first='i', last='iv'))
+        self.assertEqual(BibTeX._bibtex_to_csl_pages('11.1--11.27'),
+                         Pages(first='11.1', last='11.27'))
+        # Arabic letters
+        self.assertEqual(BibTeX._bibtex_to_csl_pages('ا-ي'),
+                         Pages(first='ا', last='ي'))
 
 
 SPLIT_NAMES = [
