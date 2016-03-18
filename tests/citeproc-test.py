@@ -304,7 +304,6 @@ if __name__ == '__main__':
         from imp import load_source
         processor = load_source('processor', TEST_PARSER_PATH)
     from processor import CslTest
-    global CslTest
 
     total_count = {}
     passed_count = {}
