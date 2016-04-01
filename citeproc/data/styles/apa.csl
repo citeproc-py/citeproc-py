@@ -199,7 +199,9 @@
     <choose>
       <if type="article-journal" match="any">
   <group delimiter=": ">
-          <text variable="publisher"/>
+          <!-- MS: publisher name should be in italics apparently -->
+          <text variable="publisher" font-style="italic"/>
+          <!-- MS -->
         </group>
       </if>
       <if type="report" match="any">
