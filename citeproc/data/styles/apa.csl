@@ -159,9 +159,7 @@
   </macro>
   <macro name="title">
     <choose>
-      <!-- MS: we were missing the article-journal type here for italics -->
-      <if type="report article-journal thesis book graphic motion_picture report song manuscript speech" match="any">
-        <!--MS -->
+      <if type="report thesis book graphic motion_picture report song manuscript speech" match="any">
         <choose>
           <if variable="version">
             <!---This is a hack until we have a computer program type -->
