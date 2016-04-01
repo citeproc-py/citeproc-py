@@ -66,7 +66,7 @@
   <macro name="author">
     <names variable="author">
       <name name-as-sort-order="all" and="symbol" sort-separator=", " initialize-with=". " delimiter=", " delimiter-precedes-last="always"/>
-      <label form="short" prefix=" (" suffix=")" text-case="capitalize-first"/>
+      <label form="short" prefix=" (" suffix=")" text-case="capitalize-first" strip-periods="true"/>
       <substitute>
         <names variable="editor"/>
         <names variable="translator"/>
@@ -159,7 +159,9 @@
   </macro>
   <macro name="title">
     <choose>
-      <if type="report thesis book graphic motion_picture report song manuscript speech" match="any">
+      <!-- MS: we were missing the article-journal type here for italics -->
+      <if type="report article-journal thesis book graphic motion_picture report song manuscript speech" match="any">
+        <!--MS -->
         <choose>
           <if variable="version">
             <!---This is a hack until we have a computer program type -->
@@ -481,8 +483,10 @@
     </sort>
     <layout>
       <group suffix=".">
+        <!-- MS: moved author macro out of the delimiter group to avoid double dots after author initials -->
+        <text macro="author"/>
+        <!--MS -->
         <group delimiter=". ">
-          <text macro="author"/>
           <text macro="issued"/>
           <text macro="title-plus-extra"/>
   <text macro="publisher"/>
