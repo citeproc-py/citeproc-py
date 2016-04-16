@@ -38,7 +38,7 @@ class BibTeXParser(dict):
                           'nov': 'November',
                           'dec': 'December'}
 
-    def __init__(self, file_or_filename, encoding='UTF-8'):
+    def __init__(self, file_or_filename, encoding='ascii'):
         try:
             self.file = open(file_or_filename, 'rt', encoding=encoding)
         except TypeError:
