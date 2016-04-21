@@ -25,6 +25,7 @@ class BibTeX(BibliographySource):
               'chapter': 'chapter_number',
               'edition': 'edition',
               'editor': 'editor',
+              'url': 'URL',
 #              'howpublished': None,
 #              'institution': None,
               'journal': 'container_title',
@@ -66,7 +67,7 @@ class BibTeX(BibliographySource):
              'report': REPORT,
              }
 
-    def __init__(self, filename, encoding='UTF-8'):
+    def __init__(self, filename, encoding='ascii'):
         bibtex_database = BibTeXParser(filename, encoding)
         self.preamble_macros = {}
         parse_latex(bibtex_database.preamble,
