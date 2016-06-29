@@ -1,6 +1,9 @@
 ﻿
 from __future__ import (absolute_import, division, print_function,
                         unicode_literals)
+
+import string
+
 from citeproc.py2compat import *
 
 import re
@@ -108,13 +111,16 @@ class BibTeX(BibliographySource):
 
     @staticmethod
     def _bibtex_to_csl_pages(value):
-        value = value.replace(' ', '')
         if '-' in value:
             try:
                 first, last = value.split('--')
             except ValueError:
                 first, last = value.split('-')
             pages = Pages(first=int(first), last=int(last))
+        elif any(c.isalpha() for c in value):
+            non_decimal = re.compile(r'[^\d]+')
+            first = non_decimal.sub('', value)
+            pages = Pages(first=int(first))
         else:
             decimal = value[:-1] if value.endswith('+') else value
             pages = Pages(first=int(decimal))
