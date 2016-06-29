@@ -21,11 +21,13 @@ from .latex.macro import NewCommand, Macro
 
 
 class BibTeX(BibliographySource):
-    fields = {'address': 'publisher_place',
+    fields = {'abstract': 'abstract',
+              'address': 'publisher_place',
               'annote': 'annote',
               'author': 'author',
               'booktitle': 'container_title',
               'chapter': 'chapter_number',
+              'doi': 'DOI',
               'edition': 'edition',
               'editor': 'editor',
 #              'howpublished': None,
@@ -36,6 +38,7 @@ class BibTeX(BibliographySource):
               'number': 'issue',
 #              'organization': None,
               'pages': 'page',
+              'pmid': 'PMID',
               'publisher': 'publisher',
 #              'school': None,
               'series': 'collection_title',
