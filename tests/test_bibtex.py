@@ -49,6 +49,8 @@ class TestBibTeX(TestCase):
                                                                     last=3))
         self.assertEqual(BibTeX._bibtex_to_csl_pages('1-3'), Pages(first=1,
                                                                    last=3))
+        self.assertEqual(BibTeX._bibtex_to_csl_pages('R106'), Pages(first=106))
+
 
 
 SPLIT_NAMES = [
