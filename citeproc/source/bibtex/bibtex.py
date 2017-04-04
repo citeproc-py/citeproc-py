@@ -274,7 +274,7 @@ def parse_name(name):
     """Parse a BibTeX name string and split it into First, von, Last and Jr
     parts.
     """
-    parts = split_name(name)
+    parts = split_name(name.strip())
     if len(parts) == 1:       # First von Last
         first_von_last, = parts
         index = 0
@@ -297,7 +297,7 @@ def parse_name(name):
 
 def split_name(name):
     """Split a name in into parts delimited by commas (at brace-level 0), and
-    each part into words.
+    each part into words.  If name is not delimited by commas, split by spaces.
 
     Returns a list of of lists of words.
     """
@@ -323,6 +323,8 @@ def split_name(name):
     if word:
         current_part.append(word)
         parts.append(current_part)
+    if not parts:  # no comma-separated entries
+        parts = name.split()
     return parts
 
 
