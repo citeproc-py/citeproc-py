@@ -192,6 +192,7 @@ MACROS = {
     'textparagraph': SymbolByName('PILCROW SIGN'),
     'textperiodcentered': SymbolByName('MIDDLE DOT'),
     'textquestiondown': SymbolByName('INVERTED QUESTION MARK'),
+    'textquotesingle': Symbol("'"),  # from the textcomp package
     'textquotedbl': Symbol('"'),
     'textquotedblleft': SymbolByName('LEFT DOUBLE QUOTATION MARK'),
     'textquotedblright': SymbolByName('RIGHT DOUBLE QUOTATION MARK'),
