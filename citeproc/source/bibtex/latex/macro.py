@@ -197,6 +197,7 @@ MACROS = {
     'textquotedblright': SymbolByName('RIGHT DOUBLE QUOTATION MARK'),
     'textquoteleft': SymbolByName('LEFT SINGLE QUOTATION MARK'),
     'textquoteright': SymbolByName('RIGHT SINGLE QUOTATION MARK'),
+    'textquotesingle': Symbol("'"),
     'textregistered': SymbolByName('REGISTERED SIGN'),
     'textsection': SymbolByName('SECTION SIGN'),
     'textsterling': SymbolByName('POUND SIGN'),
