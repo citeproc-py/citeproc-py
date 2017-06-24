@@ -1,6 +1,9 @@
 ﻿
 from __future__ import (absolute_import, division, print_function,
                         unicode_literals)
+
+import string
+
 from citeproc.py2compat import *
 
 import re
@@ -18,11 +21,13 @@ from .latex.macro import NewCommand, Macro
 
 
 class BibTeX(BibliographySource):
-    fields = {'address': 'publisher_place',
+    fields = {'abstract': 'abstract',
+              'address': 'publisher_place',
               'annote': 'annote',
               'author': 'author',
               'booktitle': 'container_title',
               'chapter': 'chapter_number',
+              'doi': 'DOI',
               'edition': 'edition',
               'editor': 'editor',
 #              'howpublished': None,
@@ -33,6 +38,7 @@ class BibTeX(BibliographySource):
               'number': 'issue',
 #              'organization': None,
               'pages': 'page',
+              'pmid': 'PMID',
               'publisher': 'publisher',
 #              'school': None,
               'series': 'collection_title',
@@ -108,13 +114,16 @@ class BibTeX(BibliographySource):
 
     @staticmethod
     def _bibtex_to_csl_pages(value):
-        value = value.replace(' ', '')
         if '-' in value:
             try:
                 first, last = value.split('--')
             except ValueError:
                 first, last = value.split('-')
             pages = Pages(first=int(first), last=int(last))
+        elif any(c.isalpha() for c in value):
+            non_decimal = re.compile(r'[^\d]+')
+            first = non_decimal.sub('', value)
+            pages = Pages(first=int(first))
         else:
             decimal = value[:-1] if value.endswith('+') else value
             pages = Pages(first=int(decimal))
