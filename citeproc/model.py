@@ -136,6 +136,8 @@ class Style(CitationStylesElement):
     _locale_fallback = {'de-AT': 'de-DE',
                         'de-CH': 'de-DE',
                         'en-GB': 'en-US',
+                        'es-CL': 'es-ES',
+                        'fr-CA': 'fr-FR',
                         'pt-BR': 'pt-PT',
                         'zh-TW': 'zh-CN'}
 
