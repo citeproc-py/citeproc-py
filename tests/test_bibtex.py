@@ -36,7 +36,8 @@ class TestBibTeX(TestCase):
 
     def test_date_months(self):
         for january in ['jan', 'JAN', '01']:
-            self.assertEqual(BibTeX._parse_month(january), ({'month': 1}, ) * 2)
+            self.assertEqual(BibTeX._parse_month(january),
+                             ({'month': 1}, ) * 2)
         self.assertEqual(BibTeX._parse_month("10~jan"),
                          ({'month': 1, 'day': 10}, ) * 2)
         self.assertEqual(BibTeX._parse_month("jul~4"),
@@ -44,7 +45,10 @@ class TestBibTeX(TestCase):
 
     def test_pages(self):
         self.assertEqual(BibTeX._bibtex_to_csl_pages('313'), Pages(first=313))
+        self.assertEqual(BibTeX._bibtex_to_csl_pages('R112'),
+                         Pages(first='R112'))
         self.assertEqual(BibTeX._bibtex_to_csl_pages('12+'), Pages(first=12))
+        # page ranges
         self.assertEqual(BibTeX._bibtex_to_csl_pages('1--3'), Pages(first=1,
                                                                     last=3))
         self.assertEqual(BibTeX._bibtex_to_csl_pages('1-3'), Pages(first=1,
@@ -53,6 +57,8 @@ class TestBibTeX(TestCase):
                          Pages(first='i', last='iv'))
         self.assertEqual(BibTeX._bibtex_to_csl_pages('11.1--11.27'),
                          Pages(first='11.1', last='11.27'))
+        self.assertEqual(BibTeX._bibtex_to_csl_pages('S43--S67'),
+                         Pages(first='S43', last='S67'))
         # Arabic letters
         self.assertEqual(BibTeX._bibtex_to_csl_pages('ا-ي'),
                          Pages(first='ا', last='ي'))
