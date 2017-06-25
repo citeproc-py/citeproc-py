@@ -4,14 +4,15 @@ from citeproc.py2compat import *
 
 import re
 import unicodedata
-import sys
+import os
 
 from functools import reduce, cmp_to_key
+from glob import glob
 from operator import itemgetter
 
 from lxml import etree
 
-from . import NAMES, DATES, NUMBERS
+from . import NAMES, DATES, NUMBERS, LOCALES_PATH
 from .source import VariableError, DateRange, LiteralDate
 from .string import String
 
@@ -122,6 +123,13 @@ class CitationStylesElement(SomewhatObjectifiedElement):
                 continue
 
 
+
+RE_LOCALE = re.compile('locales-(.*)\.xml$')
+LOCALE_DIALECTS = [RE_LOCALE.search(locale_path).group(1)
+                   for locale_path in glob(os.path.join(LOCALES_PATH,
+                                                        'locales-*.xml'))]
+
+
 # Top level elements
 
 class Style(CitationStylesElement):
@@ -157,7 +165,13 @@ class Style(CitationStylesElement):
             self.locales.append(self.xpath_search(expr)[0])
         except IndexError:
             pass
-        # 4) (locale files) chosen dialect
+        # 4) (locale files) chosen or primary dialect
+        if '-' not in output_locale:
+            dialects = [dialect for dialect in LOCALE_DIALECTS
+                        if dialect not in self._locale_fallback
+                            and dialect.startswith(output_locale)]
+            if dialects:
+                output_locale, = dialects
         try:
             self.locales.append(CitationStylesLocale(output_locale,
                                                      validate=validate).root)
