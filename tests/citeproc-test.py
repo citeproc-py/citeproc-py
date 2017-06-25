@@ -20,11 +20,11 @@ from citeproc.source import Citation, CitationItem, Locator
 from citeproc.source.json import CiteProcJSON
 
 
-CITEPROC_TEST_REPOSITORY = 'https://bitbucket.org/bdarcus/citeproc-test'
-CITEPROC_TEST_COMMIT = 'b15130259c4c'
+CITEPROC_TEST_REPOSITORY = 'https://github.com/citation-style-language/test-suite.git'
+CITEPROC_TEST_COMMIT = '91f107aa7c123348ae740b9c4b2704af4517c2ed'
 
 CITEPROC_TEST_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__),
-                                     'citeproc-test'))
+                                     'test-suite'))
 TEST_PARSER_PATH = os.path.join(CITEPROC_TEST_PATH, 'processor.py')
 TESTS_PATH = os.path.join(CITEPROC_TEST_PATH, 'processor-tests', 'humans')
 
@@ -200,41 +200,43 @@ class FailedTests(object):
             file.writelines(self.updated_lines)
 
 
-def execute_hg_command(args, echo=False):
-    """Execute a mercurial command, exiting this script when it returns a
+def execute_git_command(args, echo=False):
+    """Execute a git command, exiting this script when it returns a
     non-zero error code."""
-    command = ['hg'] + args
+    command = ['git'] + args
     if echo:
         print(' '.join(command))
     process = Popen(command, stdin=PIPE, stdout=PIPE, stderr=PIPE)
     out, err = process.communicate()
     if process.returncode:
-        print('Calling Mercurial failed. Make sure Mercurial (hg) is \n'
-              'installed. Aborting.')
+        print('Calling git failed. Make sure git is installed. Aborting.')
         sys.exit(1)
     return out, err
 
 
-def clone_citeproc_test():
+def clone_test_suite():
     """Clone the citeproc-test repository if it is not present. Otherwise, check
     whether the correct commit is checked out."""
     if not os.path.exists(CITEPROC_TEST_PATH):
-        hg_clone = ['clone', '--rev', CITEPROC_TEST_COMMIT,
-                    CITEPROC_TEST_REPOSITORY, CITEPROC_TEST_PATH]
-        print('Cloning the citeproc-test repository...')
-        execute_hg_command(hg_clone, echo=True)
+        git_clone = ['clone', CITEPROC_TEST_REPOSITORY, CITEPROC_TEST_PATH]
+        print('Cloning the test-suite repository...')
+        execute_git_command(git_clone, echo=True)
+        git_checkout = ['-C', CITEPROC_TEST_PATH, 'checkout',
+                        CITEPROC_TEST_COMMIT]
+        print('Checking out the specified commit...')
+        execute_git_command(git_checkout)
     else:
-        hg_id = ['-R', CITEPROC_TEST_PATH, 'id', '--id']
-        commit_id, _ = execute_hg_command(hg_id)
-        if commit_id.strip() != CITEPROC_TEST_COMMIT.encode('ascii'):
-            print('The checked-out commit of citeproc-test does not match \n'
+        git_ref = ['-C', CITEPROC_TEST_PATH, 'rev-parse', 'HEAD']
+        commit_ref, _ = execute_git_command(git_ref)
+        if commit_ref.strip() != CITEPROC_TEST_COMMIT.encode('ascii'):
+            print('The checked-out commit of test-suite does not match \n'
                   'the one recorded in this test script. Aborting.')
             sys.exit(1)
-        hg_pull = ['-R', CITEPROC_TEST_PATH, 'pull']
-        execute_hg_command(hg_pull)
-    hg_tip_id = ['-R', CITEPROC_TEST_PATH, 'id', '--id', '--rev', 'tip']
-    tip_commit_id, _ = execute_hg_command(hg_tip_id)
-    has_updates = tip_commit_id.strip() != CITEPROC_TEST_COMMIT.encode('ascii')
+        git_fetch = ['-C', CITEPROC_TEST_PATH, 'fetch']
+        execute_git_command(git_fetch)
+    git_ref = ['-C', CITEPROC_TEST_PATH, 'rev-parse', 'origin/master']
+    commit_ref, _ = execute_git_command(git_ref)
+    has_updates = commit_ref.strip() != CITEPROC_TEST_COMMIT.encode('ascii')
     return has_updates
 
 
@@ -293,7 +295,7 @@ if __name__ == '__main__':
         glob_pattern = '*'
         run_all_tests = True
 
-    test_repo_has_updates = clone_citeproc_test()
+    test_repo_has_updates = clone_test_suite()
 
     # import the text fixture parser included with citeproc-test
     try:  # Python 3.3+
@@ -388,7 +390,7 @@ if __name__ == '__main__':
 
             if test_repo_has_updates:
                 out()
-                out(BOLD + 'The citeproc-test repository has updates! Consider '
+                out(BOLD + 'The test-suite repository has updates! Consider '
                            'updating the test script.' + END)
         else:
             failing = sorted(failed_tests.now_failing.keys())
