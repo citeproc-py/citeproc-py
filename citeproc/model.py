@@ -710,7 +710,8 @@ class Text(CitationStylesElement, Formatted, Affixed, Quoted, TextCased,
         text = str_first
         if 'last' in page:
             str_last = str(page.last)
-            text += self.unicode_character('EN DASH')
+            delimiter = self.get_term('page-range-delimiter').single
+            text += delimiter or self.unicode_character('EN DASH')
             if len(str_first) != len(str_last):
                 text += str_last
             else:
