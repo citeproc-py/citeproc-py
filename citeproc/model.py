@@ -660,8 +660,54 @@ class Layout(CitationStylesElement, Parent, Formatted, Affixed, Delimited):
         return output_items
 
 
-class Text(CitationStylesElement, Formatted, Affixed, Quoted, TextCased,
-           StrippedPeriods):
+class FormatPage(object):
+    def _page(self, variable, item):
+        assert variable in ('page', 'page-first')
+        page = item.reference.page
+        first = self.format_number(page.first)
+        if variable == 'page-first' or 'last' not in page:
+            return first
+        last = self.format(page.last)
+        delimiter = (self.get_term('page-range-delimiter').single
+                     or self.unicode_character('EN DASH'))
+        if len(first) == len(last):
+            last = self._format_last_page(first, last)
+        return first + delimiter + last
+
+    def _format_last_page(self, first, last):
+        def find_common(first, last):
+            for count, (f, l) in enumerate(zip(first, last)):
+                if f != l:
+                    return count
+            return count + 1
+
+        range_format = self.get_root().get_option('page-range-format')
+        common = find_common(first, last)
+        if range_format == 'chicago':
+            m = re.search('\d+', first)
+            first_number = int(m.group())
+            if first_number < 100 or first_number % 100 == 0:
+                range_format = 'expanded'
+            elif len(first) >= 4 and common < 2:
+                range_format = 'expanded'
+            elif first_number % 100 in range(1, 10):
+                range_format = 'minimal'
+            elif first_number % 100 in range(10, 100):
+                range_format = 'minimal-two'
+        if range_format in ('expanded', None):
+            index = 0
+        elif range_format == 'minimal':
+            index = common
+        elif range_format == 'minimal-two':
+            index = min(common, len(first) - 2)
+        return last[index:]
+
+    def format_number(self, number):
+        return str(number)
+
+
+class Text(CitationStylesElement, FormatPage, Formatted, Affixed, Quoted,
+           TextCased, StrippedPeriods):
     generated_variables = ('year-suffix', 'citation-number')
 
     def calls_variable(self):
@@ -706,62 +752,17 @@ class Text(CitationStylesElement, Formatted, Affixed, Quoted, TextCased,
             if short_variable.replace('-', '_') in item.reference:
                 variable = short_variable
 
-        if variable == 'page':
-            text = self._page(item, context)
+        if variable.startswith('page'):
+            text = self._page(variable, item)
         elif variable == 'citation-number':
             text = item.number
         elif variable == 'locator':
             en_dash = self.unicode_character('EN DASH')
             text = str(item.locator.identifier).replace('-', en_dash)
-        elif variable == 'page-first':
-            text = str(item.reference.page.first)
         else:
             text = item.reference[variable.replace('-', '_')]
 
         return text
-
-    def _page(self, item, context):
-        page = item.reference.page
-        str_first = str(page.first)
-        text = str_first
-        if 'last' in page:
-            str_last = str(page.last)
-            delimiter = self.get_term('page-range-delimiter').single
-            text += delimiter or self.unicode_character('EN DASH')
-            if len(str_first) != len(str_last):
-                text += str_last
-            else:
-                range_fmt = self.get_root().get_option('page-range-format')
-                text += self._page_format_last(str_first, str_last, range_fmt)
-        return text
-
-    @staticmethod
-    def _page_format_last(first, last, range_format):
-        def find_common(first, last):
-            for count, (f, l) in enumerate(zip(first, last)):
-                if f != l:
-                    return count
-            return count + 1
-
-        common = find_common(first, last)
-        if range_format == 'chicago':
-            m = re.search('\d+', first)
-            first_number = int(m.group())
-            if first_number < 100 or first_number % 100 == 0:
-                range_format = 'expanded'
-            elif len(first) >= 4 and common < 2:
-                range_format = 'expanded'
-            elif first_number % 100 in range(1, 10):
-                range_format = 'minimal'
-            elif first_number % 100 in range(10, 100):
-                range_format = 'minimal-two'
-        if range_format in ('expanded', None):
-            index = 0
-        elif range_format == 'minimal':
-            index = common
-        elif range_format == 'minimal-two':
-            index = min(common, len(first) - 2)
-        return last[index:]
 
     def _term(self, item):
         form = self.get('form', 'long')
@@ -976,8 +977,8 @@ class Date_Part(CitationStylesElement, Formatted, Affixed, TextCased,
             return None
 
 
-class Number(CitationStylesElement, Formatted, Affixed, Displayed, TextCased,
-             StrippedPeriods):
+class Number(CitationStylesElement, FormatPage, Formatted, Affixed, Displayed,
+             TextCased, StrippedPeriods):
     re_numeric = re.compile(r'^(\d+).*')
     re_range = re.compile(r'^(\d+)\s*-\s*(\d+)$')
 
@@ -985,12 +986,9 @@ class Number(CitationStylesElement, Formatted, Affixed, Displayed, TextCased,
         return True
 
     def process(self, item, context=None, **kwargs):
-        form = self.get('form', 'numeric')
         variable = self.get('variable')
-        if variable == 'page-first':
-            first, last = item.reference.page.first, None
-        elif variable == 'page':
-            first, last = item.reference.page.first, item.reference.page.last
+        if variable.startswith('page'):
+            return self._page(variable, item)
         else:
             if variable == 'locator':
                 try:
@@ -999,21 +997,17 @@ class Number(CitationStylesElement, Formatted, Affixed, Displayed, TextCased,
                     return None
             else:
                 variable = item.reference[variable]
-            try:
-                m = self.re_range.match(str(variable))
-                first, last = map(int, m.groups())
-            except AttributeError:
-                first = int(self.re_numeric.match(str(variable)).group(1))
-                last = None
+        m = self.re_range.match(str(variable))
+        try:
+            first, last = (self.format_number(int(number))
+                           for number in m.groups())
+        except AttributeError:
+            first = int(self.re_numeric.match(str(variable)).group(1))
+            return self.format_number(first)
+        return first + self.unicode_character('EN DASH') + last
 
-        first = self.format_number(first, form)
-        if last:
-            last = self.format_number(last, form)
-            return first + self.unicode_character('EN DASH') + last
-        else:
-            return first
-
-    def format_number(self, number, form):
+    def format_number(self, number):
+        form = self.get('form', 'numeric')
         if form == 'numeric':
             text = str(number)
         elif form == 'ordinal' or form == 'long-ordinal' and number > 10:
@@ -1022,7 +1016,6 @@ class Number(CitationStylesElement, Formatted, Affixed, Displayed, TextCased,
             text = self.get_term('long-ordinal-{:02}'.format(number)).single
         elif form == 'roman':
             text = romanize(number).lower()
-
         return text
 
     def markup(self, text):

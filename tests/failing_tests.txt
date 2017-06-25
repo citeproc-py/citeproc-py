@@ -209,7 +209,6 @@ magic_ImplicitYearSuffixDelimiter
 magic_ImplicitYearSuffixExplicitDelimiter
 magic_NameSuffixNoComma
 magic_NameSuffixWithComma
-magic_NumberRangeFrench                                            # uncaught exception
 magic_PunctuationInQuoteDefaultEnglishDelimiter
 magic_PunctuationInQuoteDefaultEnglishSuffix
 magic_PunctuationInQuoteDelimiterTrue
@@ -277,7 +276,6 @@ number_NewOrdinalsEdition
 number_NewOrdinalsWithGenderChange
 number_PlainHyphenOrEnDashAlwaysPlural
 number_SeparateOrdinalNamespaces
-number_StrangeError                                                # uncaught exception
 page_Chicago
 page_Expand                                                        # uncaught exception
 page_Minimal
