@@ -3,7 +3,7 @@ from __future__ import (absolute_import, division, print_function,
                         unicode_literals)
 from citeproc.py2compat import *
 
-from functools import wraps
+from functools import wraps, reduce
 
 
 def discard_empty_other(method):
@@ -134,3 +134,7 @@ class NoCase(String):
 
     def capitalize_first(self):
         return self
+
+
+def join(items, delimiter=''):
+    return reduce(lambda a, b: a + delimiter + b, items)

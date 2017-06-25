@@ -270,7 +270,6 @@ nameattr_EtAlSubsequentUseFirstOnCitationInCitation
 nameattr_EtAlSubsequentUseFirstOnStyleInCitation
 number_EditionSort                                                 # uncaught exception
 number_MixedPageRange
-number_MixedText
 number_NewOrdinals
 number_NewOrdinalsEdition
 number_NewOrdinalsWithGenderChange

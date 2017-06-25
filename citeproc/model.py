@@ -6,7 +6,7 @@ import re
 import unicodedata
 import os
 
-from functools import reduce, cmp_to_key
+from functools import cmp_to_key
 from glob import glob
 from operator import itemgetter
 
@@ -14,7 +14,7 @@ from lxml import etree
 
 from . import NAMES, DATES, NUMBERS, LOCALES_PATH
 from .source import VariableError, DateRange, LiteralDate
-from .string import String
+from .string import String, join
 
 
 # Base class
@@ -350,8 +350,7 @@ class Delimited(object):
     def join(self, strings, default_delimiter=''):
         delimiter = self.get('delimiter', default_delimiter)
         try:
-            text = reduce(lambda a, b: a + delimiter + b,
-                          filter(lambda s: s is not None, strings))
+            text = join((s for s in strings if s is not None), delimiter)
         except:
             text = String('')
         return text
@@ -601,7 +600,7 @@ class Parent(object):
             except VariableError:
                 pass
         if output:
-            return reduce(lambda a, b: a + b, output)
+            return join(output)
         else:
             return None
 
@@ -979,8 +978,7 @@ class Date_Part(CitationStylesElement, Formatted, Affixed, TextCased,
 
 class Number(CitationStylesElement, FormatPage, Formatted, Affixed, Displayed,
              TextCased, StrippedPeriods):
-    re_numeric = re.compile(r'^(\d+).*')
-    re_range = re.compile(r'^(\d+)\s*-\s*(\d+)$')
+    re_numeric = re.compile(r'^([A-Z]*\d+[A-Z]*)$', re.I)
 
     def calls_variable(self):
         return True
@@ -997,17 +995,28 @@ class Number(CitationStylesElement, FormatPage, Formatted, Affixed, Displayed,
                     return None
             else:
                 variable = item.reference[variable]
-        m = self.re_range.match(str(variable))
-        try:
-            first, last = (self.format_number(int(number))
-                           for number in m.groups())
-        except AttributeError:
-            first = int(self.re_numeric.match(str(variable)).group(1))
-            return self.format_number(first)
-        return first + self.unicode_character('EN DASH') + last
+
+        comma_items = []
+        for comma_item in variable.split(','):
+            ampersand_items = []
+            for ampersand_item in comma_item.split('&'):
+                try:
+                    first, last = ampersand_item.split('-')
+                except ValueError:
+                    text = self.format_number(ampersand_item)
+                else:
+                    text = join(map(self.format_number, (first, last)),
+                                self.unicode_character('EN DASH'))
+                ampersand_items.append(text)
+            comma_items.append(join(ampersand_items, ' & '))
+        return join(comma_items, ', ')
 
     def format_number(self, number):
         form = self.get('form', 'numeric')
+        try:
+            number = int(number)
+        except ValueError:
+            return number
         if form == 'numeric':
             text = str(number)
         elif form == 'ordinal' or form == 'long-ordinal' and number > 10:
