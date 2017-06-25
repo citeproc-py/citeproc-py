@@ -987,31 +987,31 @@ class Number(CitationStylesElement, Formatted, Affixed, Displayed, TextCased,
     def process(self, item, context=None, **kwargs):
         form = self.get('form', 'numeric')
         variable = self.get('variable')
-        if variable == 'locator':
-            try:
-                variable = item.locator.identifier
-            except KeyError:
-                return None
-        elif variable == 'page-first':
-            variable = item.reference.page.first
+        if variable == 'page-first':
+            first, last = item.reference.page.first, None
+        elif variable == 'page':
+            first, last = item.reference.page.first, item.reference.page.last
         else:
-            variable = item.reference[variable]
-
-        try:
-            first, last = map(int, self.re_range.match(str(variable)).groups())
-            first = self.format_number(first, form)
-            last = self.format_number(last, form)
-            text = first + self.unicode_character('EN DASH') + last
-        except AttributeError:
+            if variable == 'locator':
+                try:
+                    variable = item.locator.identifier
+                except KeyError:
+                    return None
+            else:
+                variable = item.reference[variable]
             try:
-                number = int(self.re_numeric.match(str(variable)).group(1))
-                text = self.format_number(number, form)
+                m = self.re_range.match(str(variable))
+                first, last = map(int, m.groups())
             except AttributeError:
-                text = variable
-        except TypeError:
-            text = str(variable)
+                first = int(self.re_numeric.match(str(variable)).group(1))
+                last = None
 
-        return text
+        first = self.format_number(first, form)
+        if last:
+            last = self.format_number(last, form)
+            return first + self.unicode_character('EN DASH') + last
+        else:
+            return first
 
     def format_number(self, number, form):
         if form == 'numeric':

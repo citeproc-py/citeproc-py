@@ -209,7 +209,6 @@ magic_ImplicitYearSuffixDelimiter
 magic_ImplicitYearSuffixExplicitDelimiter
 magic_NameSuffixNoComma
 magic_NameSuffixWithComma
-magic_NumberRangeEnglish                                           # uncaught exception
 magic_NumberRangeFrench                                            # uncaught exception
 magic_PunctuationInQuoteDefaultEnglishDelimiter
 magic_PunctuationInQuoteDefaultEnglishSuffix
