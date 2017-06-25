@@ -996,20 +996,17 @@ class Number(CitationStylesElement, FormatPage, Formatted, Affixed, Displayed,
             else:
                 variable = item.reference[variable]
 
-        comma_items = []
-        for comma_item in variable.split(','):
-            ampersand_items = []
-            for ampersand_item in comma_item.split('&'):
-                try:
-                    first, last = ampersand_item.split('-')
-                except ValueError:
-                    text = self.format_number(ampersand_item)
-                else:
-                    text = join(map(self.format_number, (first, last)),
-                                self.unicode_character('EN DASH'))
-                ampersand_items.append(text)
-            comma_items.append(join(ampersand_items, ' & '))
-        return join(comma_items, ', ')
+        def format_number_or_range(item):
+            try:
+                first, last = item.split('-')
+            except ValueError:
+                return self.format_number(item)
+            return join(map(self.format_number, (first, last)),
+                        self.unicode_character('EN DASH'))
+
+        return join((join((format_number_or_range(item)
+                           for item in comma_item.split('&')), delimiter=' & ')
+                     for comma_item in variable.split(',')), delimiter=', ')
 
     def format_number(self, number):
         form = self.get('form', 'numeric')
