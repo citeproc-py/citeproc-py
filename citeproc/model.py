@@ -667,7 +667,7 @@ class FormatPage(object):
         first = self.format_number(page.first)
         if variable == 'page-first' or 'last' not in page:
             return first
-        last = self.format(page.last)
+        last = self.format_number(page.last)
         delimiter = (self.get_term('page-range-delimiter').single
                      or self.unicode_character('EN DASH'))
         if len(first) == len(last):
