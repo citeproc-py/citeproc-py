@@ -198,8 +198,6 @@ label_EditorTranslator1                                            # uncaught ex
 label_PluralNumberOfVolumes
 locale_EmptyPlusOverrideStyleOpt
 locale_EmptyStyleOpt
-locale_PageRangeDelimiterTermDefined
-locale_PageRangeDelimiterTermFrenchUndef
 locale_SpecificStyleOpt
 locale_TermInSort
 locale_TitleCaseEnglishLangUpperEmptyLocale
@@ -231,7 +229,6 @@ magic_SuppressDuplicateVariableRendering                           # uncaught ex
 magic_SuppressExtraTerminalPunctuationAfterTerm                    # uncaught exception
 magic_SuppressLayoutDelimiterIfPrefixComma
 magic_TermCapitalizationWithPrefix
-magic_TextRangeFrench
 name_AfterInvertedName
 name_ArticularWithComma
 name_Asian
@@ -286,7 +283,6 @@ page_Chicago
 page_Expand                                                        # uncaught exception
 page_Minimal
 page_NoOption
-page_WithLocaleAndWeirdDelimiter
 parallel_Bibliography
 parallel_HackedChicago
 parallel_JournalArticleReverse
