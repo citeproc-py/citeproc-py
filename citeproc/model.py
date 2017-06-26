@@ -659,19 +659,31 @@ class Layout(CitationStylesElement, Parent, Formatted, Affixed, Delimited):
         return output_items
 
 
-class FormatPage(object):
-    def _page(self, variable, item):
-        assert variable in ('page', 'page-first')
-        page = item.reference.page
-        first = self.format_number(page.first)
-        if variable == 'page-first' or 'last' not in page:
-            return first
-        last = self.format_number(page.last)
-        delimiter = (self.get_term('page-range-delimiter').single
-                     or self.unicode_character('EN DASH'))
-        if len(first) == len(last):
-            last = self._format_last_page(first, last)
-        return first + delimiter + last
+class FormatNumber(object):
+    def _process(self, value, variable):
+        page_range_delimiter = (self.get_term('page-range-delimiter').single
+                                if variable.startswith('page') else None)
+        range_delimiter = (page_range_delimiter
+                           or self.unicode_character('EN DASH'))
+
+        en_dash = unicodedata.lookup('EN DASH')
+        def format_number_or_range(item):
+            try:
+                first, last = (number.strip() for number
+                               in item.replace(en_dash, '-').split('-'))
+            except ValueError:
+                return self.format_number(item.strip())
+            first = self.format_number(first)
+            if variable == 'page-first':
+                return first
+            last = self.format_number(self._format_last_page(first, last)
+                                      if variable == 'page' else last)
+            return join((first, last), range_delimiter)
+
+        amp_delimiter = ' ' + self.unicode_character('AMPERSAND') + ' '
+        return join((join((format_number_or_range(item)
+                           for item in comma_item.split('&')), amp_delimiter)
+                     for comma_item in value.split(',')), delimiter=', ')
 
     def _format_last_page(self, first, last):
         def find_common(first, last):
@@ -705,7 +717,7 @@ class FormatPage(object):
         return str(number)
 
 
-class Text(CitationStylesElement, FormatPage, Formatted, Affixed, Quoted,
+class Text(CitationStylesElement, FormatNumber, Formatted, Affixed, Quoted,
            TextCased, StrippedPeriods):
     generated_variables = ('year-suffix', 'citation-number')
 
@@ -752,7 +764,7 @@ class Text(CitationStylesElement, FormatPage, Formatted, Affixed, Quoted,
                 variable = short_variable
 
         if variable.startswith('page'):
-            text = self._page(variable, item)
+            text = self._process(item.reference.page, variable)
         elif variable == 'citation-number':
             text = item.number
         elif variable == 'locator':
@@ -976,37 +988,24 @@ class Date_Part(CitationStylesElement, Formatted, Affixed, TextCased,
             return None
 
 
-class Number(CitationStylesElement, FormatPage, Formatted, Affixed, Displayed,
+class Number(CitationStylesElement, FormatNumber, Formatted, Affixed, Displayed,
              TextCased, StrippedPeriods):
-    re_numeric = re.compile(r'^([A-Z]*\d+[A-Z]*)$', re.I)
-
     def calls_variable(self):
         return True
 
     def process(self, item, context=None, **kwargs):
         variable = self.get('variable')
-        if variable.startswith('page'):
-            return self._page(variable, item)
-        else:
-            if variable == 'locator':
-                try:
-                    variable = item.locator.identifier
-                except KeyError:
-                    return None
-            else:
-                variable = item.reference[variable]
-
-        def format_number_or_range(item):
+        if variable == 'locator':
             try:
-                first, last = item.split('-')
-            except ValueError:
-                return self.format_number(item)
-            return join(map(self.format_number, (first, last)),
-                        self.unicode_character('EN DASH'))
-
-        return join((join((format_number_or_range(item)
-                           for item in comma_item.split('&')), delimiter=' & ')
-                     for comma_item in variable.split(',')), delimiter=', ')
+                variable = item.locator.label
+                value = item.locator.identifier
+            except KeyError:
+                return None
+        elif variable == 'page-first':
+            value = item.reference.page
+        else:
+            value = item.reference[variable]
+        return self._process(value, variable)
 
     def format_number(self, number):
         form = self.get('form', 'numeric')
@@ -1477,8 +1476,10 @@ class If(CitationStylesElement, Parent):
                 output.append(variable in item.reference)
         return output
 
+    re_numeric = re.compile(r'^([A-Z]*\d+[A-Z]*)$', re.I)
+
     def _is_numeric(self, item):
-        numeric_match = Number.re_numeric.match
+        numeric_match = self.re_numeric.match
         return [var.replace('-', '_') in item.reference and
                 numeric_match(str(item.reference[var.replace('-', '_')]))
                 for var in self.get('is-numeric').split()]

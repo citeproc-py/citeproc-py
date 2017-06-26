@@ -11,7 +11,7 @@ from warnings import warn
 from ...types import (ARTICLE, ARTICLE_JOURNAL, BOOK, CHAPTER, MANUSCRIPT,
                       PAMPHLET, PAPER_CONFERENCE, REPORT, THESIS)
 from ...string import String, MixedString, NoCase
-from .. import BibliographySource, Reference, Name, Date, DateRange, Pages
+from .. import BibliographySource, Reference, Name, Date, DateRange
 from .bibparse import BibTeXParser
 from .latex import parse_latex
 from .latex.macro import NewCommand, Macro
@@ -117,10 +117,9 @@ class BibTeX(BibliographySource):
                 first, last = value.split('--')
             except ValueError:
                 first, last = value.split('-')
-            pages = Pages(first=first, last=last)
+            pages = '-'.join((first, last))
         else:
-            decimal = value[:-1] if value.endswith('+') else value
-            pages = Pages(first=decimal)
+            pages = value[:-1] if value.endswith('+') else value
         return pages
 
     def _bibtex_to_csl_date(self, bibtex_entry):

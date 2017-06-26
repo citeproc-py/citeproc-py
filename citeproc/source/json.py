@@ -7,9 +7,9 @@ import sys
 import unicodedata
 
 from . import BibliographySource, Reference
-from . import Pages, Name, Date, DateRange, LiteralDate
+from . import Name, Date, DateRange, LiteralDate
 from ..string import String, MixedString, NoCase
-from .. import NAMES, DATES, NUMBERS
+from .. import NAMES, DATES
 
 
 class CiteProcJSON(BibliographySource):
@@ -30,9 +30,7 @@ class CiteProcJSON(BibliographySource):
                 if python_key == 'shortTitle':
                     python_key = 'title_short'
 
-                if python_key == 'page':
-                    value = self.parse_page(value)
-                elif python_key in NAMES:
+                if python_key in NAMES:
                     value = self.parse_names(value)
                 elif python_key in DATES:
                     value = self.parse_date(value)
@@ -66,16 +64,6 @@ class CiteProcJSON(BibliographySource):
             if regular:
                 output += String(regular)
         return output
-
-    def parse_page(self, json_data):
-        json_data = json_data.replace(unicodedata.lookup('EN DASH'), '-')
-        if '-' in json_data:
-            first, last = (number.strip() for number in json_data.split('-'))
-            if len(last) < len(first):
-                last = first[:- len(last)] + last
-            return Pages(first=first, last=last)
-        else:
-            return Pages(first=json_data)
 
     def parse_names(self, json_data):
         names = []

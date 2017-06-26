@@ -22,7 +22,6 @@ bugreports_CitationSortsWithEtAl
 bugreports_CollapseFailure
 bugreports_ContainerTitleShort
 bugreports_ContentPunctuationDuplicate1
-bugreports_ContextualPluralWithMainItemFields
 bugreports_CreepingAddNames
 bugreports_DemoPageFullCiteCruftOnSubsequent                       # uncaught exception
 bugreports_DisambiguationAddNames
@@ -269,7 +268,6 @@ nameattr_EtAlSubsequentMinOnStyleInCitation
 nameattr_EtAlSubsequentUseFirstOnCitationInCitation
 nameattr_EtAlSubsequentUseFirstOnStyleInCitation
 number_EditionSort                                                 # uncaught exception
-number_MixedPageRange
 number_NewOrdinals
 number_NewOrdinalsEdition
 number_NewOrdinalsWithGenderChange
@@ -278,7 +276,6 @@ number_SeparateOrdinalNamespaces
 page_Chicago
 page_Expand                                                        # uncaught exception
 page_Minimal
-page_NoOption
 parallel_Bibliography
 parallel_HackedChicago
 parallel_JournalArticleReverse

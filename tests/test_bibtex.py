@@ -8,7 +8,6 @@ from unittest import TestCase
 
 from citeproc.source.bibtex import BibTeX
 from citeproc.source.bibtex.bibtex import split_names, split_name, parse_name
-from citeproc.source import Pages
 
 
 class TestBibTeX(TestCase):
@@ -44,24 +43,20 @@ class TestBibTeX(TestCase):
                          ({'month': 7, 'day': 4}, ) * 2)
 
     def test_pages(self):
-        self.assertEqual(BibTeX._bibtex_to_csl_pages('313'), Pages(first=313))
-        self.assertEqual(BibTeX._bibtex_to_csl_pages('R112'),
-                         Pages(first='R112'))
-        self.assertEqual(BibTeX._bibtex_to_csl_pages('12+'), Pages(first=12))
+        def test(bibtex, csl):
+            self.assertEqual(BibTeX._bibtex_to_csl_pages(bibtex), csl)
+
+        test('313', '313')
+        test('R112', 'R112')
+        test('12+', '12')
         # page ranges
-        self.assertEqual(BibTeX._bibtex_to_csl_pages('1--3'), Pages(first=1,
-                                                                    last=3))
-        self.assertEqual(BibTeX._bibtex_to_csl_pages('1-3'), Pages(first=1,
-                                                                   last=3))
-        self.assertEqual(BibTeX._bibtex_to_csl_pages('i-iv'),
-                         Pages(first='i', last='iv'))
-        self.assertEqual(BibTeX._bibtex_to_csl_pages('11.1--11.27'),
-                         Pages(first='11.1', last='11.27'))
-        self.assertEqual(BibTeX._bibtex_to_csl_pages('S43--S67'),
-                         Pages(first='S43', last='S67'))
+        test('1--3', '1-3')
+        test('1-3', '1-3')
+        test('i-iv', 'i-iv')
+        test('11.1--11.27', '11.1-11.27')
+        test('S43--S67', 'S43-S67')
         # Arabic letters
-        self.assertEqual(BibTeX._bibtex_to_csl_pages('ا-ي'),
-                         Pages(first='ا', last='ي'))
+        test('ا-ي', 'ا-ي')
 
 
 SPLIT_NAMES = [

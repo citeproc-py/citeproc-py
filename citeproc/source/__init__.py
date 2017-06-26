@@ -134,18 +134,6 @@ class DateRange(DateBase):
         raise NotImplementedError
 
 
-class Pages(CustomDict):
-    def __init__(self, **args):
-        required = {'first'}
-        optional = {'last'}
-        for key, value in args.items():
-            try:
-                args[key] = int(value)
-            except ValueError:
-                pass
-        super(Pages, self).__init__(args, required, optional)
-
-
 class Citation(CustomDict):
     def __init__(self, cites, **kwargs):
         for cite in cites:
