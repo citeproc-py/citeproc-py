@@ -1,20 +1,23 @@
 # This file contains a list of the test fixtures that are known to fail.
 # It is used to check for regressions.
 
+affix_MovingPunctuation
 affix_PrefixFullCitationTextOnly
 affix_PrefixWithDecorations
-affix_SuppressDelimiterCharsWhenFullStopInSuffix                   # uncaught exception
+affix_SpaceWithQuotes
 affix_WithCommas
 affix_WordProcessorAffixNoSpace
 api_SuppressAuthor
 bugreports_AffiliationSpoofingDemoPageFullCiteCruftOnSubsequent    # uncaught exception
 bugreports_AllCapsLeakage
 bugreports_ApostropheOnParticle
+bugreports_ArabicLocale
 bugreports_AsaSpacing
 bugreports_AsmJournals
 bugreports_AuthorPosition
 bugreports_AutomaticallyDeleteItemsFails
 bugreports_BadCitationUpdate
+bugreports_BadDelimiterBeforeCollapse
 bugreports_ByBy
 bugreports_CapsAfterOneWordPrefix
 bugreports_ChicagoAuthorDateLooping
@@ -23,9 +26,11 @@ bugreports_CollapseFailure
 bugreports_ContainerTitleShort
 bugreports_ContentPunctuationDuplicate1
 bugreports_CreepingAddNames
+bugreports_DelimiterOnLayout                                       # uncaught exception
 bugreports_DemoPageFullCiteCruftOnSubsequent                       # uncaught exception
 bugreports_DisambiguationAddNames
 bugreports_DisambiguationAddNamesBibliography
+bugreports_DoubleEncodedAngleBraces                                # uncaught exception
 bugreports_DuplicateSpaces
 bugreports_DuplicateSpaces2
 bugreports_DuplicateSpaces3
@@ -36,22 +41,29 @@ bugreports_FrenchApostrophe
 bugreports_GreekStyleProblems                                      # uncaught exception
 bugreports_GreekStyleTwoEditors                                    # uncaught exception
 bugreports_IeeePunctuation
+bugreports_ikeyOne
 bugreports_LabelsOutOfPlace
+bugreports_MissingItemInJoin
 bugreports_MovePunctuationInsideQuotesForLocator
+bugreports_NoCaseEscape
+bugreports_NonBreakingSpaceJoinFail                                # uncaught exception
 bugreports_NoTitle
 bugreports_NumberAffixEscape
 bugreports_NumberInMacroWithVerticalAlign
 bugreports_NumericStyleFirstRefMultipleCiteFailure                 # uncaught exception
 bugreports_OldMhraDisambiguationFailure
-bugreports_Places
+bugreports_parenthesis
+bugreports_parseName
 bugreports_ProcessorHang1
+bugreports_SimpleBib                                               # uncaught exception
 bugreports_SingleQuote
-bugreports_SortSecondaryKey
+bugreports_SmallCapsEscape
 bugreports_SortedIeeeItalicsFail
+bugreports_SortSecondaryKey
 bugreports_ThesisUniversityAppearsTwice
 bugreports_TitleCase
-bugreports_TwoCitesPlusOneBackref
 bugreports_TwoFullStops
+bugreports_UndefinedBeforeVal
 bugreports_UndefinedInName                                         # uncaught exception
 bugreports_UndefinedInName3
 bugreports_UndefinedNotString
@@ -59,9 +71,6 @@ bugreports_UndefinedStr
 bugreports_UriWrapping
 bugreports_YearSuffixInHarvard1                                    # uncaught exception
 bugreports_YearSuffixLingers
-bugreports_ikeyOne
-bugreports_parenthesis
-bugreports_parseName
 collapse_AuthorCollapse
 collapse_AuthorCollapseNoDate
 collapse_AuthorCollapseNoDateSorted
@@ -80,7 +89,6 @@ collapse_YearSuffixCollapseNoRange
 collapse_YearSuffixCollapseNoYearSuffixDelimiter
 collapse_YearSuffixImplicitCollapseNoYearSuffixDelimiter
 condition_IsNumeric
-condition_SingletonIfMatchNone
 date_DateNoDateNoTest
 date_VariousInvalidDates                                           # uncaught exception
 date_YearSuffixDelimiter
@@ -106,7 +114,6 @@ disambiguate_AndreaEg4
 disambiguate_AndreaEg5
 disambiguate_BasedOnEtAlSubsequent
 disambiguate_BasedOnSubsequentFormWithBackref
-disambiguate_BasedOnSubsequentFormWithBackref2
 disambiguate_BasedOnSubsequentFormWithLocator
 disambiguate_ByCiteBaseNameCountOnFailureIfYearSuffixAvailable
 disambiguate_ByCiteGivennameExpandCrossNestedNames
@@ -150,15 +157,13 @@ disambiguate_YearSuffixTwoPairsBibliography
 disambiguate_YearSuffixTwoPairsFirstNameBibliography
 disambiguate_YearSuffixWithEtAlSubequent
 disambiguate_YearSuffixWithMixedCreatorTypes
-discretionary_AuthorDateAuthorOnlyThenSuppressAuthor
-discretionary_AuthorOnly
-discretionary_CitationNumberAuthorOnlyThenSuppressAuthor
 discretionary_SuppressAuthorSolo
 discretionary_SuppressEditorSolo
 discretionary_SuppressEditorSubstitute
 discretionary_SuppressMultipleAuthors
 display_AuthorAsHeading
 display_DisplayBlock
+display_LostSuffix
 display_SecondFieldAlignClone
 display_SecondFieldAlignMigratePunctuation
 etal_CitationAndBibliographyDecorationsInBibliography
@@ -172,6 +177,7 @@ flipflop_ItalicsSimple
 flipflop_ItalicsWithOk
 flipflop_ItalicsWithOkAndTextcase
 flipflop_LeadingSingleQuote
+flipflop_OrphanQuote
 flipflop_QuotesInFieldNotOnNode
 flipflop_QuotesNodeLevelMarkup
 flipflop_SingleQuotesOnItalics
@@ -181,6 +187,8 @@ fullstyles_ABdNT
 fullstyles_ChicagoArticleTitleQuestion
 fullstyles_ChicagoAuthorDateSimple
 group_ComplexNesting
+group_LegalWithAuthorDate                                          # uncaught exception
+group_SuppressTermInMacro
 integration_CrossCitationIbidOnInsert
 integration_DeleteName
 integration_DisambiguateAddGivenname1                              # uncaught exception
@@ -194,13 +202,15 @@ integration_SimpleIbid
 integration_YearSuffixOnOffOn                                      # uncaught exception
 label_CollapsedPageNumberPluralDetection
 label_EditorTranslator1                                            # uncaught exception
+label_MissingReturnsEmpty                                          # uncaught exception
 label_PluralNumberOfVolumes
 locale_EmptyPlusOverrideStyleOpt
 locale_EmptyStyleOpt
 locale_SpecificStyleOpt
-locale_TermInSort
 locale_TitleCaseEnglishLangUpperEmptyLocale
+locator_SimpleLocators
 locator_TrickyEntryForPlurals
+locator_WithLeadingSpace
 magic_CapitalizeFirstOccurringTerm
 magic_CitationLabelInBibliography
 magic_CitationLabelInCitation
@@ -223,18 +233,19 @@ magic_SubsequentAuthorSubstituteNotFooled
 magic_SubsequentAuthorSubstituteOfTitleField
 magic_SuperscriptChars
 magic_SuppressDuplicateVariableRendering                           # uncaught exception
-magic_SuppressExtraTerminalPunctuationAfterTerm                    # uncaught exception
 magic_SuppressLayoutDelimiterIfPrefixComma
 magic_TermCapitalizationWithPrefix
 name_AfterInvertedName
+name_ApostropheInGivenName
 name_ArticularWithComma
-name_Asian
 name_AsianGlyphs
 name_AuthorCountWithMultipleVariables
 name_AuthorCountWithSameVarContentAndCombinedTermFail
 name_AuthorEditorCount
-name_EditorTranslatorBoth
-name_EditorTranslatorWithTranslatorOnlyBib
+name_CiteGroupDelimiterWithYearCollapse
+name_CiteGroupDelimiterWithYearSuffixCollapse
+name_CiteGroupDelimiterWithYearSuffixCollapse2
+name_CiteGroupDelimiterWithYearSuffixCollapse3
 name_EtAlWithCombined
 name_FormattingOfParticles
 name_HebrewAnd
@@ -242,39 +253,36 @@ name_HyphenatedNonDroppingParticle1
 name_HyphenatedNonDroppingParticle2
 name_Institution                                                   # uncaught exception
 name_InstitutionDecoration                                         # uncaught exception
+name_LiteralWithComma                                              # uncaught exception
 name_LongAbbreviation
 name_LowercaseSurnameSuffix
-name_MixedFormatsInitialSortOrderAllWithDecorationsEtAl            # uncaught exception
-name_MixedFormatsInitialSortOrderFirstWithDecorationsEtAl          # uncaught exception
-name_MixedFormatsInitialsWithDecorationsEtAl                       # uncaught exception
-name_MixedFormatsPrimaryDecorations                                # uncaught exception
-name_MixedFormatsWithDecorationsEtAl                               # uncaught exception
-name_MixedFormatsWithDecorationsPlusAlternateEtAlDecorations       # uncaught exception
-name_MixedFormatsWithDecorationsPlusEtAlDecorations                # uncaught exception
+name_namepartAffixes
 name_OnlyGivenname                                                 # uncaught exception
-name_ParseNames
 name_ParsedCommaDelimitedDroppingParticleSortOrderingWithoutAffixes
 name_ParsedDroppingParticleWithApostrophe
 name_ParsedNonDroppingParticleWithApostrophe
+name_ParseNames
 name_ParticleCaps3
 name_ParticlesDemoteNonDroppingNever
 name_SubsequentAuthorSubstituteMultipleNames
 name_SubstituteInheritLabel
 name_TwoRolesSameRenderingSeparateRoleLabels
 name_WithNonBreakingSpace
-name_namepartAffixes
 nameattr_EtAlSubsequentMinOnCitationInCitation
 nameattr_EtAlSubsequentMinOnStyleInCitation
 nameattr_EtAlSubsequentUseFirstOnCitationInCitation
 nameattr_EtAlSubsequentUseFirstOnStyleInCitation
+nameattr_EtAlUseFirstOnCitationInBibliography
 number_EditionSort                                                 # uncaught exception
-number_NewOrdinals
 number_NewOrdinalsEdition
 number_NewOrdinalsWithGenderChange
+number_OrdinalSpacing                                              # uncaught exception
 number_PlainHyphenOrEnDashAlwaysPlural
 number_SeparateOrdinalNamespaces
 page_Chicago
+page_ChicagoWeird
 page_Expand                                                        # uncaught exception
+page_ExpandWeirdComposite
 page_Minimal
 parallel_Bibliography
 parallel_HackedChicago
@@ -305,11 +313,11 @@ punctuation_SuppressPrefixPeriodForDelimiterSemicolon
 quotes_Punctuation
 quotes_PunctuationNasty
 quotes_PunctuationWithInnerQuote
+quotes_QuotesUnderQuotesFalse
 simplespace_case1
 sort_AguStyle
 sort_AguStyleReverseGroups
 sort_AuthorDateWithYearSuffix
-sort_BibliographyCitationNumberDescending
 sort_BibliographyCitationNumberDescendingViaMacro
 sort_BibliographyNosortOption
 sort_ChicagoYearSuffix1                                            # uncaught exception
@@ -320,20 +328,35 @@ sort_CiteGroupDelimiter
 sort_ConditionalMacroDates
 sort_DateMacroSortWithSecondFieldAlign
 sort_DropNameLabelInSort
-sort_FamilyOnly                                                    # uncaught exception
 sort_GroupedByAuthorstring
+sort_LeadingA
 sort_LeadingApostropheOnNameParticle
 sort_NameVariable
+sort_OmittedBibRefMixedNumericStyle
+sort_Quotes
+sort_RangeUnaffected
 sort_SeparateAuthorsAndOthers
 sort_StripMarkup
 sort_SubstituteTitle
 sort_WithAndInOneEntry
+substitute_SharedMacro                                             # uncaught exception
 substitute_SuppressOrdinaryVariable
 testers_FirstAutoGeneratedZoteroPluginTest
 testers_SecondAutoGeneratedZoteroPluginTest
+textcase_AfterQuote
+textcase_InQuotes
+textcase_Lowercase
 textcase_NonEnglishChars
+textcase_RepeatedTitleBug
 textcase_SkipNameParticlesInTitleCase
+textcase_StopWordBeforeHyphen
+textcase_TitleCapitalization2
+textcase_TitleCaseWithFinalNocase
 textcase_TitleCaseWithHyphens
+textcase_TitleCaseWithNonBreakSpace
+textcase_TitleWithEmDash
+textcase_TitleWithEnDash
+textcase_Uppercase
 variables_ShortForm
 variables_TitleShortOnAbbrevWithTitle
 variables_TitleShortOnAbbrevWithTitleCondition
