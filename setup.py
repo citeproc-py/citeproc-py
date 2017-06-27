@@ -87,6 +87,7 @@ setup(
     cmdclass = dict(build_py=custom_build_py, develop=custom_develop),
     packages=find_packages(),
     package_data={PACKAGE: ['data/locales/*.xml',
+                            'data/locales/locales.json',
                             'data/schema/*.rng',
                             'data/styles/*.csl']},
     scripts=['bin/csl_unsorted'],
