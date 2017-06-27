@@ -12,7 +12,7 @@ from operator import itemgetter
 
 from lxml import etree
 
-from . import NAMES, DATES, NUMBERS, LOCALES_PATH
+from . import NAMES, DATES, NUMBERS, PRIMARY_DIALECTS, LANGUAGE_NAMES
 from .source import VariableError, DateRange, LiteralDate
 from .string import String, join
 
@@ -123,73 +123,45 @@ class CitationStylesElement(SomewhatObjectifiedElement):
                 continue
 
 
-
-RE_LOCALE = re.compile('locales-(.*)\.xml$')
-LOCALE_DIALECTS = [RE_LOCALE.search(locale_path).group(1)
-                   for locale_path in glob(os.path.join(LOCALES_PATH,
-                                                        'locales-*.xml'))]
-
-
 # Top level elements
 
 class Style(CitationStylesElement):
-    _locale_fallback = {'de-AT': 'de-DE',
-                        'de-CH': 'de-DE',
-                        'en-GB': 'en-US',
-                        'es-CL': 'es-ES',
-                        'fr-CA': 'fr-FR',
-                        'pt-BR': 'pt-PT',
-                        'zh-TW': 'zh-CN'}
-
     def set_locale_list(self, output_locale, validate=True):
         """Set up list of locales in which to search for localizable units"""
         from .frontend import CitationStylesLocale
 
-        def search_locale(locale):
-            return self.xpath_search('./cs:locale[@xml:lang="{}"]'
-                                     .format(locale))[0]
-
         self.locales = []
+        system_locales_added = set()
+
+        def add_instyle_locale(locale):
+            expr = ('./cs:locale[@xml:lang="{}"]'.format(locale)
+                    if locale else './cs:locale[not(@xml:lang)]')
+            results = self.xpath_search(expr)
+            if results:
+                locale_element, = results
+                self.locales.append(locale_element)
+
+        def add_system_locale(locale):
+            if locale not in system_locales_added:
+                csl_locale = CitationStylesLocale(locale, validate=validate)
+                self.locales.append(csl_locale.root)
+                system_locales_added.add(locale)
+
         # 1) (in-style locale) chosen dialect
-        try:
-            self.locales.append(search_locale(output_locale))
-        except IndexError:
-            pass
+        add_instyle_locale(output_locale)
         # 2) (in-style locale) matching language
         language = output_locale.split('-')[0]
-        try:
-            self.locales.append(search_locale(language))
-        except IndexError:
-            pass
+        add_instyle_locale(language)
         # 3) (in-style locale) no language set
-        try:
-            expr = './cs:locale[not(@xml:lang)]'
-            self.locales.append(self.xpath_search(expr)[0])
-        except IndexError:
-            pass
+        add_instyle_locale(None)
         # 4) (locale files) chosen or primary dialect
-        if '-' not in output_locale:
-            dialects = [dialect for dialect in LOCALE_DIALECTS
-                        if dialect not in self._locale_fallback
-                            and dialect.startswith(output_locale)]
-            if dialects:
-                output_locale, = dialects
-        try:
-            self.locales.append(CitationStylesLocale(output_locale,
-                                                     validate=validate).root)
-        except ValueError:
-            pass
+        if output_locale in LANGUAGE_NAMES:
+            add_system_locale(output_locale)
         # 5) (locale files) fall back to primary language dialect
-        try:
-            fallback_locale = self._locale_fallback[output_locale]
-            self.locales.append(CitationStylesLocale(fallback_locale,
-                                                     validate=validate).root)
-        except KeyError:
-            pass
+        if language in PRIMARY_DIALECTS:
+            add_system_locale(PRIMARY_DIALECTS[language])
         # 6) (locale files) default locale (en-US)
-        if output_locale != 'en-US':
-            self.locales.append(CitationStylesLocale('en-US',
-                                                     validate=validate).root)
+        add_system_locale('en-US')
         for locale in self.locales:
             locale.style = self
 
