@@ -55,7 +55,6 @@ bugreports_OldMhraDisambiguationFailure
 bugreports_parenthesis
 bugreports_parseName
 bugreports_ProcessorHang1
-bugreports_SimpleBib                                               # uncaught exception
 bugreports_SingleQuote
 bugreports_SmallCapsEscape
 bugreports_SortedIeeeItalicsFail
@@ -251,9 +250,6 @@ name_FormattingOfParticles
 name_HebrewAnd
 name_HyphenatedNonDroppingParticle1
 name_HyphenatedNonDroppingParticle2
-name_Institution                                                   # uncaught exception
-name_InstitutionDecoration                                         # uncaught exception
-name_LiteralWithComma                                              # uncaught exception
 name_LongAbbreviation
 name_LowercaseSurnameSuffix
 name_namepartAffixes

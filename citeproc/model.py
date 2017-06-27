@@ -1175,7 +1175,7 @@ class Name(CitationStylesElement, Formatted, Affixed, Delimited):
 
                 if form == 'long':
                     if (name_as_sort_order == 'all' or
-                        (name_as_sort_order == 'first' and i == 0)):
+                            (name_as_sort_order == 'first' and i == 0)):
                         if demote_ndp in ('never', 'sort-only'):
                             family = ' '.join([n for n in (ndp, family) if n])
                             given = ' '.join([n for n in (given, dp) if n])
