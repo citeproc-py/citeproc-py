@@ -9,6 +9,7 @@ import re
 import sys
 
 from datetime import datetime
+from io import open
 from subprocess import Popen, PIPE
 from setuptools import setup, find_packages
 from setuptools.command.build_py import build_py
@@ -63,9 +64,8 @@ def convert_rnc():
     import rnc2rng
 
     filename_root, _ = os.path.splitext(CSL_SCHEMA_RNC)
-    with open(CSL_SCHEMA_RNC, 'r') as rnc:
-        root = rnc2rng.load(rnc)
-    with open(filename_root + '.rng', 'w') as rng:
+    root = rnc2rng.load(CSL_SCHEMA_RNC)
+    with open(filename_root + '.rng', 'w', encoding='utf-8') as rng:
         rnc2rng.dump(root, rng)
 
 
@@ -91,7 +91,7 @@ setup(
                             'data/schema/*.rng',
                             'data/styles/*.csl']},
     scripts=['bin/csl_unsorted'],
-    setup_requires=['rnc2rng>=2.2'],
+    setup_requires=['rnc2rng>=2.6.1'],
     install_requires=['lxml'],
     provides=[PACKAGE],
     #test_suite='nose.collector',
