@@ -6,9 +6,6 @@ from citeproc.py2compat import *
 import os
 import json
 
-from . import types, formatter
-
-
 DATA_PATH = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'data')
 
 SCHEMA_PATH = os.path.join(DATA_PATH, 'schema', 'csl.rng')
