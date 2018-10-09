@@ -1,6 +1,24 @@
 Changelog
 ---------
 
+Release 0.4.0 (2017-06-23)
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+New features:
+
+* allow specifying the encoding of a BibTeX database file (#20 and #25)
+* BibTeX 'month' field: support integers and "<month> <day>" values
+* BibTeX 'pages' field: support "10", "10+", "10-12" and "10--12" formats
+* BibTeX entry types: map the non-standard 'thesis' and 'report' entries
+* update the CSL schema to version 1.0.1 (#5)
+* update the CSL locales to commit 49bf3fc0
+
+Bug fixed:
+
+* avoid crash when there is nothing to affix (David Lesieur)
+* fix BibTeX month to CSL month mapping (#24)
+* strip leading/trailing whitespace from BibTeX values (#37)
+
 Release 0.3.0 (2014-11-07)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 

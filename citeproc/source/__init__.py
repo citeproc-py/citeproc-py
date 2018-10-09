@@ -64,9 +64,8 @@ class VariableError(Exception):
 
 class Name(CustomDict):
     def __init__(self, **args):
-        if 'name' in args:
-            required = {'name'}
-            optional = set()
+        if 'literal' in args:
+            required, optional = {'literal'}, set()
         else:
             required = {'family'}
             optional = {'given', 'dropping-particle', 'non-dropping-particle',
@@ -74,9 +73,12 @@ class Name(CustomDict):
         super(Name, self).__init__(args, required, optional)
 
     def parts(self):
-        return (self.get('given'), self.get('family'),
-                self.get('dropping-particle'),
-                self.get('non-dropping-particle'), self.get('suffix'))
+        if 'literal' in self:
+            return (None, self['literal'], None, None, None)
+        else:
+            return (self.get('given'), self.get('family'),
+                    self.get('dropping-particle'),
+                    self.get('non-dropping-particle'), self.get('suffix'))
 
 
 class DateBase(CustomDict):
@@ -132,18 +134,6 @@ class DateRange(DateBase):
     def __eq__(self, other):
         # TODO: for sorting
         raise NotImplementedError
-
-
-class Pages(CustomDict):
-    def __init__(self, **args):
-        required = {'first'}
-        optional = {'last'}
-        for key, value in args.items():
-            try:
-                args[key] = int(value)
-            except ValueError:
-                pass
-        super(Pages, self).__init__(args, required, optional)
 
 
 class Citation(CustomDict):

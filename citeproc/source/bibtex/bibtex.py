@@ -11,18 +11,20 @@ from warnings import warn
 from ...types import (ARTICLE, ARTICLE_JOURNAL, BOOK, CHAPTER, MANUSCRIPT,
                       PAMPHLET, PAPER_CONFERENCE, REPORT, THESIS)
 from ...string import String, MixedString, NoCase
-from .. import BibliographySource, Reference, Name, Date, DateRange, Pages
+from .. import BibliographySource, Reference, Name, Date, DateRange
 from .bibparse import BibTeXParser
 from .latex import parse_latex
 from .latex.macro import NewCommand, Macro
 
 
 class BibTeX(BibliographySource):
-    fields = {'address': 'publisher_place',
+    fields = {'abstract': 'abstract',
+              'address': 'publisher_place',
               'annote': 'annote',
               'author': 'author',
               'booktitle': 'container_title',
               'chapter': 'chapter_number',
+              'doi': 'DOI',
               'edition': 'edition',
               'editor': 'editor',
 #              'howpublished': None,
@@ -33,6 +35,7 @@ class BibTeX(BibliographySource):
               'number': 'issue',
 #              'organization': None,
               'pages': 'page',
+              'pmid': 'PMID',
               'publisher': 'publisher',
 #              'school': None,
               'series': 'collection_title',
@@ -80,6 +83,10 @@ class BibTeX(BibliographySource):
         csl_dict = {}
         for field, value in bibtex_entry.items():
             try:
+                value = value.strip()
+            except AttributeError:
+                pass
+            try:
                 csl_field = self.fields[field]
             except KeyError:
                 if field not in ('year', 'month', 'filename'):
@@ -110,10 +117,9 @@ class BibTeX(BibliographySource):
                 first, last = value.split('--')
             except ValueError:
                 first, last = value.split('-')
-            pages = Pages(first=int(first), last=int(last))
+            pages = '-'.join((first, last))
         else:
-            decimal = value[:-1] if value.endswith('+') else value
-            pages = Pages(first=int(decimal))
+            pages = value[:-1] if value.endswith('+') else value
         return pages
 
     def _bibtex_to_csl_date(self, bibtex_entry):

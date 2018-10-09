@@ -4,9 +4,7 @@ from __future__ import (absolute_import, division, print_function,
 from citeproc.py2compat import *
 
 import os
-
-from glob import glob
-from warnings import warn
+import json
 
 from . import types, formatter
 
@@ -41,8 +39,10 @@ VARIABLES = (['abstract', 'annote', 'archive', 'archive_location',
               'title_short', 'URL', 'version', 'year_suffix'] +
              NAMES + DATES + NUMBERS)
 
-LOCALES = [os.path.basename(path)[8:-4]
-           for path in glob(os.path.join(LOCALES_PATH, 'locales-*.xml'))]
+with open(os.path.join(LOCALES_PATH, 'locales.json')) as file:
+    locales_json = json.load(file)
+    PRIMARY_DIALECTS = locales_json['primary-dialects']
+    LANGUAGE_NAMES = locales_json['language-names']
 
 
 from .frontend import CitationStylesStyle, CitationStylesBibliography

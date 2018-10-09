@@ -20,7 +20,7 @@ if PY2:
     def print(*objects, **kwargs):
         if kwargs.get('file', sys.stdout) == sys.stdout:
             objects = (unicode(obj) for obj in objects)
-            if not sys.stdout.encoding:
+            if not getattr(sys.stdout, 'encoding', None):
                 objects = (obj.encode(locale.getpreferredencoding())
                            for obj in objects)
         std_print(*objects, **kwargs)

@@ -2,6 +2,11 @@ __pycache__
 *.pyc
 /build
 /dist
+/.eggs
 /MANIFEST
 /citeproc_py.egg-info
 /citeproc/version.py
+/.tox
+/.python-version
+/tests/citeproc-test
+/.coverage

@@ -4,16 +4,17 @@ from citeproc.py2compat import *
 
 import re
 import unicodedata
-import sys
+import os
 
-from functools import reduce, cmp_to_key
+from functools import cmp_to_key
+from glob import glob
 from operator import itemgetter
 
 from lxml import etree
 
-from . import NAMES, DATES, NUMBERS
+from . import NAMES, DATES, NUMBERS, PRIMARY_DIALECTS, LANGUAGE_NAMES
 from .source import VariableError, DateRange, LiteralDate
-from .string import String
+from .string import String, join
 
 
 # Base class
@@ -125,55 +126,42 @@ class CitationStylesElement(SomewhatObjectifiedElement):
 # Top level elements
 
 class Style(CitationStylesElement):
-    _locale_fallback = {'de-AT': 'de-DE',
-                        'de-CH': 'de-DE',
-                        'en-GB': 'en-US',
-                        'pt-BR': 'pt-PT',
-                        'zh-TW': 'zh-CN'}
-
     def set_locale_list(self, output_locale, validate=True):
         """Set up list of locales in which to search for localizable units"""
         from .frontend import CitationStylesLocale
 
-        def search_locale(locale):
-            return self.xpath_search('./cs:locale[@xml:lang="{}"]'
-                                     .format(locale))[0]
-
         self.locales = []
+        system_locales_added = set()
+
+        def add_instyle_locale(locale):
+            expr = ('./cs:locale[@xml:lang="{}"]'.format(locale)
+                    if locale else './cs:locale[not(@xml:lang)]')
+            results = self.xpath_search(expr)
+            if results:
+                locale_element, = results
+                self.locales.append(locale_element)
+
+        def add_system_locale(locale):
+            if locale not in system_locales_added:
+                csl_locale = CitationStylesLocale(locale, validate=validate)
+                self.locales.append(csl_locale.root)
+                system_locales_added.add(locale)
+
         # 1) (in-style locale) chosen dialect
-        try:
-            self.locales.append(search_locale(output_locale))
-        except IndexError:
-            pass
+        add_instyle_locale(output_locale)
         # 2) (in-style locale) matching language
         language = output_locale.split('-')[0]
-        try:
-            self.locales.append(search_locale(language))
-        except IndexError:
-            pass
+        add_instyle_locale(language)
         # 3) (in-style locale) no language set
-        try:
-            expr = './cs:locale[not(@xml:lang)]'
-            self.locales.append(self.xpath_search(expr)[0])
-        except IndexError:
-            pass
-        # 4) (locale files) chosen dialect
-        try:
-            self.locales.append(CitationStylesLocale(output_locale,
-                                                     validate=validate).root)
-        except ValueError:
-            pass
+        add_instyle_locale(None)
+        # 4) (locale files) chosen or primary dialect
+        if output_locale in LANGUAGE_NAMES:
+            add_system_locale(output_locale)
         # 5) (locale files) fall back to primary language dialect
-        try:
-            fallback_locale = self._locale_fallback[output_locale]
-            self.locales.append(CitationStylesLocale(fallback_locale,
-                                                     validate=validate).root)
-        except KeyError:
-            pass
+        if language in PRIMARY_DIALECTS:
+            add_system_locale(PRIMARY_DIALECTS[language])
         # 6) (locale files) default locale (en-US)
-        if output_locale != 'en-US':
-            self.locales.append(CitationStylesLocale('en-US',
-                                                     validate=validate).root)
+        add_system_locale('en-US')
         for locale in self.locales:
             locale.style = self
 
@@ -334,8 +322,7 @@ class Delimited(object):
     def join(self, strings, default_delimiter=''):
         delimiter = self.get('delimiter', default_delimiter)
         try:
-            text = reduce(lambda a, b: a + delimiter + b,
-                          filter(lambda s: s is not None, strings))
+            text = join((s for s in strings if s is not None), delimiter)
         except:
             text = String('')
         return text
@@ -585,7 +572,7 @@ class Parent(object):
             except VariableError:
                 pass
         if output:
-            return reduce(lambda a, b: a + b, output)
+            return join(output)
         else:
             return None
 
@@ -644,8 +631,66 @@ class Layout(CitationStylesElement, Parent, Formatted, Affixed, Delimited):
         return output_items
 
 
-class Text(CitationStylesElement, Formatted, Affixed, Quoted, TextCased,
-           StrippedPeriods):
+class FormatNumber(object):
+    def _process(self, value, variable):
+        page_range_delimiter = (self.get_term('page-range-delimiter').single
+                                if variable.startswith('page') else None)
+        range_delimiter = (page_range_delimiter
+                           or self.unicode_character('EN DASH'))
+
+        en_dash = unicodedata.lookup('EN DASH')
+        def format_number_or_range(item):
+            try:
+                first, last = (number.strip() for number
+                               in item.replace(en_dash, '-').split('-'))
+            except ValueError:
+                return self.format_number(item.strip())
+            first = self.format_number(first)
+            if variable == 'page-first':
+                return first
+            last = self.format_number(self._format_last_page(first, last)
+                                      if variable == 'page' else last)
+            return join((first, last), range_delimiter)
+
+        amp_delimiter = ' ' + self.unicode_character('AMPERSAND') + ' '
+        return join((join((format_number_or_range(item)
+                           for item in comma_item.split('&')), amp_delimiter)
+                     for comma_item in value.split(',')), delimiter=', ')
+
+    def _format_last_page(self, first, last):
+        def find_common(first, last):
+            for count, (f, l) in enumerate(zip(first, last)):
+                if f != l:
+                    return count
+            return count + 1
+
+        range_format = self.get_root().get_option('page-range-format')
+        common = find_common(first, last)
+        if range_format == 'chicago':
+            m = re.search('\d+', first)
+            first_number = int(m.group())
+            if first_number < 100 or first_number % 100 == 0:
+                range_format = 'expanded'
+            elif len(first) >= 4 and common < 2:
+                range_format = 'expanded'
+            elif first_number % 100 in range(1, 10):
+                range_format = 'minimal'
+            elif first_number % 100 in range(10, 100):
+                range_format = 'minimal-two'
+        if range_format in ('expanded', None):
+            index = 0
+        elif range_format == 'minimal':
+            index = common
+        elif range_format == 'minimal-two':
+            index = min(common, len(first) - 2)
+        return last[index:]
+
+    def format_number(self, number):
+        return str(number)
+
+
+class Text(CitationStylesElement, FormatNumber, Formatted, Affixed, Quoted,
+           TextCased, StrippedPeriods):
     generated_variables = ('year-suffix', 'citation-number')
 
     def calls_variable(self):
@@ -690,61 +735,17 @@ class Text(CitationStylesElement, Formatted, Affixed, Quoted, TextCased,
             if short_variable.replace('-', '_') in item.reference:
                 variable = short_variable
 
-        if variable == 'page':
-            text = self._page(item, context)
+        if variable.startswith('page'):
+            text = self._process(item.reference.page, variable)
         elif variable == 'citation-number':
             text = item.number
         elif variable == 'locator':
             en_dash = self.unicode_character('EN DASH')
             text = str(item.locator.identifier).replace('-', en_dash)
-        elif variable == 'page-first':
-            text = str(item.reference.page.first)
         else:
             text = item.reference[variable.replace('-', '_')]
 
         return text
-
-    def _page(self, item, context):
-        page = item.reference.page
-        str_first = str(page.first)
-        text = str_first
-        if 'last' in page:
-            str_last = str(page.last)
-            text += self.unicode_character('EN DASH')
-            if len(str_first) != len(str_last):
-                text += str_last
-            else:
-                range_fmt = self.get_root().get_option('page-range-format')
-                text += self._page_format_last(str_first, str_last, range_fmt)
-        return text
-
-    @staticmethod
-    def _page_format_last(first, last, range_format):
-        def find_common(first, last):
-            for count, (f, l) in enumerate(zip(first, last)):
-                if f != l:
-                    return count
-            return count + 1
-
-        common = find_common(first, last)
-        if range_format == 'chicago':
-            m = re.search('\d+', first)
-            first_number = int(m.group())
-            if first_number < 100 or first_number % 100 == 0:
-                range_format = 'expanded'
-            elif len(first) >= 4 and common < 2:
-                range_format = 'expanded'
-            elif first_number % 100 in range(1, 10):
-                range_format = 'minimal'
-            elif first_number % 100 in range(10, 100):
-                range_format = 'minimal-two'
-        if range_format in ('expanded', None):
-            index = 0
-        elif range_format == 'minimal':
-            index = common
-        elif range_format == 'minimal-two':
-            index = min(common, len(first) - 2)
-        return last[index:]
 
     def _term(self, item):
         form = self.get('form', 'long')
@@ -959,44 +960,31 @@ class Date_Part(CitationStylesElement, Formatted, Affixed, TextCased,
             return None
 
 
-class Number(CitationStylesElement, Formatted, Affixed, Displayed, TextCased,
-             StrippedPeriods):
-    re_numeric = re.compile(r'^(\d+).*')
-    re_range = re.compile(r'^(\d+)\s*-\s*(\d+)$')
-
+class Number(CitationStylesElement, FormatNumber, Formatted, Affixed, Displayed,
+             TextCased, StrippedPeriods):
     def calls_variable(self):
         return True
 
     def process(self, item, context=None, **kwargs):
-        form = self.get('form', 'numeric')
         variable = self.get('variable')
         if variable == 'locator':
             try:
-                variable = item.locator.identifier
+                variable = item.locator.label
+                value = item.locator.identifier
             except KeyError:
                 return None
         elif variable == 'page-first':
-            variable = item.reference.page.first
+            value = item.reference.page
         else:
-            variable = item.reference[variable]
+            value = item.reference[variable]
+        return self._process(value, variable)
 
+    def format_number(self, number):
+        form = self.get('form', 'numeric')
         try:
-            first, last = map(int, self.re_range.match(str(variable)).groups())
-            first = self.format_number(first, form)
-            last = self.format_number(last, form)
-            text = first + self.unicode_character('EN DASH') + last
-        except AttributeError:
-            try:
-                number = int(self.re_numeric.match(str(variable)).group(1))
-                text = self.format_number(number, form)
-            except AttributeError:
-                text = variable
-        except TypeError:
-            text = str(variable)
-
-        return text
-
-    def format_number(self, number, form):
+            number = int(number)
+        except ValueError:
+            return number
         if form == 'numeric':
             text = str(number)
         elif form == 'ordinal' or form == 'long-ordinal' and number > 10:
@@ -1005,7 +993,6 @@ class Number(CitationStylesElement, Formatted, Affixed, Displayed, TextCased,
             text = self.get_term('long-ordinal-{:02}'.format(number)).single
         elif form == 'roman':
             text = romanize(number).lower()
-
         return text
 
     def markup(self, text):
@@ -1188,7 +1175,7 @@ class Name(CitationStylesElement, Formatted, Affixed, Delimited):
 
                 if form == 'long':
                     if (name_as_sort_order == 'all' or
-                        (name_as_sort_order == 'first' and i == 0)):
+                            (name_as_sort_order == 'first' and i == 0)):
                         if demote_ndp in ('never', 'sort-only'):
                             family = ' '.join([n for n in (ndp, family) if n])
                             given = ' '.join([n for n in (given, dp) if n])
@@ -1461,8 +1448,10 @@ class If(CitationStylesElement, Parent):
                 output.append(variable in item.reference)
         return output
 
+    re_numeric = re.compile(r'^([A-Z]*\d+[A-Z]*)$', re.I)
+
     def _is_numeric(self, item):
-        numeric_match = Number.re_numeric.match
+        numeric_match = self.re_numeric.match
         return [var.replace('-', '_') in item.reference and
                 numeric_match(str(item.reference[var.replace('-', '_')]))
                 for var in self.get('is-numeric').split()]

@@ -2,6 +2,22 @@
 citeproc-py
 ===========
 
+.. image:: http://img.shields.io/pypi/v/citeproc-py.svg
+   :target: https://pypi.python.org/pypi/citeproc-py
+   :alt: PyPI
+
+.. image:: https://travis-ci.org/brechtm/citeproc-py.svg
+   :target: https://travis-ci.org/brechtm/citeproc-py
+   :alt: Build status
+
+.. image:: https://coveralls.io/repos/brechtm/citeproc-py/badge.svg?branch=master&service=github
+   :target: https://coveralls.io/github/brechtm/citeproc-py?branch=master
+   :alt: Code coverage
+
+.. image:: https://www.quantifiedcode.com/api/v1/project/61fcd880bcd04d478d659f2a8a1034ae/badge.svg
+   :target: https://www.quantifiedcode.com/app/project/61fcd880bcd04d478d659f2a8a1034ae
+   :alt: Code issues
+
 citeproc-py is a `CSL`_ processor for Python. It aims to implement the
 `CSL 1.0.1 specification`_. citeproc-py can output styled citations and
 bibliographies in a number of different output formats. Currently
@@ -85,9 +101,7 @@ Running the Tests
 -----------------
 
 First clone the `citeproc-test suite`_ so that it sits next to the
-citeproc-py directory. Then run the ``processor.py`` script to generate
-the test fixtures (using Python 2.x). After that, you can run
-``citeproc-test.py`` (in the ``tests`` directory). Run
-``citeproc-test.py --help`` to see its usage information.
+citeproc-py directory. Now you can run ``citeproc-test.py`` (in the ``tests``
+directory). Run ``citeproc-test.py --help`` to see its usage information.
 
 .. _citeproc-test suite: https://bitbucket.org/bdarcus/citeproc-test

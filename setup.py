@@ -4,18 +4,24 @@
 Setup script for citeproc-py
 """
 
+import io
 import os
+import re
 import sys
 
 from datetime import datetime
 from subprocess import Popen, PIPE
 from setuptools import setup, find_packages
+from setuptools.command.build_py import build_py
+from setuptools.command.develop import develop
 
 
 PACKAGE = 'citeproc'
 BASE_PATH = os.path.dirname(os.path.abspath(__file__))
 PACKAGE_ABSPATH = os.path.join(BASE_PATH, PACKAGE)
 VERSION_FILE = os.path.join(PACKAGE_ABSPATH, 'version.py')
+
+VERSION_FORMAT = re.compile(r'v\d+\.\d+\.\d+')
 
 # All external commands are relative to BASE_PATH
 os.chdir(BASE_PATH)
@@ -24,12 +30,13 @@ os.chdir(BASE_PATH)
 # inspired by http://dcreager.net/2010/02/10/setuptools-git-version-numbers/
 try:
     print('Attempting to get version number from git...')
-    git = Popen(['git', 'describe', '--abbrev=4', '--dirty'],
+    git = Popen(['git', 'describe', '--always', '--dirty'],
                 stdout=PIPE, stderr=sys.stderr)
     if git.wait() != 0:
         raise OSError
-    line = git.stdout.readlines()[0]
-    __version__ = line.strip()[1:].decode('ascii')
+    line, = git.stdout.readlines()
+    line = line.strip().decode('ascii')
+    __version__ = line[1:] if VERSION_FORMAT.match(line) else line
     __release_date__ = datetime.now().strftime('%b %d %Y, %H:%M:%S')
     with open(VERSION_FILE, 'w') as version_file:
         version_file.write("__version__ = '{}'\n".format(__version__))
@@ -51,14 +58,40 @@ def long_description():
     return result
 
 
+CSL_SCHEMA_RNC = 'citeproc/data/schema/csl.rnc'
+
+def convert_rnc():
+    import rnc2rng
+
+    filename_root, _ = os.path.splitext(CSL_SCHEMA_RNC)
+    root = rnc2rng.load(CSL_SCHEMA_RNC)
+    with io.open(filename_root + '.rng', 'w', encoding='utf-8') as rng:
+        rnc2rng.dump(root, rng)
+
+
+class custom_build_py(build_py):
+    def run(self):
+        convert_rnc()
+        build_py.run(self)
+
+
+class custom_develop(develop):
+    def run(self):
+        convert_rnc()
+        develop.run(self)
+
+
 setup(
     name='citeproc-py',
     version=__version__,
+    cmdclass = dict(build_py=custom_build_py, develop=custom_develop),
     packages=find_packages(),
     package_data={PACKAGE: ['data/locales/*.xml',
+                            'data/locales/locales.json',
                             'data/schema/*.rng',
                             'data/styles/*.csl']},
     scripts=['bin/csl_unsorted'],
+    setup_requires=['rnc2rng>=2.6.1'],
     install_requires=['lxml'],
     provides=[PACKAGE],
     #test_suite='nose.collector',
@@ -84,9 +117,10 @@ setup(
         'License :: OSI Approved :: BSD License',
         'Operating System :: OS Independent',
         'Programming Language :: Python',
-        'Programming Language :: Python :: 2.6',
         'Programming Language :: Python :: 2.7',
-        'Programming Language :: Python :: 3',
+        'Programming Language :: Python :: 3.4',
+        'Programming Language :: Python :: 3.5',
+        'Programming Language :: Python :: 3.6',
         'Topic :: Documentation',
         'Topic :: Printing',
         'Topic :: Software Development :: Documentation',
