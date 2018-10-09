@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <style xmlns="http://purl.org/net/xbiblio/csl" class="note" version="1.0" demote-non-dropping-particle="never" default-locale="en-GB">
   <info>
     <title>OSCOLA (Oxford University Standard for Citation of Legal Authorities)</title>
@@ -13,7 +13,7 @@
     <category citation-format="note"/>
     <category field="law"/>
     <summary>The OSCOLA Standards. For a Zotero Group showing data-entry in Zotero see: https://www.zotero.org/groups/oscola_samples/items/order/itemType</summary>
-    <updated>2013-11-15T01:14:57+00:00</updated>
+    <updated>2018-04-25T18:13:00+00:00</updated>
     <rights license="http://creativecommons.org/licenses/by-sa/3.0/">This work is licensed under a Creative Commons Attribution-ShareAlike 3.0 License</rights>
   </info>
   <locale>
@@ -154,8 +154,7 @@
       <else-if type="legal_case legislation" match="any"/>
       <else>
         <names variable="author">
-          <!-- MS 02-2016: removed initialize-with="" to make last names display fully -->
-          <name delimiter-precedes-last="never" and="text" delimiter=", " name-as-sort-order="all" sort-separator=" "/>
+          <name delimiter-precedes-last="never" and="text" delimiter=", " name-as-sort-order="all" initialize-with="" sort-separator=" "/>
           <label form="short" prefix=" (" suffix=")" strip-periods="true"/>
           <substitute>
             <names variable="editor"/>
@@ -169,7 +168,7 @@
   <macro name="editor">
     <choose>
       <if type="chapter paper-conference entry-encyclopedia" match="none">
-        <names variable="editor translator" delimiter=", ">
+        <names variable="editor translator container-author" delimiter=", ">
           <name delimiter-precedes-last="never" and="text" delimiter=", " initialize="false" initialize-with=""/>
           <label form="short" prefix=" " strip-periods="true"/>
         </names>
@@ -179,7 +178,7 @@
   <macro name="editor-chapter">
     <group>
       <text term="in" suffix=" "/>
-      <names variable="editor translator" delimiter=", ">
+      <names variable="editor translator container-author" delimiter=", ">
         <name delimiter-precedes-last="never" and="text" delimiter=", " initialize="false" initialize-with=""/>
         <label form="short" prefix=" (" suffix=")" strip-periods="true"/>
       </names>
@@ -188,7 +187,7 @@
   <!-- Titles -->
   <macro name="title">
     <choose>
-      <if type="book motion_picture manuscript" match="any">
+      <if type="book motion_picture treaty" match="any">
         <text variable="title" font-style="italic" text-case="title"/>
       </if>
       <else-if type="bill legislation" match="any">
@@ -204,7 +203,7 @@
   </macro>
   <macro name="title-short">
     <choose>
-      <if type="book motion_picture manuscript" match="any">
+      <if type="book motion_picture treaty" match="any">
         <text variable="title" font-style="italic" text-case="title" form="short"/>
       </if>
       <else-if type="bill legislation" match="any">
@@ -240,7 +239,7 @@
             <text macro="issued-year" prefix="[" suffix="]"/>
           </if>
           <else-if variable="volume">
-            <text macro="issued-year" prefix="[" suffix="]"/>
+            <text macro="issued-year" prefix="(" suffix=")"/>
           </else-if>
           <else-if variable="container-title volume number" match="any">
             <!--no year in square brackets for unreported case w/o medium neutral citation-->
@@ -256,7 +255,7 @@
   <!--publication info -->
   <macro name="publisher">
     <choose>
-      <if type="book chapter broadcast personal_communication manuscript paper-conference article-newspaper report legislation motion_picture speech interview thesis entry-encyclopedia webpage" match="any">
+      <if type="book chapter broadcast personal_communication manuscript paper-conference article-newspaper report legislation motion_picture speech interview thesis entry-encyclopedia webpage post-weblog" match="any">
         <group delimiter=" ">
           <group prefix="(" suffix=")" delimiter=", ">
             <choose>
@@ -264,7 +263,7 @@
                 <text variable="publisher-place" strip-periods="true"/>
                 <date variable="issued" form="text"/>
               </if>
-              <else-if type="broadcast personal_communication manuscript" match="any">
+              <else-if type="broadcast personal_communication treaty" match="any">
                 <date variable="issued" form="text"/>
               </else-if>
               <else-if type="legislation bill" match="any">
@@ -297,7 +296,7 @@
                       <text macro="issued-year"/>
                     </group>
                   </else-if>
-                  <else-if type="webpage">
+                  <else-if type="webpage post-weblog" match="any">
                     <text variable="container-title" font-style="italic"/>
                     <text macro="issued-full"/>
                   </else-if>
@@ -315,7 +314,7 @@
             </choose>
           </group>
           <choose>
-            <if type="report interview" match="any">
+            <if type="report interview manuscript" match="any">
               <group delimiter=" ">
                 <text variable="genre" strip-periods="true"/>
                 <text variable="number"/>
@@ -350,7 +349,7 @@
       <if type="book chapter report" match="any">
         <group delimiter=" ">
           <label variable="volume" form="short" strip-periods="true"/>
-          <text variable="volume" />
+          <text variable="volume"/>
         </group>
       </if>
     </choose>
@@ -406,8 +405,7 @@
             </if>
           </choose>
           <group delimiter=" ">
-            <!-- volume number -->
-            <text variable="volume" />
+            <text variable="volume"/>
             <choose>
               <if type="legal_case">
                 <choose>
@@ -431,8 +429,7 @@
   <macro name="page-first">
     <choose>
       <if type="chapter report paper-conference" match="none">
-        <!-- Issue number -->
-        <text variable="page-first" prefix="(" suffix=")"/>
+        <text variable="page-first"/>
       </if>
     </choose>
   </macro>
@@ -446,6 +443,16 @@
         </choose>
       </if>
     </choose>
+  </macro>
+  <macro name="locator-basic">
+    <group delimiter=" ">
+      <choose>
+        <if locator="page" match="none">
+          <label variable="locator" form="short" strip-periods="true"/>
+        </if>
+      </choose>
+      <text variable="locator"/>
+    </group>
   </macro>
   <macro name="locator-space">
     <choose>
@@ -461,26 +468,12 @@
         </choose>
       </if>
       <else-if type="legislation book article-journal article-magazine" match="none">
-        <group delimiter=" ">
-          <choose>
-            <if locator="page" match="none">
-              <label variable="locator" form="short" strip-periods="true"/>
-            </if>
-          </choose>
-          <text variable="locator"/>
-        </group>
+        <text macro="locator-basic"/>
       </else-if>
       <else-if type="book">
         <choose>
           <if variable="issued publisher" match="any">
-            <group delimiter=" ">
-              <choose>
-                <if locator="page" match="none">
-                  <label variable="locator" form="short" strip-periods="true"/>
-                </if>
-              </choose>
-              <text variable="locator"/>
-            </group>
+            <text macro="locator-basic"/>
           </if>
         </choose>
       </else-if>
@@ -503,21 +496,14 @@
         </choose>
       </if>
       <else-if type="legislation article-journal article-magazine" match="any">
-        <group delimiter=" ">
-          <choose>
-            <if locator="page" match="none">
-              <label variable="locator" form="short"/>
-            </if>
-          </choose>
-          <text variable="locator"/>
-        </group>
+        <text macro="locator-basic"/>
       </else-if>
     </choose>
   </macro>
   <!--Others -->
-  <macro name="manuscript-catchall">
+  <macro name="treaty-catchall">
     <choose>
-      <if type="manuscript">
+      <if type="treaty">
         <text variable="genre"/>
       </if>
     </choose>
@@ -550,7 +536,7 @@
   <macro name="sort-type">
     <!--This should just sort secondary sources first. I'm leaving the rest from AGLC for simplicity-->
     <choose>
-      <if type="book chapter paper-conference article-magazine article-newspaper article-journal report speech entry-encyclopedia" match="any">
+      <if type="book chapter paper-conference article-magazine article-newspaper article-journal manuscript report speech entry-encyclopedia" match="any">
         <text value="1"/>
       </if>
       <else-if type="legal_case">
@@ -565,8 +551,7 @@
           </if>
         </choose>
       </else-if>
-      <else-if type="manuscript">
-        <!--Manuscript here as a stand-in for Treaty. Not perfect -->
+      <else-if type="treaty">
         <text value="4"/>
       </else-if>
       <else>
@@ -579,16 +564,16 @@
       <choose>
         <if position="ibid-with-locator">
           <group delimiter=" ">
-            <text term="ibid" strip-periods="true"/>
+            <text term="ibid" strip-periods="true" text-case="lowercase"/>
             <text variable="locator"/>
           </group>
         </if>
         <else-if position="ibid">
-          <text term="ibid" strip-periods="true"/>
+          <text term="ibid" strip-periods="true" text-case="lowercase"/>
         </else-if>
         <else-if position="subsequent">
           <choose>
-            <if type="legal_case bill legislation manuscript" match="any">
+            <if type="legal_case bill legislation treaty" match="any">
               <!--don't use short form and above note for legal citations -->
               <group delimiter=" ">
                 <text macro="author-note"/>
@@ -609,7 +594,7 @@
                   </choose>
                 </group>
                 <text variable="first-reference-note-number" prefix="(n " suffix=")"/>
-                <text variable="locator"/>
+                <text macro="locator-basic"/>
               </group>
             </else>
           </choose>
@@ -626,7 +611,7 @@
                     <text macro="book-container"/>
                   </group>
                   <text macro="broadcast-container"/>
-                  <text macro="volume-book" />
+                  <text macro="volume-book"/>
                   <text macro="looseleaf-note"/>
                 </group>
                 <group delimiter=" ">
@@ -636,7 +621,7 @@
                   <text macro="publisher"/>
                 </group>
               </group>
-              <text macro="manuscript-catchall"/>
+              <text macro="treaty-catchall"/>
             </group>
             <group delimiter=", ">
               <group delimiter=" ">
@@ -682,7 +667,7 @@
               <text macro="publisher"/>
             </group>
           </group>
-          <text macro="manuscript-catchall"/>
+          <text macro="treaty-catchall"/>
         </group>
         <group delimiter=" ">
           <text macro="page-first"/>
@@ -693,4 +678,3 @@
     </layout>
   </bibliography>
 </style>
-
