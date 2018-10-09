@@ -43,7 +43,7 @@ with open(
         ),
         encoding='utf-8'
 ) as file:
-    locales_json = json.loads(file)
+    locales_json = json.load(file)
     PRIMARY_DIALECTS = locales_json['primary-dialects']
     LANGUAGE_NAMES = locales_json['language-names']
 
