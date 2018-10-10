@@ -731,8 +731,11 @@
     </sort>
     <layout>
       <group suffix=".">
-        <group delimiter=". ">
+        <!-- author macro placed own separate group to fix period delimiter duplicate -->
+        <group delimiter=" ">
           <text macro="author"/>
+        </group>
+        <group delimiter=". ">
           <choose>
             <if is-uncertain-date="issued">
               <group prefix=" [" suffix="]" delimiter=" ">
