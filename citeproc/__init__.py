@@ -1,13 +1,10 @@
 
 from __future__ import (absolute_import, division, print_function,
                         unicode_literals)
-from citeproc.py2compat import *
+from citeproc.py2compat import * # noqa
 
 import os
 import json
-
-from . import types, formatter
-
 
 DATA_PATH = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'data')
 
@@ -39,11 +36,17 @@ VARIABLES = (['abstract', 'annote', 'archive', 'archive_location',
               'title_short', 'URL', 'version', 'year_suffix'] +
              NAMES + DATES + NUMBERS)
 
-with open(os.path.join(LOCALES_PATH, 'locales.json')) as file:
+with open(
+        os.path.join(
+            LOCALES_PATH,
+            'locales.json'
+        ),
+        encoding='utf-8'
+) as file:
     locales_json = json.load(file)
     PRIMARY_DIALECTS = locales_json['primary-dialects']
     LANGUAGE_NAMES = locales_json['language-names']
 
 
-from .frontend import CitationStylesStyle, CitationStylesBibliography
-from .source import Citation, CitationItem, Locator
+from .frontend import CitationStylesStyle, CitationStylesBibliography # noqa
+from .source import Citation, CitationItem, Locator # noqa
