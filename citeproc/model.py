@@ -659,6 +659,7 @@ class FormatNumber(object):
 
     def _format_last_page(self, first, last):
         def find_common(first, last):
+            count = 0
             for count, (f, l) in enumerate(zip(first, last)):
                 if f != l:
                     return count
