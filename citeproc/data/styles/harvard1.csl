@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <style xmlns="http://purl.org/net/xbiblio/csl" class="in-text" version="1.0" demote-non-dropping-particle="sort-only" default-locale="en-GB">
   <info>
     <title>Anglia Ruskin University - Harvard</title>
@@ -366,8 +366,8 @@
       <key macro="year-date"/>
       <key variable="title"/>
     </sort>
-    <layout suffix=".">
-      <group delimiter=" ">
+    <layout>
+      <group delimiter=" "><!-- period delimiter removed to fix duplicate bug in journal-articles with no online-access macro -->
         <text macro="cite-author"/>
         <choose>
           <if type="legal_case" match="any">
