@@ -669,7 +669,7 @@ class FormatNumber(object):
         common = find_common(first, last)
         if range_format == 'chicago':
             m = re.search('\d+', first)
-            first_number = int(m.group())
+            first_number = int(m.group()) if m else 0
             if first_number < 100 or first_number % 100 == 0:
                 range_format = 'expanded'
             elif len(first) >= 4 and common < 2:
