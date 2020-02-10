@@ -1,6 +1,27 @@
 Changelog
 ---------
 
+Release 0.5.0 (2020-02-09)
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Enhancements:
+
+* handle commas and ampersands in a functional style
+* Number: handle commas and ampersands
+* added symbol for textquotesingle
+* specify fallback locales for fr-CA and es-CL
+* improved page number and ranges parsing
+
+Bug fixed:
+
+* don't fail on empty page ranges (#90) (bbm)
+* detect end of file while parsing incorrect bib (#59) (John Vandenberg)
+
+Other changes:
+
+* Removed 3.2-3.4 and added 3.7, 3.8 to supported Pythons
+* Refactored locales handling
+
 Release 0.4.0 (2017-06-23)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
