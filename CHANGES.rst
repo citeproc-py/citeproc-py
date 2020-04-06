@@ -1,6 +1,13 @@
 Changelog
 ---------
 
+Release 0.5.1 (2020-03-06)
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Bug fixed:
+
+* avoid rnc2rng 2.6.2 which breaks installation of citeproc-py
+
 Release 0.5.0 (2020-02-09)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
