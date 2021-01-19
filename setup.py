@@ -64,7 +64,14 @@ def convert_rnc():
     import rnc2rng
 
     filename_root, _ = os.path.splitext(CSL_SCHEMA_RNC)
-    root = rnc2rng.load(CSL_SCHEMA_RNC)
+    try:
+        # To overcome an issue with rnc2rng 2.6.4 not picking up "include"ed
+        # files on Windows we need to cd to the directory first
+        curdir = os.getcwd()
+        os.chdir(os.path.dirname(CSL_SCHEMA_RNC))
+        root = rnc2rng.load(os.path.basename(CSL_SCHEMA_RNC))
+    finally:
+        os.chdir(curdir)
     with io.open(filename_root + '.rng', 'w', encoding='utf-8') as rng:
         rnc2rng.dump(root, rng)
 
