@@ -153,8 +153,8 @@ class BibTeX(BibliographySource):
 
     MONTHS = ('jan', 'feb', 'mar', 'apr', 'may', 'jun',
               'jul', 'aug', 'sep', 'oct', 'nov', 'dec')
-    RE_DAY = '(?P<day>\d+)'
-    RE_MONTH = '(?P<month>\w+)'
+    RE_DAY = r'(?P<day>\d+)'
+    RE_MONTH = r'(?P<month>\w+)'
 
     @staticmethod
     def _parse_month(month):
