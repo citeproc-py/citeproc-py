@@ -668,7 +668,7 @@ class FormatNumber(object):
         range_format = self.get_root().get_option('page-range-format')
         common = find_common(first, last)
         if range_format == 'chicago':
-            m = re.search('\d+', first)
+            m = re.search(r'\d+', first)
             first_number = int(m.group())
             if first_number < 100 or first_number % 100 == 0:
                 range_format = 'expanded'
