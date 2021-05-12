@@ -39,7 +39,7 @@
   </locale>
   <macro name="author">
     <names variable="author">
-      <name name-as-sort-order="first" and="text" delimiter-precedes-last="always" delimiter-precedes-et-al="always" initialize="false" initialize-with=". "/>
+      <name name-as-sort-order="first" and="text" delimiter-precedes-last="always" delimiter-precedes-et-al="always" initialize="false" initialize-with=" "/>
       <label form="long" prefix=", "/>
       <substitute>
         <names variable="editor"/>
@@ -68,7 +68,7 @@
   <macro name="title">
     <choose>
       <if variable="container-title" match="any">
-        <text variable="title" quotes="true" text-case="title"/>
+        <text variable="title" quotes="true"/>
       </if>
       <else>
         <text variable="title" font-style="italic" text-case="title"/>
