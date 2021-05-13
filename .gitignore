@@ -10,3 +10,6 @@ __pycache__
 /.python-version
 /tests/citeproc-test
 /.coverage
+
+# PyCharm configuration
+.idea
