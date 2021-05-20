@@ -1,7 +1,7 @@
 [build-system]
 build-backend = "setuptools.build_meta"
 requires = [
-    "rnc2rng>=2.6.1,!=2.6.2,<2.6.5",
+    "rnc2rng>=2.6.1,!=2.6.2",
     "setuptools",
     "wheel"
 ]
