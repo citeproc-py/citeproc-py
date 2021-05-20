@@ -2,13 +2,9 @@
 # It is used to check for regressions.
 
 affix_MovingPunctuation
-affix_PrefixFullCitationTextOnly
 affix_PrefixWithDecorations
 affix_SpaceWithQuotes
 affix_WithCommas
-affix_WordProcessorAffixNoSpace
-api_SuppressAuthor
-bugreports_AffiliationSpoofingDemoPageFullCiteCruftOnSubsequent    # uncaught exception
 bugreports_AllCapsLeakage
 bugreports_ApostropheOnParticle
 bugreports_ArabicLocale
@@ -20,13 +16,11 @@ bugreports_BadCitationUpdate
 bugreports_BadDelimiterBeforeCollapse
 bugreports_ByBy
 bugreports_CapsAfterOneWordPrefix
-bugreports_ChicagoAuthorDateLooping
 bugreports_CitationSortsWithEtAl
 bugreports_CollapseFailure
 bugreports_ContainerTitleShort
 bugreports_ContentPunctuationDuplicate1
 bugreports_CreepingAddNames
-bugreports_DelimiterOnLayout                                       # uncaught exception
 bugreports_DemoPageFullCiteCruftOnSubsequent                       # uncaught exception
 bugreports_DisambiguationAddNames
 bugreports_DisambiguationAddNamesBibliography
@@ -43,14 +37,10 @@ bugreports_GreekStyleTwoEditors                                    # uncaught ex
 bugreports_IeeePunctuation
 bugreports_ikeyOne
 bugreports_LabelsOutOfPlace
-bugreports_MissingItemInJoin
 bugreports_MovePunctuationInsideQuotesForLocator
 bugreports_NoCaseEscape
-bugreports_NonBreakingSpaceJoinFail                                # uncaught exception
 bugreports_NoTitle
 bugreports_NumberAffixEscape
-bugreports_NumberInMacroWithVerticalAlign
-bugreports_NumericStyleFirstRefMultipleCiteFailure                 # uncaught exception
 bugreports_OldMhraDisambiguationFailure
 bugreports_parenthesis
 bugreports_parseName
@@ -61,13 +51,11 @@ bugreports_SortedIeeeItalicsFail
 bugreports_SortSecondaryKey
 bugreports_ThesisUniversityAppearsTwice
 bugreports_TitleCase
-bugreports_TwoFullStops
 bugreports_UndefinedBeforeVal
 bugreports_UndefinedInName                                         # uncaught exception
 bugreports_UndefinedInName3
 bugreports_UndefinedNotString
 bugreports_UndefinedStr
-bugreports_UriWrapping
 bugreports_YearSuffixInHarvard1                                    # uncaught exception
 bugreports_YearSuffixLingers
 collapse_AuthorCollapse
@@ -87,7 +75,6 @@ collapse_YearSuffixCollapse
 collapse_YearSuffixCollapseNoRange
 collapse_YearSuffixCollapseNoYearSuffixDelimiter
 collapse_YearSuffixImplicitCollapseNoYearSuffixDelimiter
-condition_IsNumeric
 date_DateNoDateNoTest
 date_VariousInvalidDates                                           # uncaught exception
 date_YearSuffixDelimiter
@@ -112,8 +99,6 @@ disambiguate_AndreaEg3
 disambiguate_AndreaEg4
 disambiguate_AndreaEg5
 disambiguate_BasedOnEtAlSubsequent
-disambiguate_BasedOnSubsequentFormWithBackref
-disambiguate_BasedOnSubsequentFormWithLocator
 disambiguate_ByCiteBaseNameCountOnFailureIfYearSuffixAvailable
 disambiguate_ByCiteGivennameExpandCrossNestedNames
 disambiguate_ByCiteGivennameNoShortFormInitializeWith
@@ -126,11 +111,7 @@ disambiguate_ByCiteRetainNamesOnFailureIfYearSuffixNotAvailable
 disambiguate_CitationLabelDefault
 disambiguate_CitationLabelInData
 disambiguate_DisambiguateTrueAndYearSuffixOne
-disambiguate_DisambiguateTrueAndYearSuffixTwo
-disambiguate_DisambiguateWithThree
-disambiguate_DisambiguateWithThree2
 disambiguate_DisambiguationHang
-disambiguate_ExtraTextCitation
 disambiguate_FailWithYearSuffix
 disambiguate_ImplicitYearSuffixOnceOnly
 disambiguate_IncrementalExtraText
@@ -156,10 +137,6 @@ disambiguate_YearSuffixTwoPairsBibliography
 disambiguate_YearSuffixTwoPairsFirstNameBibliography
 disambiguate_YearSuffixWithEtAlSubequent
 disambiguate_YearSuffixWithMixedCreatorTypes
-discretionary_SuppressAuthorSolo
-discretionary_SuppressEditorSolo
-discretionary_SuppressEditorSubstitute
-discretionary_SuppressMultipleAuthors
 display_AuthorAsHeading
 display_DisplayBlock
 display_LostSuffix
@@ -186,9 +163,7 @@ fullstyles_ABdNT
 fullstyles_ChicagoArticleTitleQuestion
 fullstyles_ChicagoAuthorDateSimple
 group_ComplexNesting
-group_LegalWithAuthorDate                                          # uncaught exception
 group_SuppressTermInMacro
-integration_CrossCitationIbidOnInsert
 integration_DeleteName
 integration_DisambiguateAddGivenname1                              # uncaught exception
 integration_DisambiguateAddGivenname2                              # uncaught exception
@@ -206,7 +181,6 @@ label_PluralNumberOfVolumes
 locale_EmptyPlusOverrideStyleOpt
 locale_EmptyStyleOpt
 locale_SpecificStyleOpt
-locale_TitleCaseEnglishLangUpperEmptyLocale
 locator_SimpleLocators
 locator_TrickyEntryForPlurals
 locator_WithLeadingSpace
@@ -264,12 +238,7 @@ name_SubsequentAuthorSubstituteMultipleNames
 name_SubstituteInheritLabel
 name_TwoRolesSameRenderingSeparateRoleLabels
 name_WithNonBreakingSpace
-nameattr_EtAlSubsequentMinOnCitationInCitation
-nameattr_EtAlSubsequentMinOnStyleInCitation
-nameattr_EtAlSubsequentUseFirstOnCitationInCitation
-nameattr_EtAlSubsequentUseFirstOnStyleInCitation
 nameattr_EtAlUseFirstOnCitationInBibliography
-number_EditionSort                                                 # uncaught exception
 number_NewOrdinalsEdition
 number_NewOrdinalsWithGenderChange
 number_OrdinalSpacing                                              # uncaught exception
@@ -280,11 +249,6 @@ page_ChicagoWeird
 page_Expand                                                        # uncaught exception
 page_ExpandWeirdComposite
 page_Minimal
-parallel_Bibliography
-parallel_HackedChicago
-parallel_JournalArticleReverse
-parallel_JournalArticleSimple
-parallel_TrailingIbid
 position_FirstTrueOnlyOnce
 position_IbidInText
 position_IbidSeparateCiteSameNote
@@ -293,7 +257,6 @@ position_IbidWithMultipleSoloCitesInBackref
 position_IbidWithPrefixFullStop
 position_IfIbidWithLocatorIsTrueThenIbidIsTrue
 position_NearNoteSameNote                                          # uncaught exception
-position_NearNoteTrue
 position_ResetNoteNumbers
 punctuation_DefaultYearSuffixDelimiter
 punctuation_DelimiterWithStripPeriodsAndSubstitute2
@@ -315,11 +278,8 @@ sort_AguStyle
 sort_AguStyleReverseGroups
 sort_AuthorDateWithYearSuffix
 sort_BibliographyCitationNumberDescendingViaMacro
-sort_BibliographyNosortOption
 sort_ChicagoYearSuffix1                                            # uncaught exception
 sort_ChicagoYearSuffix2                                            # uncaught exception
-sort_CitationEdit
-sort_CitationUnsorted
 sort_CiteGroupDelimiter
 sort_ConditionalMacroDates
 sort_DateMacroSortWithSecondFieldAlign
@@ -353,7 +313,3 @@ textcase_TitleCaseWithNonBreakSpace
 textcase_TitleWithEmDash
 textcase_TitleWithEnDash
 textcase_Uppercase
-variables_ShortForm
-variables_TitleShortOnAbbrevWithTitle
-variables_TitleShortOnAbbrevWithTitleCondition
-variables_TitleShortOnAbbrevWithTitleGroup
