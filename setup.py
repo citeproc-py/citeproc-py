@@ -36,7 +36,8 @@ try:
         raise OSError
     line, = git.stdout.readlines()
     line = line.strip().decode('ascii')
-    __version__ = line[1:] if VERSION_FORMAT.match(line) else line
+    # compose version while also replacing first - with + to become more semver
+    __version__ = (line[1:] if VERSION_FORMAT.match(line) else line).replace("-", "+", 1)
     __release_date__ = datetime.now().strftime('%b %d %Y, %H:%M:%S')
     with open(VERSION_FILE, 'w') as version_file:
         version_file.write("__version__ = '{}'\n".format(__version__))
