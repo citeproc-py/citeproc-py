@@ -1,0 +1,6 @@
+[build-system]
+requires = [
+    "rnc2rng>=2.6.3",
+    "setuptools",
+    "wheel"
+]

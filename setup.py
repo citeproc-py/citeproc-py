@@ -91,7 +91,6 @@ setup(
                             'data/schema/*.rng',
                             'data/styles/*.csl']},
     scripts=['bin/csl_unsorted'],
-    setup_requires=['rnc2rng>=2.6.1,!=2.6.2'],
     install_requires=['lxml'],
     provides=[PACKAGE],
     #test_suite='nose.collector',
