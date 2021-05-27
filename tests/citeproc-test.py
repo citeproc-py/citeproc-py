@@ -21,7 +21,7 @@ from citeproc.source.json import CiteProcJSON
 
 
 CITEPROC_TEST_REPOSITORY = 'https://github.com/citation-style-language/test-suite.git'
-CITEPROC_TEST_COMMIT = '5779a8cd6e2560ef28e5b72225ec15368b089084'
+CITEPROC_TEST_COMMIT = 'c3db429ab7c6b9b9ccaaa6d3c6bb9e503f0d7b11'
 
 CITEPROC_TEST_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__),
                                      'test-suite'))
@@ -36,12 +36,10 @@ FAILING_TESTS_FILE = 'failing_tests.txt'
 
 IGNORED_RESULS = {
     'date_Accessed': 'raw date',
-    'date_LoneJapaneseMonth': 'raw date',
     'date_LopsidedDataYearSuffixCollapse': 'raw date',
-    'date_RawParseSimpleDate': 'raw date',
-    'date_RawSeasonRange1': 'raw date',
-    'date_RawSeasonRange2': 'raw date',
-    'date_RawSeasonRange3': 'raw date',
+    'date_SeasonRange1': 'raw date',
+    'date_SeasonRange2': 'raw date',
+    'date_SeasonRange3': 'raw date',
     'date_String': 'raw date',
 }
 
