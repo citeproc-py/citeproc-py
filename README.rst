@@ -6,8 +6,8 @@ citeproc-py
    :target: https://pypi.python.org/pypi/citeproc-py
    :alt: PyPI
 
-.. image:: https://travis-ci.org/brechtm/citeproc-py.svg
-   :target: https://travis-ci.org/brechtm/citeproc-py
+.. image:: https://github.com/brechtm/citeproc-py/actions/workflows/test.yml/badge.svg
+   :target: https://github.com/brechtm/citeproc-py/actions/workflows/test.yml
    :alt: Build status
 
 .. image:: https://coveralls.io/repos/brechtm/citeproc-py/badge.svg?branch=master&service=github
