@@ -1,8 +1,4 @@
 
-from __future__ import (absolute_import, division, print_function,
-                        unicode_literals)
-from citeproc.py2compat import *
-
 # http://maverick.inria.fr/~Xavier.Decoret/resources/xdkbibtex/bibtex_summary.html
 # http://www.lsv.ens-cachan.fr/~markey/bibla.php?lang=en
 

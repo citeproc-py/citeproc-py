@@ -32,9 +32,8 @@ should not expect to see any major API changes soon.
 Requirements
 ------------
 
-citeproc-py was originally developed for Python 3 but now also runs on Python
-2.6+. It depends on `lxml`_ for parsing and navigating the CSL style and locale
-files.
+citeproc-py supports Python 3.6 and up. It depends on `lxml`_ for parsing and
+navigating the CSL style and locale files.
 
 .. _lxml: http://lxml.de/
 

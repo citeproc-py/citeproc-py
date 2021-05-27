@@ -1,10 +1,5 @@
 # coding: utf-8
 
-from __future__ import (absolute_import, division, print_function,
-                        unicode_literals)
-from citeproc.py2compat import *
-
-
 import unicodedata
 
 from . import (parse_argument, eat_whitespace, parse_macro_name,

@@ -1,9 +1,5 @@
 # coding: utf-8
 
-from __future__ import (absolute_import, division, print_function,
-                        unicode_literals)
-from citeproc.py2compat import *
-
 from unittest import TestCase
 
 from citeproc.source.bibtex import BibTeX
