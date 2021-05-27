@@ -2,7 +2,12 @@ name: Test
 
 on:
   pull_request:
+    branches: [ master ]
   push:
+    branches: [ master ]
+    tags:
+      - '*'
+  workflow_dispatch:
 
 jobs:
   test:
