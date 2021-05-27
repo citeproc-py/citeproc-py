@@ -6,17 +6,13 @@ citeproc-py
    :target: https://pypi.python.org/pypi/citeproc-py
    :alt: PyPI
 
-.. image:: https://travis-ci.org/brechtm/citeproc-py.svg
-   :target: https://travis-ci.org/brechtm/citeproc-py
+.. image:: https://github.com/brechtm/citeproc-py/actions/workflows/test.yml/badge.svg
+   :target: https://github.com/brechtm/citeproc-py/actions/workflows/test.yml
    :alt: Build status
 
 .. image:: https://coveralls.io/repos/brechtm/citeproc-py/badge.svg?branch=master&service=github
    :target: https://coveralls.io/github/brechtm/citeproc-py?branch=master
    :alt: Code coverage
-
-.. image:: https://www.quantifiedcode.com/api/v1/project/61fcd880bcd04d478d659f2a8a1034ae/badge.svg
-   :target: https://www.quantifiedcode.com/app/project/61fcd880bcd04d478d659f2a8a1034ae
-   :alt: Code issues
 
 citeproc-py is a `CSL`_ processor for Python. It aims to implement the
 `CSL 1.0.1 specification`_. citeproc-py can output styled citations and
@@ -29,16 +25,15 @@ number is still at 0, meaning the API is not yet stable. However, you
 should not expect to see any major API changes soon.
 
 .. _CSL: http://citationstyles.org/
-.. _CSL 1.0.1 specification: http://citationstyles.org/downloads/specification.html
+.. _CSL 1.0.1 specification: https://docs.citationstyles.org/en/1.0.1/specification.html
 .. _semantic versioning: http://semver.org/
 
 
 Requirements
 ------------
 
-citeproc-py was originally developed for Python 3 but now also runs on Python
-2.6+. It depends on `lxml`_ for parsing and navigating the CSL style and locale
-files.
+citeproc-py supports Python 3.6 and up. It depends on `lxml`_ for parsing and
+navigating the CSL style and locale files.
 
 .. _lxml: http://lxml.de/
 
@@ -93,8 +88,8 @@ is not (yet) supported:
 -  static-ordering
 -  literal names
 
-.. _citeproc-test suite: https://bitbucket.org/bdarcus/citeproc-test
-.. _citeproc-js: http://bitbucket.org/fbennett/citeproc-js/wiki/Home
+.. _citeproc-test suite: https://github.com/citation-style-language/test-suite
+.. _citeproc-js: https://github.com/juris-m/citeproc-js
 
 
 Running the Tests
@@ -103,5 +98,3 @@ Running the Tests
 First clone the `citeproc-test suite`_ so that it sits next to the
 citeproc-py directory. Now you can run ``citeproc-test.py`` (in the ``tests``
 directory). Run ``citeproc-test.py --help`` to see its usage information.
-
-.. _citeproc-test suite: https://bitbucket.org/bdarcus/citeproc-test

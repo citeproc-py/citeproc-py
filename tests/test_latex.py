@@ -1,9 +1,5 @@
 # coding: utf-8
 
-from __future__ import (absolute_import, division, print_function,
-                        unicode_literals)
-from citeproc.py2compat import *
-
 from unittest import TestCase
 
 from citeproc.source.bibtex.latex import parse_latex, substitute_ligatures
@@ -53,9 +49,11 @@ class TestLatex(TestCase):
 
     # assorted string with macros
     ASSORTED = [('Escobar, María José', r"Escobar, Mar{\'\i}a Jos{\'e}"),
-                ('Escobar, María-José', r"Escobar, Mar\'{\i}a-Jos\'{e}"),
-                ('Åke José Édouard Gödel',      # unbalanced parenthesis
-                      r"\AA{ke} {Jos{\'{e}} {\'{E}douard} G{\"o}del")]
+                ('Escobar, María-José', r"Escobar, Mar\'{\i}a-Jos\'{e}")]
+
+    WARNINGS = [('Åke José Édouard Gödel',
+                 r"\AA{ke} {Jos{\'{e}} {\'{E}douard} G{\"o}del",
+                 "Unbalanced parenthesis")]
 
     MATH = [(r'An $O(n \log n / \! \log\log n)$ Sorting Algorithm',
                   r"An $O(n \log n / \! \log\log n)$ Sorting Algorithm")]
@@ -67,6 +65,11 @@ class TestLatex(TestCase):
             self.assertEqual(reference, parse_latex(string))
         for reference, string in self.ASSORTED:
             self.assertEqual(reference, parse_latex(string))
+        for reference, string, warning in self.WARNINGS:
+            with self.assertWarns(UserWarning) as record:
+                self.assertEqual(reference, parse_latex(string))
+            message, = (rec.message.args[0] for rec in record.warnings)
+            assert warning in message
         for reference, string in self.MATH:
             self.assertEqual(reference, parse_latex(string))
 

@@ -16,7 +16,7 @@ if __name__ == '__main__':
     os.symlink(dot_coverage_path, '.coverage')
 
     # create a report from the coverage data
-    if 'TRAVIS' in os.environ or 'GITHUB_ACTIONS' in os.environ:
+    if 'GITHUB_ACTIONS' in os.environ:
         rc = call('coveralls')
         raise SystemExit(rc)
     else:

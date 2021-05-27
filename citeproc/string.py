@@ -1,8 +1,4 @@
 
-from __future__ import (absolute_import, division, print_function,
-                        unicode_literals)
-from citeproc.py2compat import *
-
 from functools import wraps, reduce
 
 
@@ -115,11 +111,6 @@ class MixedString(list):
         for string in self:
             for word in string.words():
                 yield word
-
-
-if PY2:
-    MixedString.__unicode__ = MixedString.__str__
-    del MixedString.__str__
 
 
 class NoCase(String):

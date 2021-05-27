@@ -2,7 +2,12 @@ name: Test
 
 on:
   pull_request:
+    branches: [ master ]
   push:
+    branches: [ master ]
+    tags:
+      - '*'
+  workflow_dispatch:
 
 jobs:
   test:
@@ -13,11 +18,12 @@ jobs:
         runs-on:
           - macos-latest
           - windows-latest
+          - ubuntu-latest
         python-version:
-          - '2.7'
           - '3.6'
           - '3.7'
           - '3.8'
+          - '3.9'
     steps:
       - name: Check out repository
         uses: actions/checkout@v2
@@ -39,6 +45,6 @@ jobs:
         run: tox
         env:
           # Needed for coveralls:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
 
 # vim:set et sts=2:

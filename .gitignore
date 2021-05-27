@@ -8,7 +8,7 @@ __pycache__
 /citeproc/version.py
 /.tox
 /.python-version
-/tests/citeproc-test
+/tests/test-suite
 /.coverage
 
 # PyCharm configuration
