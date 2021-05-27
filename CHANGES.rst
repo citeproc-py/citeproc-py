@@ -1,6 +1,22 @@
 Changelog
 ---------
 
+Release 0.6.0 (2021-05-27)
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Bug fixes
+
+* Various issues on Windows: testing, explicit utf-8 encoding
+* Strings with unescaped \ declared r"aw"
+
+Other changes:
+
+* Removed support for Python 2.7, 3.5 and added for 3.9
+* Travis CI is removed in favor of GitHub actions testing across
+  all 3 major OSes (MacOS, Windows, GNU/Linux Ubuntu)
+* CSL test-suite progressed from 5779a8c to c3db429
+
+
 Release 0.5.1 (2020-03-06)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
