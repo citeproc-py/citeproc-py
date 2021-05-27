@@ -1,5 +1,5 @@
 include LICENSE README.rst CHANGES.rst
-recursive-include citeproc/data/schema *.rnc *.md
+recursive-include citeproc/data/schema *.rnc *.md *.rng
 recursive-include docs *.html *.css *.png
 recursive-include examples *.py *.csl *.bib
 recursive-include tests *.py *.bib
