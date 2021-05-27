@@ -4,8 +4,6 @@ from __future__ import (absolute_import, division, print_function,
                         unicode_literals)
 from citeproc.py2compat import *
 
-import pytest
-
 from unittest import TestCase
 
 from citeproc.source.bibtex.latex import parse_latex, substitute_ligatures
@@ -72,9 +70,9 @@ class TestLatex(TestCase):
         for reference, string in self.ASSORTED:
             self.assertEqual(reference, parse_latex(string))
         for reference, string, warning in self.WARNINGS:
-            with pytest.warns(UserWarning) as record:
+            with self.assertWarns(UserWarning) as record:
                 self.assertEqual(reference, parse_latex(string))
-            message, = (rec.message.args[0] for rec in record)
+            message, = (rec.message.args[0] for rec in record.warnings)
             assert warning in message
         for reference, string in self.MATH:
             self.assertEqual(reference, parse_latex(string))
