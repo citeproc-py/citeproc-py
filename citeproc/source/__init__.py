@@ -8,24 +8,39 @@ from warnings import warn
 from .. import VARIABLES
 
 
+class MissingArgumentWarning(UserWarning,TypeError):
+    pass
+
+class UnsupportedArgumentWarning(UserWarning,TypeError):
+    pass
+
+
 class CustomDict(dict):
     def __init__(self, args, required=set(), optional=set(), required_or=[]):
         passed_keywords = set(args.keys())
         missing = required - passed_keywords
         if missing:
-            raise TypeError('The following required arguments are missing: ' +
-                            ', '.join(missing))
+            warn("The following required arguments are missing: " +
+                 ', '.join(missing),
+                 MissingArgumentWarning)
+            args = dict(args)
+            for m in missing:
+                args[m] = ''
+
         required_or_merged = set()
         for required_options in required_or:
             if not passed_keywords & required_options:
                 raise TypeError('Require at least one of: ' +
                                 ', '.join(required_options))
             required_or_merged |= required_options
+
         unsupported = passed_keywords - required - optional - required_or_merged
         if unsupported:
             cls_name = self.__class__.__name__
             warn('The following arguments for {} are '.format(cls_name) +
-                 'unsupported: ' + ', '.join(unsupported))
+                 'unsupported: ' + ', '.join(unsupported),
+                 UnsupportedArgumentWarning)
+
         self.update(args)
 
     def __setattr__(self, name, value):
