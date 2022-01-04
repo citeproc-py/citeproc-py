@@ -903,6 +903,8 @@ class Date_Part(CitationStylesElement, Formatted, Affixed, TextCased,
         except (AttributeError, IndexError):
             pass
 
+        text = None
+
         if name == 'day' and date.day:
             form = self.get('form', 'numeric')
             if (form == 'ordinal'
