@@ -941,7 +941,7 @@ class Date_Part(CitationStylesElement, Formatted, Affixed, TextCased,
         elif name == 'year':
             form = self.get('form', 'long')
             if form == 'long':
-                text = str(abs(date.year))
+                text = str(abs(int(date.year)))
                 if date.year < 0:
                     text += context.get_term('bc').single
                 elif date.year < 1000:
