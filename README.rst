@@ -29,6 +29,12 @@ should not expect to see any major API changes soon.
 .. _semantic versioning: http://semver.org/
 
 
+Call for Maintainers
+--------------------
+
+Unfortunately, the current maintainers lack the spare time to properly support citeproc-py at the moment. Even though there are not many bugs being reported, these are currently not being addressed. If you are an active user of this package, consider volunteering to help with maintainership. Please create a ticket to get the ball rolling. Thanks!
+
+
 Requirements
 ------------
 
