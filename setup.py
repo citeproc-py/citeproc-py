@@ -32,7 +32,7 @@ try:
     if os.path.lexists(os.path.join(BASE_PATH, 'PKG-INFO')):
         raise OSError("PKG-INFO exists")
     print('Attempting to get version number from git...')
-    git = Popen(['git', 'describe', '--always', '--dirty'],
+    git = Popen(['git', 'describe', '--tags'], #'--always', '--dirty'],
                 stdout=PIPE, stderr=sys.stderr)
     if git.wait() != 0:
         raise OSError
@@ -87,7 +87,7 @@ class custom_develop(develop):
 
 
 setup(
-    name='citeproc-py',
+    name='citeproc-py-phfpatch',
     version=__version__,
     cmdclass = dict(build_py=custom_build_py, develop=custom_develop),
     packages=find_packages(),
