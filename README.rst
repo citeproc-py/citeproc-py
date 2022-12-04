@@ -38,7 +38,7 @@ Unfortunately, the current maintainers lack the spare time to properly support c
 Requirements
 ------------
 
-citeproc-py supports Python 3.6 and up. It depends on `lxml`_ for parsing and
+citeproc-py supports Python 3.7 and up. It depends on `lxml`_ for parsing and
 navigating the CSL style and locale files.
 
 .. _lxml: http://lxml.de/
