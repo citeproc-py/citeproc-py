@@ -652,7 +652,7 @@ class FormatNumber(object):
         amp_delimiter = ' ' + self.unicode_character('AMPERSAND') + ' '
         return join((join((format_number_or_range(item)
                            for item in comma_item.split('&')), amp_delimiter)
-                     for comma_item in value.split(',')), delimiter=', ')
+                     for comma_item in str(value).split(',')), delimiter=', ')
 
     def _format_last_page(self, first, last):
         def find_common(first, last):
