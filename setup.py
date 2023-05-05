@@ -39,6 +39,9 @@ try:
     line, = git.stdout.readlines()
     line = line.strip().decode('ascii')
     __version__ = line[1:] if VERSION_FORMAT.match(line) else line
+    # harmonize version a bit to Python PEP liking
+    # TODO: switch to use versioneer or versioningit
+    __version__ = __version__.replace('-', '.post', 1).replace('-', '+')
     __release_date__ = datetime.now().strftime('%b %d %Y, %H:%M:%S')
     with open(VERSION_FILE, 'w') as version_file:
         version_file.write("__version__ = '{}'\n".format(__version__))
