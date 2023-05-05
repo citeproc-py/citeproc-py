@@ -29,6 +29,8 @@ os.chdir(BASE_PATH)
 # retrieve the version number from git or VERSION_FILE
 # inspired by http://dcreager.net/2010/02/10/setuptools-git-version-numbers/
 try:
+    if os.path.lexists(os.path.join(BASE_PATH, 'PKG-INFO')):
+        raise OSError("PKG-INFO exists")
     print('Attempting to get version number from git...')
     git = Popen(['git', 'describe', '--always', '--dirty'],
                 stdout=PIPE, stderr=sys.stderr)
@@ -37,12 +39,15 @@ try:
     line, = git.stdout.readlines()
     line = line.strip().decode('ascii')
     __version__ = line[1:] if VERSION_FORMAT.match(line) else line
+    # harmonize version a bit to Python PEP liking
+    # TODO: switch to use versioneer or versioningit
+    __version__ = __version__.replace('-', '.post', 1).replace('-', '+')
     __release_date__ = datetime.now().strftime('%b %d %Y, %H:%M:%S')
     with open(VERSION_FILE, 'w') as version_file:
         version_file.write("__version__ = '{}'\n".format(__version__))
         version_file.write("__release_date__ = '{}'\n".format(__release_date__))
 except OSError as e:
-    print('Assume we are running from a source distribution.')
+    print(f'Assuming we are running from a source distribution: {e}')
     # read version from VERSION_FILE
     with open(VERSION_FILE) as version_file:
         code = compile(version_file.read(), VERSION_FILE, 'exec')
