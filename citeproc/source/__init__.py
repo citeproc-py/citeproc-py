@@ -23,9 +23,7 @@ class CustomDict(dict):
             warn("The following required arguments are missing: " +
                  ', '.join(missing),
                  MissingArgumentWarning)
-            args = dict(args)
-            for m in missing:
-                args[m] = ''
+            args = {m: '' for m in missing}
 
         required_or_merged = set()
         for required_options in required_or:
