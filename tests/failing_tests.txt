@@ -354,4 +354,3 @@ variables_ContainerTitleShort2
 bugreports_disambigHang
 disambiguate_YearSuffixWithEtAlSubsequent
 page_Chicago16                                                     # uncaught exception
-textcase_TitleCaseWithCleverBrandName
