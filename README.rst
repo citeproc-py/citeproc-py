@@ -99,7 +99,7 @@ is not (yet) supported:
 
 
 Local Install and Running the Tests
------------------
+-----------------------------------
 
 First clone the `citeproc-py`_ repository and install the submodules with `git
 submodule update --init`_. Then install with `python setup.py
