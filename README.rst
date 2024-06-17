@@ -102,7 +102,7 @@ Local Install and Running the Tests
 -----------------
 
 First clone the `citeproc-py`_ repository and install the submodules with `git
-submodule init`_ and `git submidule update`_. Then install with `python setup.py
+submodule update --init`_. Then install with `python setup.py
 install`_. Then move to the ``tests`` directory and run ``python citeproc-test.py``. 
 Run ``citeproc-test.py --help`` to see its usage information. The first time
 you run the script it will clone the `citeproc-test suite`_ repository into the
