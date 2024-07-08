@@ -63,8 +63,8 @@ class Name(CustomDict):
         if 'literal' in args:
             required, optional = {'literal'}, set()
         else:
-            required = {'family'}
-            optional = {'given', 'dropping-particle', 'non-dropping-particle',
+            required = set()
+            optional = {'family', 'given', 'dropping-particle', 'non-dropping-particle',
                         'suffix'}
         super(Name, self).__init__(args, required, optional)
 
