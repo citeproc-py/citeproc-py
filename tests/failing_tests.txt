@@ -113,8 +113,8 @@ disambiguate_ByCiteGivennameExpandCrossNestedNames
 disambiguate_ByCiteGivennameNoShortFormInitializeWith
 disambiguate_ByCiteGivennameShortFormInitializeWith
 disambiguate_ByCiteGivennameShortFormNoInitializeWith
-disambiguate_ByCiteIncremental1                                    # uncaught exception
-disambiguate_ByCiteIncremental2                                    # uncaught exception
+disambiguate_ByCiteIncremental1
+disambiguate_ByCiteIncremental2
 disambiguate_ByCiteMinimalGivennameExpandMinimalNames
 disambiguate_ByCiteRetainNamesOnFailureIfYearSuffixNotAvailable
 disambiguate_CitationLabelDefault
