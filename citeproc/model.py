@@ -1529,7 +1529,7 @@ def to_ordinal(number, context):
     if last_digit in (1, 2, 3) and not (len(number) > 1 and number[-2] == '1'):
         ordinal_term = 'ordinal-{:02}'.format(last_digit)
     else:
-        ordinal_term = 'ordinal-04'
+        ordinal_term = 'ordinal-11'
     return number + context.get_term(ordinal_term).single
 
 
