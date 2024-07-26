@@ -1,0 +1,108 @@
+>>===== MODE =====>>
+citation
+<<===== MODE =====<<
+
+
+>>===== DESCRIPTION =====>>
+<https://github.com/citeproc-py/citeproc-py/issues/142>
+<<===== DESCRIPTION =====<<
+
+
+>>===== RESULT =====>>
+(Doe)
+(Doe 23)
+<<===== RESULT =====<<
+
+
+>>===== CITATION-ITEMS =====>>
+[
+    [
+        {
+            "id": "ITEM-1"
+        }
+    ],
+    [
+        {
+            "id": "ITEM-1",
+            "label": "page",
+            "locator": 23
+        }
+    ]
+]
+<<===== CITATION-ITEMS =====<<
+
+
+>>===== CSL =====>>
+<style
+      xmlns="http://purl.org/net/xbiblio/csl"
+      class="note"
+      version="1.0">
+  <info>
+    <id />
+    <title />
+    <updated>2024-07-26T21:37:09+08:00</updated>
+  </info>
+  <macro name="author-short">
+    <group delimiter=", ">
+      <names variable="author">
+        <name form="short" initialize-with=". " and="text"/>
+        <substitute>
+          <names variable="editor"/>
+          <names variable="translator"/>
+          <text variable="title" form="short"/>
+        </substitute>
+      </names>
+    </group>
+  </macro>
+  <citation>
+    <layout prefix="(" suffix=")" delimiter="; ">
+      <choose>
+        <if locator="page line" match="any">
+          <group delimiter=" ">
+            <text macro="author-short"/>
+            <text variable="locator"/>
+          </group>
+        </if>
+        <else>
+          <group delimiter=", ">
+            <text macro="author-short"/>
+            <group>
+              <label variable="locator" form="short"/>
+              <text variable="locator"/>
+            </group>
+          </group>
+        </else>
+      </choose>
+    </layout>
+  </citation>
+</style>
+<<===== CSL =====<<
+
+
+>>===== INPUT =====>>
+[
+    {
+        "id": "ITEM-1",
+        "type": "book",
+        "author": [
+            {
+                "family": "Doe",
+                "given": "John"
+            }
+        ],
+        "issued": {
+            "date-parts": [
+                [
+                    "1984"
+                ]
+            ]
+        },
+        "title": "Title"
+    }
+]
+<<===== INPUT =====<<
+
+
+>>===== VERSION =====>>
+1.0
+<<===== VERSION =====<<
