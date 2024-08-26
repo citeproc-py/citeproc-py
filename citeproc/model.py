@@ -95,14 +95,16 @@ class CitationStylesElement(SomewhatObjectifiedElement):
         return self.markup(self.process(*args, **kwargs))
 
     # TODO: Locale methods
-    def get_term(self, name, form=None):
+    def get_term(self, name, form=None, fallback_locale=True, zero_padded=False):
         if isinstance(self.get_root(), Locale):
             return self.get_root().get_term(name, form)
         else:
             for locale in self.get_root().locales:
                 try:
-                    return locale.get_term(name, form)
+                    return locale.get_term(name, form, zero_padded=zero_padded)
                 except IndexError: # TODO: create custom exception
+                    if not fallback_locale:
+                        return None
                     continue
 
     def get_date(self, form):
@@ -167,12 +169,15 @@ class Locale(CitationStylesElement):
     _default_options = {'limit-day-ordinals-to-day-1': 'false',
                         'punctuation-in-quote': 'false'}
 
-    def get_term(self, name, form=None):
+    def get_term(self, name, form=None, zero_padded=False):
         attributes = "@name='{}'".format(name)
         if form is not None:
             attributes += " and @form='{}'".format(form)
         else:
             attributes += " and not(@form)"
+        if zero_padded:
+            attributes += "and not(@match='whole-number')"
+            attributes += "and not(@match='last-two-digits')"
         expr = './cs:term[{}]'.format(attributes)
         try:
             return self.terms.xpath_search(expr)[0]
@@ -1524,13 +1529,15 @@ class Else(CitationStylesElement, Parent):
 # utility functions
 
 def to_ordinal(number, context):
-    number = str(number)
-    last_digit = int(number[-1])
-    if last_digit in (1, 2, 3) and not (len(number) > 1 and number[-2] == '1'):
-        ordinal_term = 'ordinal-{:02}'.format(last_digit)
+    if len(str(number)) == 1:
+        ordinal_term = f'ordinal-{number:02}'
     else:
-        ordinal_term = 'ordinal'
-    return number + context.get_term(ordinal_term).single
+        ordinal_term = f'ordinal-{number}'
+    if context.get_term(ordinal_term, fallback_locale=False) is None:
+        ordinal_term = f'ordinal-{int(str(number)[-1]):02}'
+        if context.get_term(ordinal_term, fallback_locale=False, zero_padded=True) is None:
+            ordinal_term = f'ordinal'
+    return str(number) + context.get_term(ordinal_term).single
 
 
 def romanize(n):

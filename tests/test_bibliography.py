@@ -11,30 +11,36 @@ from citeproc import (
 from unittest import TestCase
 from citeproc.source.bibtex.bibparse import BibTeXParser
 
-BIB = [
-    {
+template = {
         "type": "book",
-        "id": "1",
         "title": "La Rettorica",
         "author": [{"literal": "Brunetto Latini"}],
         "issued": {"date-parts": [[1968]]},
         "editor": [{"literal": "Francesco Maggini"}],
-        "edition": 4,
         "publisher": "Le Monnier",
         "location": "Firenze",
     }
-]
 
+def _pp(string):
+    return string.split(" ")[5]
 
 class TestBibliographyGeneration(TestCase):
     def test_generate(self):
-        bib = source.json.CiteProcJSON(BIB)
-        bib_style = CitationStylesStyle("harvard1")
-        bibliography = CitationStylesBibliography(bib_style, bib, formatter.plain)
-        citations = [CitationItem(item["id"]) for item in BIB]
-        bibliography.register(Citation(citations))
-        print(
-            "\n".join(
-                [str(x) for x in bibliography.style.render_bibliography(citations)]
+        for lg in ["en-US", "de-DE", "nl-NL", "fr-FR", "es-ES", "it-IT", "hi-IN"]:
+            bib_style = CitationStylesStyle("harvard1", lg)
+            entries = []
+            for edition in range(1,26):
+                template["id"] = str(edition)
+                template["edition"] = edition
+                entries.append(template.copy())
+            bib = source.json.CiteProcJSON(entries)
+            bibliography = CitationStylesBibliography(bib_style, bib, formatter.plain)
+            citations = [CitationItem(str(x)) for x in range(1,26)]
+            bibliography.register(Citation(citations))
+            print(lg)
+            print(
+                "\n".join(
+                    [_pp(x) for x in bibliography.style.render_bibliography(citations)]
+                )
             )
-        )
+            print("")
