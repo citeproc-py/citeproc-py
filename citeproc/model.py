@@ -95,7 +95,7 @@ class CitationStylesElement(SomewhatObjectifiedElement):
         return self.markup(self.process(*args, **kwargs))
 
     # TODO: Locale methods
-    def get_term(self, name, form=None, fallback_locale=True, zero_padded=False):
+    def get_term(self, name, form=None, zero_padded=False):
         if isinstance(self.get_root(), Locale):
             return self.get_root().get_term(name, form)
         else:
@@ -103,8 +103,6 @@ class CitationStylesElement(SomewhatObjectifiedElement):
                 try:
                     return locale.get_term(name, form, zero_padded=zero_padded)
                 except IndexError: # TODO: create custom exception
-                    if not fallback_locale:
-                        return None
                     continue
 
     def get_date(self, form):
@@ -160,7 +158,8 @@ class Style(CitationStylesElement):
         if language in PRIMARY_DIALECTS:
             add_system_locale(PRIMARY_DIALECTS[language])
         # 6) (locale files) default locale (en-US)
-        add_system_locale('en-US')
+        if not self.locales:
+            add_system_locale('en-US')
         for locale in self.locales:
             locale.style = self
 
@@ -1533,9 +1532,9 @@ def to_ordinal(number, context):
         ordinal_term = f'ordinal-{number:02}'
     else:
         ordinal_term = f'ordinal-{number}'
-    if context.get_term(ordinal_term, fallback_locale=False) is None:
+    if context.get_term(ordinal_term) is None:
         ordinal_term = f'ordinal-{int(str(number)[-1]):02}'
-        if context.get_term(ordinal_term, fallback_locale=False, zero_padded=True) is None:
+        if context.get_term(ordinal_term, zero_padded=True) is None:
             ordinal_term = f'ordinal'
     return str(number) + context.get_term(ordinal_term).single
 
