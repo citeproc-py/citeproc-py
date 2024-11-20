@@ -95,11 +95,14 @@ class CitationStylesElement(SomewhatObjectifiedElement):
         return self.markup(self.process(*args, **kwargs))
 
     # TODO: Locale methods
-    def get_term(self, name, form=None, zero_padded=False):
+    def get_term(self, name, form=None, fallback_locale=True, zero_padded=False):
         if isinstance(self.get_root(), Locale):
             return self.get_root().get_term(name, form)
         else:
-            for locale in self.get_root().locales:
+            locales = self.get_root().locales
+            if not fallback_locale and len(locales) > 1:
+                locales = locales[:-1]
+            for locale in locales:
                 try:
                     return locale.get_term(name, form, zero_padded=zero_padded)
                 except IndexError: # TODO: create custom exception
@@ -1526,16 +1529,25 @@ class Else(CitationStylesElement, Parent):
 # utility functions
 
 def to_ordinal(number, context):
+    zero_padded = False
+    fallback_locale = False
     if len(str(number)) == 1:
         ordinal_term = f'ordinal-{number:02}'
     else:
         ordinal_term = f'ordinal-{number}'
-    if context.get_term(ordinal_term) is None:
-        ordinal_term = f'ordinal-{int(str(number)[-1]):02}'
-        if context.get_term(ordinal_term, zero_padded=True) is None:
-            ordinal_term = f'ordinal'
-    return str(number) + context.get_term(ordinal_term).single
 
+    def get_ordinal_term():
+        return context.get_term(ordinal_term, fallback_locale=fallback_locale, zero_padded=zero_padded)
+
+    if get_ordinal_term() is None:
+        ordinal_term = f'ordinal-{int(str(number)[-1]):02}'
+        zero_padded = True
+        if get_ordinal_term() is None:
+            fallback_locale = True
+        if get_ordinal_term() is None:
+            zero_padded = False
+            ordinal_term = f'ordinal'
+    return str(number) + get_ordinal_term().single
 
 def romanize(n):
     # by Kay Schluehr - from http://billmill.org/python_roman.html
