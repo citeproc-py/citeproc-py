@@ -102,7 +102,8 @@ class CitationStylesElement(SomewhatObjectifiedElement):
             for locale in self.get_root().locales:
                 try:
                     return locale.get_term(name, form, zero_padded=zero_padded)
-                except IndexError: # TODO: create custom exception
+                except IndexError as e: # TODO: create custom exception
+                    print(name, form, e, locale.attrib)
                     continue
 
     def get_date(self, form):
@@ -158,8 +159,8 @@ class Style(CitationStylesElement):
         if language in PRIMARY_DIALECTS:
             add_system_locale(PRIMARY_DIALECTS[language])
         # 6) (locale files) default locale (en-US)
-        if not self.locales:
-            add_system_locale('en-US')
+        # if not self.locales:
+        add_system_locale('en-US')
         for locale in self.locales:
             locale.style = self
 
@@ -179,7 +180,11 @@ class Locale(CitationStylesElement):
             attributes += "and not(@match='last-two-digits')"
         expr = './cs:term[{}]'.format(attributes)
         try:
-            return self.terms.xpath_search(expr)[0]
+            res = self.terms.xpath_search(expr)
+            if not res:
+                print(f"Not found: {expr}")
+                raise IndexError
+            return res[0]
         except AttributeError:
             raise IndexError
 
@@ -755,7 +760,7 @@ class Text(CitationStylesElement, FormatNumber, Formatted, Affixed, Quoted,
         if form == 'long':
             form = None
         term = self.get_term(self.get('term'), form)
-
+        print("_term:", item, form, term)
         if plural:
             text = term.multiple
         else:
