@@ -97,7 +97,7 @@ Contributing
 -----------------
 citeproc-py is 100% volunteer maintained, and new contributions are always welcome. 
 If you would like to contribute, please follow the guidelines in the
-`CONTRIBUTING.rst`_ file.
+`CONTRIBUTING.rst <https://github.com/citeproc-py/citeproc-py/blob/master/CONTRIBUTING.rst>`_ file.
 
 
 Local Install and Running the Tests
