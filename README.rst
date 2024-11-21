@@ -92,6 +92,7 @@ is not (yet) supported:
 .. _citeproc-js: https://github.com/juris-m/citeproc-js
 
 
+
 Contributing
 -----------------
 citeproc-py is 100% volunteer maintained, and new contributions are always welcome. 
@@ -99,9 +100,18 @@ If you would like to contribute, please follow the guidelines in the
 `CONTRIBUTING.rst`_ file.
 
 
-Running the Tests
------------------
+Local Install and Running the Tests
+-----------------------------------
 
-First clone the `citeproc-test suite`_ so that it sits next to the
-citeproc-py directory. Now you can run ``citeproc-test.py`` (in the ``tests``
-directory). Run ``citeproc-test.py --help`` to see its usage information.
+First clone the `citeproc-py`_ repository and install the submodules with ``git
+submodule update --init``. Then install with ``pip install -e .``. Then move to 
+the ``tests`` directory and run ``python citeproc-test.py``. 
+
+Run ``citeproc-test.py --help`` to see its usage information. The first time
+you run the script it will clone the `citeproc-test suite`_ repository into the
+``tests`` directory and checkout the last tested version. By default failed tests are
+automatically added into the ``failing_tests.txt`` file and aren't shown when
+running the test suite again.
+
+If you want git to fully ignore the submodule, you can type ``git update-index
+--assume-unchanged citeproc/data/schema``

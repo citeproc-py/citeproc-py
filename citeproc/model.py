@@ -1462,6 +1462,8 @@ class If(CitationStylesElement, Parent):
                 circa = item.reference[date_variable].get('circa', False)
             except VariableError:
                 circa = False
+            except AttributeError:
+                circa = False
             result.append(circa)
         return result
 
