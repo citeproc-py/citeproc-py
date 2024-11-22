@@ -666,6 +666,8 @@ class FormatNumber(object):
         common = find_common(first, last)
         if range_format == 'chicago':
             m = re.search(r'\d+', first)
+            if not m:
+                return last
             first_number = int(m.group())
             if first_number < 100 or first_number % 100 == 0:
                 range_format = 'expanded'
