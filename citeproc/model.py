@@ -309,8 +309,8 @@ class Formatted(object):
 class Affixed(object):
     def wrap(self, string):
         if string is not None:
-            prefix = self.get('prefix', '')
-            suffix = self.get('suffix', '')
+            prefix = self.preformat(self.get('prefix', ''))
+            suffix = self.preformat(self.get('suffix', ''))
             return prefix + string + suffix
         return None
 
