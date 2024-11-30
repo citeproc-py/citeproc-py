@@ -4,3 +4,4 @@ recursive-include docs *.html *.css *.png
 recursive-include examples *.py *.csl *.bib
 recursive-include tests *.py *.bib
 prune tests/citeproc-test
+prune tests/local
