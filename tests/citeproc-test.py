@@ -22,6 +22,7 @@ CITEPROC_TEST_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__),
                                      'test-suite'))
 TEST_PARSER_PATH = os.path.join(CITEPROC_TEST_PATH, 'processor.py')
 TESTS_PATH = os.path.join(CITEPROC_TEST_PATH, 'processor-tests', 'humans')
+LOCAL_TESTS_PATH = os.path.join(os.path.dirname(__file__), "local")
 
 FAILING_TESTS_FILE = 'failing_tests.txt'
 
@@ -306,8 +307,9 @@ if __name__ == '__main__':
     failed_tests = FailedTests(os.path.join(os.path.dirname(__file__),
                                             FAILING_TESTS_FILE))
     count = 0
-    test_files = os.path.join(TESTS_PATH, '{}.txt'.format(glob_pattern))
-    for filename in sorted(glob.glob(test_files)):
+    test_files = list(glob.glob(os.path.join(TESTS_PATH, '{}.txt'.format(glob_pattern))))
+    test_files += list(glob.glob(os.path.join(LOCAL_TESTS_PATH, '{}.txt'.format(glob_pattern))))
+    for filename in sorted(test_files):
         test_name, _ = os.path.basename(filename).split('.txt')
         category, _ = os.path.basename(filename).split('_')
         passed_count.setdefault(category, 0)

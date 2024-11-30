@@ -1470,7 +1470,7 @@ class If(CitationStylesElement, Parent):
         return result
 
     def _locator(self, item):
-        return [var.replace('-', ' ') == item.locator.label
+        return [item.has_locator and var.replace('-', ' ') == item.locator.label
                 for var in self.get('locator').split()]
 
     def _position(self, item, context):
