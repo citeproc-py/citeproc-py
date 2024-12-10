@@ -3,4 +3,5 @@ recursive-include citeproc/data/schema *.rnc *.md *.rng
 recursive-include docs *.html *.css *.png
 recursive-include examples *.py *.csl *.bib
 recursive-include tests *.py *.bib
+recursive-include tests/local *.txt
 prune tests/citeproc-test
