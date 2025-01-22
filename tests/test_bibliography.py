@@ -27,10 +27,10 @@ def _pp(string):
 class TestBibliographyGeneration(TestCase):
     def test_generate(self):
         expected_ordinals = {
-            "en-US": {0: "1st", 1: "2nd"},
-            "de-DE": {0: "1."},
+            "en-US": {0: "1st", 1: "2nd", 3: "4th", 19: "20th"},
+            "de-DE": {0: "1.", 9: "10."},
             "es-ES": {0: "1.ª"},
-            "fr-FR": {0: "1ʳᵉ"},
+            "fr-FR": {0: "1ʳᵉ", 9: "10ᵉ"},
             "hi-IN": {0: "1"},
             "it-IT": {0: "1º"}
         }
