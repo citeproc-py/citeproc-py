@@ -86,16 +86,28 @@ def dispatch(tokens, macros, level=0):
                 warn("Unbalanced parenthesis in '{}'".format(tokens.string))
             break
         if next_token.type == OPEN_SCOPE:
-            yield handle_scope(tokens, macros, level)
+            try:
+                yield handle_scope(tokens, macros, level)
+            except StopIteration:
+                return
         elif next_token.type == CLOSE_SCOPE:
             raise ScopeClosing
         elif next_token.type == START_MACRO:
-            yield handle_macro(tokens, macros)
+            try:
+                yield handle_macro(tokens, macros)
+            except StopIteration:
+                return
         elif next_token.type == TOGGLE_MATH:
-            yield handle_math(tokens)
+            try:
+                yield handle_math(tokens)
+            except StopIteration:
+                return
         else:
             assert next_token.type in (CHARACTER, WHITESPACE)
-            yield next(tokens).value
+            try:
+                yield next(tokens).value
+            except StopIteration:
+                return
 
 
 def handle_scope(tokens, macros, level):
