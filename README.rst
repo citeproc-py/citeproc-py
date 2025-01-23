@@ -32,7 +32,7 @@ should not expect to see any major API changes soon.
 Requirements
 ------------
 
-citeproc-py supports Python 3.7 and up. It depends on `lxml`_ for parsing and
+citeproc-py supports Python 3.9 and up. It depends on `lxml`_ for parsing and
 navigating the CSL style and locale files.
 
 .. _lxml: http://lxml.de/
