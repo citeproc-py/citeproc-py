@@ -30,7 +30,7 @@ def long_description():
     with open(os.path.join(BASE_PATH, 'README.rst')) as readme:
         result = readme.read()
     result += '\n\n'
-    with open(os.path.join(BASE_PATH, 'CHANGES.rst')) as changes:
+    with open(os.path.join(BASE_PATH, 'CHANGES.md')) as changes:
         result += changes.read()
     return result
 
