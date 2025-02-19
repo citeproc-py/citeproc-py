@@ -1,6 +1,27 @@
 Changelog
 ---------
 
+Release 0.7.0 (2025-02-19)
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Just to get a release out after long period.
+
+Bug fixes
+
+* Better handling of ordinals
+* Fix locator conditions (resolves #142)
+* Make family name optional
+* Allow date parts to not be integers
+* Support space macros
+* Fix multiple capitals
+* Fix parsing BibTex integer values
+
+Other changes:
+
+* Removed support for Python 3.6, 3.7, 3.8 and added for 3.10 - 3.13
+* Switch versioning to versioneer
+
+
 Release 0.6.0 (2021-05-27)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
