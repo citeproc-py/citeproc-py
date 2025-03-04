@@ -1,4 +1,4 @@
-include LICENSE README.rst CHANGES.rst
+include LICENSE README.md CHANGES.md
 recursive-include citeproc/data/schema *.rnc *.md *.rng
 recursive-include docs *.html *.css *.png
 recursive-include examples *.py *.csl *.bib
