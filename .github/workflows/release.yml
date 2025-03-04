@@ -1,0 +1,45 @@
+name: Auto-release on PR merge
+
+on:
+  # ATM, this is the closest trigger to a PR merging
+  push:
+    branches:
+      - master
+  workflow_dispatch:
+
+jobs:
+  auto-release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Download latest auto
+        run: |
+          auto_download_url="$(curl -fsSL https://api.github.com/repos/intuit/auto/releases/latest | jq -r '.assets[] | select(.name == "auto-linux.gz") | .browser_download_url')"
+          wget -O- "$auto_download_url" | gunzip > ~/auto
+          chmod a+x ~/auto
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '^3.10'
+
+      - name: Install Python dependencies
+        run: python -m pip install build twine
+
+      - name: Create release
+        run: |
+          if [ "${{ github.event_name }}" = workflow_dispatch ]
+          then opts=
+          else opts=--only-publish-with-release-label
+          fi
+          ~/auto shipit -vv $opts
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TWINE_USERNAME: __token__
+          TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
+
+# vim:set sts=2:
