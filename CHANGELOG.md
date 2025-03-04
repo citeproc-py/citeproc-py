@@ -1,15 +1,32 @@
-Changelog
----------
 
-Release 0.6.0 (2021-05-27)
-~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Release 0.7.0 (2025-02-19)
 
-Bug fixes
+Just to get a release out after long period.
+
+#### Bug fixes
+
+* Better handling of ordinals
+* Fix locator conditions (resolves #142)
+* Make family name optional
+* Allow date parts to not be integers
+* Support space macros
+* Fix multiple capitals
+* Fix parsing BibTex integer values
+
+#### Other changes:
+
+* Removed support for Python 3.6, 3.7, 3.8 and added for 3.10 - 3.13
+* Switch versioning to versioneer
+
+
+# Release 0.6.0 (2021-05-27)
+
+#### Bug fixes
 
 * Various issues on Windows: testing, explicit utf-8 encoding
 * Strings with unescaped \ declared r"aw"
 
-Other changes:
+#### Other changes:
 
 * Removed support for Python 2.7, 3.5 and added for 3.9
 * Travis CI is removed in favor of GitHub actions testing across
@@ -17,17 +34,15 @@ Other changes:
 * CSL test-suite progressed from 5779a8c to c3db429
 
 
-Release 0.5.1 (2020-03-06)
-~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Release 0.5.1 (2020-03-06)
 
-Bug fixed:
+#### Bug fixed:
 
 * avoid rnc2rng 2.6.2 which breaks installation of citeproc-py
 
-Release 0.5.0 (2020-02-09)
-~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Release 0.5.0 (2020-02-09)
 
-Enhancements:
+#### Enhancements:
 
 * handle commas and ampersands in a functional style
 * Number: handle commas and ampersands
@@ -35,20 +50,19 @@ Enhancements:
 * specify fallback locales for fr-CA and es-CL
 * improved page number and ranges parsing
 
-Bug fixed:
+#### Bug fixed:
 
 * don't fail on empty page ranges (#90) (bbm)
 * detect end of file while parsing incorrect bib (#59) (John Vandenberg)
 
-Other changes:
+#### Other changes:
 
 * Removed 3.2-3.4 and added 3.7, 3.8 to supported Pythons
 * Refactored locales handling
 
-Release 0.4.0 (2017-06-23)
-~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Release 0.4.0 (2017-06-23)
 
-New features:
+#### New features:
 
 * allow specifying the encoding of a BibTeX database file (#20 and #25)
 * BibTeX 'month' field: support integers and "<month> <day>" values
@@ -57,16 +71,15 @@ New features:
 * update the CSL schema to version 1.0.1 (#5)
 * update the CSL locales to commit 49bf3fc0
 
-Bug fixed:
+#### Bug fixed:
 
 * avoid crash when there is nothing to affix (David Lesieur)
 * fix BibTeX month to CSL month mapping (#24)
 * strip leading/trailing whitespace from BibTeX values (#37)
 
-Release 0.3.0 (2014-11-07)
-~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Release 0.3.0 (2014-11-07)
 
-Major improvements to the BibTeX parser:
+#### Major improvements to the BibTeX parser:
 
 * split names into parts and assign them to the equivalent CSL name parts
 * fixed handling of accent macros and escaped characters
@@ -74,12 +87,11 @@ Major improvements to the BibTeX parser:
 * handle standard Computer Modern ligatures such as --, ---, and <<
 * added unit tests for the BibTeX and LaTeX parsers
 
-Other changes:
+#### Other changes:
 
 * disable RelaxNG validation of CSL styles by default (API change)
 
-Release 0.2.0 (2014-10-25)
-~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Release 0.2.0 (2014-10-25)
 
 * bad cite callback function can determine how a bad cite is displayed (hetsch)
 * added option to disable RelaxNG validation (Jasper Op de Coul)
