@@ -11,6 +11,12 @@ jobs:
   auto-release:
     runs-on: ubuntu-latest
     steps:
+      - id: create_token
+        uses: tibdex/github-app-token@v2
+        with:
+          app_id: ${{ secrets.APP_ID }}
+          private_key: ${{ secrets.PRIVATE_KEY }}
+
       - name: Checkout source
         uses: actions/checkout@v4
         with:
@@ -38,7 +44,7 @@ jobs:
           fi
           ~/auto shipit -vv $opts
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ steps.create_token.outputs.token }}
           TWINE_USERNAME: __token__
           TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
 
