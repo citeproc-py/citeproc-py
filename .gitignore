@@ -16,3 +16,4 @@ __pycache__
 
 # VS Code configuration
 *.code-workspace
+/venv/**
