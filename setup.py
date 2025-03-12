@@ -27,10 +27,10 @@ os.chdir(BASE_PATH)
 
 
 def long_description():
-    with open(os.path.join(BASE_PATH, 'README.md')) as readme:
+    with open(os.path.join(BASE_PATH, 'README.md'), encoding='utf-8') as readme:
         result = readme.read()
     result += '\n\n'
-    with open(os.path.join(BASE_PATH, 'CHANGELOG.md')) as changes:
+    with open(os.path.join(BASE_PATH, 'CHANGELOG.md'), encoding='utf-8') as changes:
         result += changes.read()
     return result
 
