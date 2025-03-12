@@ -78,6 +78,7 @@ setup(
     author_email='brecht@mos6581.org',
     description='Citations and bibliography formatter',
     long_description=long_description(),
+    long_description_content_type='text/markdown',
     url='https://github.com/brechtm/citeproc-py',
     keywords='csl citation html rst bibtex xml',
     license='2-clause BSD License',
