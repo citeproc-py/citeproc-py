@@ -1,11 +1,11 @@
 # citeproc-py
 
-![PyPI - Version](https://img.shields.io/pypi/v/citeproc-py)
-![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/citeproc-py/citeproc-py/test.yml)
-![Coveralls](https://img.shields.io/coverallsCoverage/github/citeproc-py/citeproc-py)
+[![PyPI - Version](https://img.shields.io/pypi/v/citeproc-py)](https://pypi.org/project/citeproc-py/)
+[![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/citeproc-py/citeproc-py/test.yml)](https://github.com/citeproc-py/citeproc-py/actions?query=branch%3Amaster+workflow%3ATest)
+[![Coveralls](https://img.shields.io/coverallsCoverage/github/citeproc-py/citeproc-py)](https://coveralls.io/github/citeproc-py/citeproc-py)
 
 
-citeproc-py is a [`CSL`](https://citationstyles.org/) processor for Python. It aims to implement the
+citeproc-py is a [CSL](https://citationstyles.org/) processor for Python. It aims to implement the
 [CSL 1.0.1 specification](https://docs.citationstyles.org/en/1.0.1/specification.html).
 citeproc-py can output styled citations and
 bibliographies in a number of different output formats. Currently
