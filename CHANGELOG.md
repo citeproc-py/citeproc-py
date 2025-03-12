@@ -1,3 +1,15 @@
+# v0.8.1 (Wed Mar 12 2025)
+
+#### 🏠 Internal
+
+- release: checkout with submodules [#159](https://github.com/citeproc-py/citeproc-py/pull/159) ([@yarikoptic](https://github.com/yarikoptic))
+
+#### Authors: 1
+
+- Yaroslav Halchenko ([@yarikoptic](https://github.com/yarikoptic))
+
+---
+
 # v0.8.0 (Wed Mar 12 2025)
 
 #### 🚀 Enhancement
