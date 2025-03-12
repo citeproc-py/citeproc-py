@@ -1,8 +1,4 @@
 
-from __future__ import (absolute_import, division, print_function,
-                        unicode_literals)
-from citeproc.py2compat import *
-
 import os
 import json
 
@@ -39,7 +35,8 @@ VARIABLES = (['abstract', 'annote', 'archive', 'archive_location',
               'title_short', 'URL', 'version', 'year_suffix'] +
              NAMES + DATES + NUMBERS)
 
-with open(os.path.join(LOCALES_PATH, 'locales.json')) as file:
+with open(os.path.join(LOCALES_PATH, 'locales.json'),
+          encoding='utf-8') as file:
     locales_json = json.load(file)
     PRIMARY_DIALECTS = locales_json['primary-dialects']
     LANGUAGE_NAMES = locales_json['language-names']
@@ -47,3 +44,6 @@ with open(os.path.join(LOCALES_PATH, 'locales.json')) as file:
 
 from .frontend import CitationStylesStyle, CitationStylesBibliography
 from .source import Citation, CitationItem, Locator
+
+from . import _version
+__version__ = _version.get_versions()['version']

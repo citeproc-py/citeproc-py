@@ -1,12 +1,7 @@
 
-from __future__ import (absolute_import, division, print_function,
-                        unicode_literals)
-from citeproc.py2compat import *
-
-
 def escape(text):
-    text = text.replace('*', '\*')
-    text = text.replace('`', '\`')
+    text = text.replace('*', r'\*')
+    text = text.replace('`', r'\`')
     return text
 
 

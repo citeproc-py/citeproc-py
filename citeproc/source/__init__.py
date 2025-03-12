@@ -1,8 +1,4 @@
 
-from __future__ import (absolute_import, division, print_function,
-                        unicode_literals)
-from citeproc.py2compat import *
-
 # http://sourceforge.net/mailarchive/message.php?msg_id=25355232
 
 # http://dret.net/bibconvert/tex2unicode
@@ -67,8 +63,8 @@ class Name(CustomDict):
         if 'literal' in args:
             required, optional = {'literal'}, set()
         else:
-            required = {'family'}
-            optional = {'given', 'dropping-particle', 'non-dropping-particle',
+            required = set()
+            optional = {'family', 'given', 'dropping-particle', 'non-dropping-particle',
                         'suffix'}
         super(Name, self).__init__(args, required, optional)
 
@@ -97,7 +93,11 @@ class Date(DateBase):
         if 'day' in args and 'month' not in args:
             raise TypeError('When specifying the day, you should also specify '
                             'the month')
-        args = {key: int(value) for key, value in args.items()}
+        for key, value in args.items():
+            try:
+                args[key] = int(value)
+            except ValueError:
+                pass
         super(Date, self).__init__(args, required, optional)
 
     def sort_key(self):

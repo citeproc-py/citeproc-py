@@ -1,9 +1,4 @@
 
-from __future__ import (absolute_import, division, print_function,
-                        unicode_literals)
-from citeproc.py2compat import *
-
-
 import glob
 import io
 import os
@@ -21,12 +16,13 @@ from citeproc.source.json import CiteProcJSON
 
 
 CITEPROC_TEST_REPOSITORY = 'https://github.com/citation-style-language/test-suite.git'
-CITEPROC_TEST_COMMIT = '5779a8cd6e2560ef28e5b72225ec15368b089084'
+CITEPROC_TEST_COMMIT = '4001cdada66cd30f2ba1b8ae45a8da20f407dec0'
 
 CITEPROC_TEST_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__),
                                      'test-suite'))
 TEST_PARSER_PATH = os.path.join(CITEPROC_TEST_PATH, 'processor.py')
 TESTS_PATH = os.path.join(CITEPROC_TEST_PATH, 'processor-tests', 'humans')
+LOCAL_TESTS_PATH = os.path.join(os.path.dirname(__file__), "local")
 
 FAILING_TESTS_FILE = 'failing_tests.txt'
 
@@ -36,12 +32,10 @@ FAILING_TESTS_FILE = 'failing_tests.txt'
 
 IGNORED_RESULS = {
     'date_Accessed': 'raw date',
-    'date_LoneJapaneseMonth': 'raw date',
     'date_LopsidedDataYearSuffixCollapse': 'raw date',
-    'date_RawParseSimpleDate': 'raw date',
-    'date_RawSeasonRange1': 'raw date',
-    'date_RawSeasonRange2': 'raw date',
-    'date_RawSeasonRange3': 'raw date',
+    'date_SeasonRange1': 'raw date',
+    'date_SeasonRange2': 'raw date',
+    'date_SeasonRange3': 'raw date',
     'date_String': 'raw date',
 }
 
@@ -313,8 +307,9 @@ if __name__ == '__main__':
     failed_tests = FailedTests(os.path.join(os.path.dirname(__file__),
                                             FAILING_TESTS_FILE))
     count = 0
-    test_files = os.path.join(TESTS_PATH, '{}.txt'.format(glob_pattern))
-    for filename in sorted(glob.glob(test_files)):
+    test_files = list(glob.glob(os.path.join(TESTS_PATH, '{}.txt'.format(glob_pattern))))
+    test_files += list(glob.glob(os.path.join(LOCAL_TESTS_PATH, '{}.txt'.format(glob_pattern))))
+    for filename in sorted(test_files):
         test_name, _ = os.path.basename(filename).split('.txt')
         category, _ = os.path.basename(filename).split('_')
         passed_count.setdefault(category, 0)
