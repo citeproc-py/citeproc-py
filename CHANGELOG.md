@@ -1,3 +1,16 @@
+# v0.8.2 (Wed Mar 12 2025)
+
+#### 🏠 Internal
+
+- Explicitly specify utf-8 encoding while reading top level .md files for description [#162](https://github.com/citeproc-py/citeproc-py/pull/162) ([@yarikoptic](https://github.com/yarikoptic))
+- Instruct that long description is in markdown and not ReST [#160](https://github.com/citeproc-py/citeproc-py/pull/160) ([@yarikoptic](https://github.com/yarikoptic))
+
+#### Authors: 1
+
+- Yaroslav Halchenko ([@yarikoptic](https://github.com/yarikoptic))
+
+---
+
 # v0.8.1 (Wed Mar 12 2025)
 
 #### 🏠 Internal
