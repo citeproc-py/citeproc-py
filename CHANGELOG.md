@@ -1,3 +1,30 @@
+# v0.8.0 (Wed Mar 12 2025)
+
+#### 🚀 Enhancement
+
+- release: use GitHUb App token for checkout and push [#158](https://github.com/citeproc-py/citeproc-py/pull/158) ([@tmorrell](https://github.com/tmorrell))
+
+#### ⚠️ Pushed to `master`
+
+- Rename CHANGES to CHANGELOG ([@yarikoptic](https://github.com/yarikoptic))
+
+#### 🏠 Internal
+
+- release: switch to using GitHub App to overcome branch protection [#157](https://github.com/citeproc-py/citeproc-py/pull/157) ([@tmorrell](https://github.com/tmorrell))
+- Set up `auto` to automate releases [#153](https://github.com/citeproc-py/citeproc-py/pull/153) ([@jwodder](https://github.com/jwodder) [@yarikoptic](https://github.com/yarikoptic))
+
+#### 📝 Documentation
+
+- Convert CHANGES.rst, CONTRIBUTING.rst, and README.md to markdown [#154](https://github.com/citeproc-py/citeproc-py/pull/154) ([@tmorrell](https://github.com/tmorrell))
+
+#### Authors: 3
+
+- John T. Wodder II ([@jwodder](https://github.com/jwodder))
+- Tom Morrell ([@tmorrell](https://github.com/tmorrell))
+- Yaroslav Halchenko ([@yarikoptic](https://github.com/yarikoptic))
+
+---
+
 
 # Release 0.7.0 (2025-02-19)
 
