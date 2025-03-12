@@ -116,6 +116,22 @@ class CitationStylesElement(SomewhatObjectifiedElement):
                 except IndexError: # TODO: create custom exception
                     continue
 
+    def get_plural_term(self, name, *args, **kwargs):
+        """
+        Return plural form of the term or None if no term found
+        """
+        if term := self.get_term(name, *args, **kwargs):
+            return term.multiple
+        return None
+
+    def get_single_term(self, name, *args, **kwargs):
+        """
+        Return singular form of the term or None if no term found
+        """
+        if term := self.get_term(name, *args, **kwargs):
+            return term.single
+        return None
+
     def get_date(self, form):
         for locale in self.get_root().locales:
             try:
@@ -347,10 +363,8 @@ class Quoted(object):
     def quote(self, string):
         piq = self.get_locale_option('punctuation-in-quote').lower() == 'true'
         if self.get('quotes', 'false').lower() == 'true':
-            term = self.get_term('open-quote')
-            open_quote = term.single if term is not None else ''
-            term = self.get_term('close-quote')
-            close_quote = term.single if term is not None else ''
+            open_quote = self.get_single_term(name='open-quote') or ''
+            close_quote = self.get_single_term(name='close-quote') or ''
             string = open_quote + string + close_quote
 ##            quoted_string = QuotedString(string, open_quote, close_quote, piq)
         return string
@@ -646,9 +660,8 @@ class Layout(CitationStylesElement, Parent, Formatted, Affixed, Delimited):
 
 class FormatNumber(object):
     def _process(self, value, variable):
-        term = self.get_term('page-range-delimiter') \
+        page_range_delimiter = self.get_single_term(name='page-range-delimiter') \
             if variable.startswith('page') else None
-        page_range_delimiter = (term.single if term is not None else None)
         range_delimiter = (page_range_delimiter
                            or self.unicode_character('EN DASH'))
 
@@ -767,15 +780,13 @@ class Text(CitationStylesElement, FormatNumber, Formatted, Affixed, Quoted,
     def _term(self, item):
         form = self.get('form', 'long')
         plural = self.get('plural', 'false').lower() == 'true'
-        if form == 'long':
-            form = None
-        term = self.get_term(self.get('term'), form)
-        if term is None:
-            return
+        variable = self.get('term')
         if plural:
-            text = term.multiple
+            text = self.get_plural_term(name=variable,
+                                        form=form if form != 'long' else None)
         else:
-            text = term.single
+            text = self.get_single_term(name=variable,
+                                        form=form if form != 'long' else None)
 
         return text
 
@@ -947,16 +958,9 @@ class Date_Part(CitationStylesElement, Formatted, Affixed, TextCased,
                 index = date.season
                 term = 'season'
 
-            if form == 'long':
-                term = context.get_term('{}-{:02}'.format(term, index))
-                if term is None:
-                    return
-                text = term.single
-            elif form == 'short':
-                term = context.get_term('{}-{:02}'.format(term, index), 'short')
-                if term is None:
-                    return
-                text = term.single
+            if form == 'long' or form == 'short':
+                text = context.get_single_term(name='{}-{:02}'.format(term, index),
+                                               form='short' if form == 'long' else None)
             else:
                 assert term == 'month'
                 if form == 'numeric':
@@ -968,15 +972,9 @@ class Date_Part(CitationStylesElement, Formatted, Affixed, TextCased,
             if form == 'long':
                 text = str(abs(date.year))
                 if date.year < 0:
-                    term = context.get_term('bc')
-                    if term is None:
-                        return text
-                    text += term.single
+                    text += context.get_single_term(name='bc') or ''
                 elif date.year < 1000:
-                    term = context.get_term('ad')
-                    if term is None:
-                        return text
-                    text += term.single
+                    text += context.get_single_term(name='ad') or ''
             elif form == 'short':
                 text = str(date.year)[-2:]
 
@@ -1019,10 +1017,7 @@ class Number(CitationStylesElement, FormatNumber, Formatted, Affixed, Displayed,
         elif form == 'ordinal' or form == 'long-ordinal' and number > 10:
             text = to_ordinal(number, self)
         elif form == 'long-ordinal':
-            term = self.get_term('long-ordinal-{:02}'.format(number))
-            if term is None:
-                return
-            text = term.single
+            text = self.get_single_term(name='long-ordinal-{:02}'.format(number))
         elif form == 'roman':
             text = romanize(number).lower()
         return text
@@ -1147,8 +1142,7 @@ class Name(CitationStylesElement, Formatted, Affixed, Delimited):
         try:
             result = self.xpath_search(expr)[0].render()
         except IndexError:
-            term = self.get_term('et-al')
-            result = term.single if term is not None else None
+            result = self.get_single_term(name='et-al')
         return result
 
     def process(self, item, variable, context=None, sort_options=None, **kwargs):
@@ -1181,8 +1175,7 @@ class Name(CitationStylesElement, Formatted, Affixed, Delimited):
         names = item.reference.get(variable, [])
 
         if and_ == 'text':
-            term = self.get_term('and')
-            and_term = term.single if term is not None else None
+            and_term = self.get_single_term(name='and')
         elif and_ == 'symbol':
             and_term = self.preformat('&')
 
@@ -1353,19 +1346,13 @@ class Label(CitationStylesElement, Formatted, Affixed, StrippedPeriods,
         if variable == 'locator' and item.has_locator:
             variable = item.locator.label
 
-        if form == 'long':
-            term = self.get_term(variable)
-        else:
-            term = self.get_term(variable, form)
-
-        if term is None:
-            return
-
         if (plural_option == 'contextual' and plural or
             plural_option == 'always'):
-            text = term.multiple
+            text = self.get_plural_term(name=variable,
+                                        form=form if form != 'long' else None)
         else:
-            text = term.single
+            text = self.get_single_term(name=variable,
+                                        form=form if form != 'long' else None)
 
         return text
 
@@ -1571,7 +1558,8 @@ def to_ordinal(number, context):
         ordinal_term = f'ordinal-{number}'
 
     def get_ordinal_term():
-        return context.get_term(ordinal_term, fallback_locale=fallback_locale, zero_padded=zero_padded)
+        return context.get_single_term(name=ordinal_term, fallback_locale=fallback_locale,
+                                       zero_padded=zero_padded)
 
     if get_ordinal_term() is None:
         ordinal_term = f'ordinal-{int(str(number)[-1]):02}'
@@ -1581,10 +1569,7 @@ def to_ordinal(number, context):
             ordinal_term = f'ordinal'
         if get_ordinal_term() is None:
             fallback_locale = True
-    term = get_ordinal_term()
-    if term is None:
-        return str(number)
-    return str(number) + term.single
+    return str(number) + get_ordinal_term() or ''
 
 def romanize(n):
     # by Kay Schluehr - from http://billmill.org/python_roman.html
