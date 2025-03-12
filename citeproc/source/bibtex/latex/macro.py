@@ -1,10 +1,5 @@
 # coding: utf-8
 
-from __future__ import (absolute_import, division, print_function,
-                        unicode_literals)
-from citeproc.py2compat import *
-
-
 import unicodedata
 
 from . import (parse_argument, eat_whitespace, parse_macro_name,
@@ -155,9 +150,14 @@ MACROS = {
     'NG': SymbolByName('LATIN CAPITAL LETTER ENG'),
     'th': SymbolByName('LATIN SMALL LETTER THORN'),
     'TH': SymbolByName('LATIN CAPITAL LETTER THORN'),
+
+    'emspace': SymbolByName('EM SPACE'),
+    'enspace': SymbolByName('EN SPACE'),
+
     'dag': SymbolByName('DAGGER'),
     'ddag': SymbolByName('DOUBLE DAGGER'),
     'dots': SymbolByName('HORIZONTAL ELLIPSIS'),
+    'ldots': SymbolByName('HORIZONTAL ELLIPSIS'),
     'P': SymbolByName('PILCROW SIGN'),
     'S': SymbolByName('SECTION SIGN'),
     'copyright': SymbolByName('COPYRIGHT SIGN'),
@@ -168,6 +168,8 @@ MACROS = {
     'guilsinglright': SymbolByName('SINGLE RIGHT-POINTING ANGLE QUOTATION MARK'),
     'quotedblbase': SymbolByName('DOUBLE LOW-9 QUOTATION MARK'),
     'quotesinglbase': SymbolByName('SINGLE LOW-9 QUOTATION MARK'),
+
+    'thinspace': SymbolByName('THIN SPACE'),
 
     'textasciicircum': Symbol('^'),
     'textasciitilde': Symbol('~'),

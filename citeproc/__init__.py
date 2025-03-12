@@ -1,8 +1,4 @@
 
-from __future__ import (absolute_import, division, print_function,
-                        unicode_literals)
-from citeproc.py2compat import *
-
 import os
 import json
 
@@ -48,3 +44,6 @@ with open(os.path.join(LOCALES_PATH, 'locales.json'),
 
 from .frontend import CitationStylesStyle, CitationStylesBibliography
 from .source import Citation, CitationItem, Locator
+
+from . import _version
+__version__ = _version.get_versions()['version']

@@ -14,46 +14,23 @@ from subprocess import Popen, PIPE
 from setuptools import setup, find_packages
 from setuptools.command.build_py import build_py
 from setuptools.command.develop import develop
-
+import versioneer
 
 PACKAGE = 'citeproc'
 BASE_PATH = os.path.dirname(os.path.abspath(__file__))
 PACKAGE_ABSPATH = os.path.join(BASE_PATH, PACKAGE)
 VERSION_FILE = os.path.join(PACKAGE_ABSPATH, 'version.py')
 
-VERSION_FORMAT = re.compile(r'v\d+\.\d+\.\d+')
 
 # All external commands are relative to BASE_PATH
 os.chdir(BASE_PATH)
 
-# retrieve the version number from git or VERSION_FILE
-# inspired by http://dcreager.net/2010/02/10/setuptools-git-version-numbers/
-try:
-    print('Attempting to get version number from git...')
-    git = Popen(['git', 'describe', '--always', '--dirty'],
-                stdout=PIPE, stderr=sys.stderr)
-    if git.wait() != 0:
-        raise OSError
-    line, = git.stdout.readlines()
-    line = line.strip().decode('ascii')
-    __version__ = line[1:] if VERSION_FORMAT.match(line) else line
-    __release_date__ = datetime.now().strftime('%b %d %Y, %H:%M:%S')
-    with open(VERSION_FILE, 'w') as version_file:
-        version_file.write("__version__ = '{}'\n".format(__version__))
-        version_file.write("__release_date__ = '{}'\n".format(__release_date__))
-except OSError as e:
-    print('Assume we are running from a source distribution.')
-    # read version from VERSION_FILE
-    with open(VERSION_FILE) as version_file:
-        code = compile(version_file.read(), VERSION_FILE, 'exec')
-        exec(code)
-
 
 def long_description():
-    with open(os.path.join(BASE_PATH, 'README.rst')) as readme:
+    with open(os.path.join(BASE_PATH, 'README.md')) as readme:
         result = readme.read()
     result += '\n\n'
-    with open(os.path.join(BASE_PATH, 'CHANGES.rst')) as changes:
+    with open(os.path.join(BASE_PATH, 'CHANGELOG.md')) as changes:
         result += changes.read()
     return result
 
@@ -83,13 +60,14 @@ class custom_develop(develop):
 
 setup(
     name='citeproc-py',
-    version=__version__,
-    cmdclass = dict(build_py=custom_build_py, develop=custom_develop),
+    version=versioneer.get_version(),
+    cmdclass=versioneer.get_cmdclass({'build_py': custom_build_py, 'develop': custom_develop}),
     packages=find_packages(),
     package_data={PACKAGE: ['data/locales/*.xml',
                             'data/locales/locales.json',
                             'data/schema/*.rng',
                             'data/styles/*.csl']},
+    python_requires='>=3.9',
     scripts=['bin/csl_unsorted'],
     setup_requires=['rnc2rng>=2.6.1,!=2.6.2'],
     install_requires=['lxml'],
@@ -117,12 +95,11 @@ setup(
         'License :: OSI Approved :: BSD License',
         'Operating System :: OS Independent',
         'Programming Language :: Python',
-        'Programming Language :: Python :: 2.7',
-        'Programming Language :: Python :: 3.4',
-        'Programming Language :: Python :: 3.5',
-        'Programming Language :: Python :: 3.6',
-        'Programming Language :: Python :: 3.7',
-        'Programming Language :: Python :: 3.8',
+        'Programming Language :: Python :: 3.9',
+        'Programming Language :: Python :: 3.10',
+        'Programming Language :: Python :: 3.11',
+        'Programming Language :: Python :: 3.12',
+        'Programming Language :: Python :: 3.13',
         'Topic :: Documentation',
         'Topic :: Printing',
         'Topic :: Software Development :: Documentation',
