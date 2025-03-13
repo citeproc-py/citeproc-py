@@ -118,19 +118,19 @@ class CitationStylesElement(SomewhatObjectifiedElement):
 
     def get_plural_term(self, name, *args, **kwargs):
         """
-        Return plural form of the term or None if no term found
+        Return plural form of the term or empty string if no term found
         """
         if term := self.get_term(name, *args, **kwargs):
             return term.multiple
-        return None
+        return String('')
 
     def get_single_term(self, name, *args, **kwargs):
         """
-        Return singular form of the term or None if no term found
+        Return singular form of the term or empty string if no term found
         """
         if term := self.get_term(name, *args, **kwargs):
             return term.single
-        return None
+        return String('')
 
     def get_date(self, form):
         for locale in self.get_root().locales:
@@ -363,8 +363,8 @@ class Quoted(object):
     def quote(self, string):
         piq = self.get_locale_option('punctuation-in-quote').lower() == 'true'
         if self.get('quotes', 'false').lower() == 'true':
-            open_quote = self.get_single_term(name='open-quote') or ''
-            close_quote = self.get_single_term(name='close-quote') or ''
+            open_quote = self.get_single_term(name='open-quote')
+            close_quote = self.get_single_term(name='close-quote')
             string = open_quote + string + close_quote
 ##            quoted_string = QuotedString(string, open_quote, close_quote, piq)
         return string
@@ -972,9 +972,9 @@ class Date_Part(CitationStylesElement, Formatted, Affixed, TextCased,
             if form == 'long':
                 text = str(abs(date.year))
                 if date.year < 0:
-                    text += context.get_single_term(name='bc') or ''
+                    text += context.get_single_term(name='bc')
                 elif date.year < 1000:
-                    text += context.get_single_term(name='ad') or ''
+                    text += context.get_single_term(name='ad')
             elif form == 'short':
                 text = str(date.year)[-2:]
 
@@ -1569,7 +1569,7 @@ def to_ordinal(number, context):
             ordinal_term = f'ordinal'
         if get_ordinal_term() is None:
             fallback_locale = True
-    return str(number) + get_ordinal_term() or ''
+    return str(number) + get_ordinal_term()
 
 def romanize(n):
     # by Kay Schluehr - from http://billmill.org/python_roman.html
