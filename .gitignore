@@ -13,3 +13,7 @@ __pycache__
 
 # PyCharm configuration
 .idea
+
+# VS Code configuration
+*.code-workspace
+/venv/**
