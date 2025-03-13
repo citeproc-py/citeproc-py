@@ -120,7 +120,7 @@ class CitationStylesElement(SomewhatObjectifiedElement):
         """
         Return plural form of the term or empty string if no term found
         """
-        if term := self.get_term(name, *args, **kwargs):
+        if (term := self.get_term(name, *args, **kwargs)) is not None:
             return term.multiple
         return String('')
 
@@ -128,7 +128,7 @@ class CitationStylesElement(SomewhatObjectifiedElement):
         """
         Return singular form of the term or empty string if no term found
         """
-        if term := self.get_term(name, *args, **kwargs):
+        if (term := self.get_term(name, *args, **kwargs)) is not None:
             return term.single
         return String('')
 
@@ -960,7 +960,7 @@ class Date_Part(CitationStylesElement, Formatted, Affixed, TextCased,
 
             if form == 'long' or form == 'short':
                 text = context.get_single_term(name='{}-{:02}'.format(term, index),
-                                               form='short' if form == 'long' else None)
+                                               form='short' if form == 'short' else None)
             else:
                 assert term == 'month'
                 if form == 'numeric':
@@ -1558,16 +1558,17 @@ def to_ordinal(number, context):
         ordinal_term = f'ordinal-{number}'
 
     def get_ordinal_term():
-        return context.get_single_term(name=ordinal_term, fallback_locale=fallback_locale,
+        return context.get_single_term(name=ordinal_term,
+                                       fallback_locale=fallback_locale,
                                        zero_padded=zero_padded)
 
-    if get_ordinal_term() is None:
+    if not get_ordinal_term():  # can be empty string
         ordinal_term = f'ordinal-{int(str(number)[-1]):02}'
         zero_padded = True
-        if get_ordinal_term() is None:
+        if not get_ordinal_term():  # can be empty string
             zero_padded = False
             ordinal_term = f'ordinal'
-        if get_ordinal_term() is None:
+        if not get_ordinal_term():  # can be empty string
             fallback_locale = True
     return str(number) + get_ordinal_term()
 
