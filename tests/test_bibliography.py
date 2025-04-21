@@ -31,7 +31,7 @@ class TestBibliographyGeneration(TestCase):
             "de-DE": {0: "1.", 9: "10."},
             "es-ES": {0: "1.ª"},
             "fr-FR": {0: "1ʳᵉ", 9: "10ᵉ"},
-            "hi-IN": {0: "1"},
+            "hi-IN": {0: "1वाँ"},
             "it-IT": {0: "1º"}
         }
 
