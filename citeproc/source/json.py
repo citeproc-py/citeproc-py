@@ -73,7 +73,10 @@ class CiteProcJSON(BibliographySource):
             date_data = {}
             try:
                 for i, part in enumerate(('year', 'month', 'day')):
-                    date_data[part] = json_date[i]
+                    dd = json_date[i]
+                    if dd is None:
+                        raise IndexError("date part is None")
+                    date_data[part] = dd
             except IndexError:
                 pass
             return date_data
