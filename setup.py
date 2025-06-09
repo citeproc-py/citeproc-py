@@ -81,7 +81,7 @@ setup(
     long_description_content_type='text/markdown',
     url='https://github.com/brechtm/citeproc-py',
     keywords='csl citation html rst bibtex xml',
-    license='2-clause BSD License',
+    license='BSD-2-Clause-Views',
     classifiers = [
         'Development Status :: 3 - Alpha',
         'Environment :: Console',
