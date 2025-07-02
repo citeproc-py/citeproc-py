@@ -1,0 +1,11 @@
+@article{Smith2025ThinkingWithInnerVoices,
+  author = {Smith, John},
+  title = {Thinking with “Inner Voices”: Echo, Self, and Dialogue in Contemporary Narrative},
+  journal = {Journal of Literary Psychology},
+  year = {2025},
+  volume = {12},
+  number = {1},
+  abstract = {This article explores how contemporary narrative fiction represents internal dialogue, drawing on literary theory and cognitive psychology to interpret “inner voices” as mechanisms of character development.},
+  keywords = {literary theory, narrative, psychology, internal monologue, dialogism},
+  note = {Generated for quote-handling test | Keywords supplemented by AI}
+}
