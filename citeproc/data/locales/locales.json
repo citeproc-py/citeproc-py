@@ -1,0 +1,17 @@
+{
+  "primary-dialects": [],
+  "language-names": {
+    "en": "English"
+  },
+  "en": {
+    "terms": {
+      "open-quote": "\u201c",
+      "close-quote": "\u201d",
+      "open-inner-quote": "\u2018",
+      "close-inner-quote": "\u2019"
+    },
+    "options": {
+      "punctuation-in-quote": "true"
+    }
+  }
+}
