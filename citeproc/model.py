@@ -365,7 +365,8 @@ class Quoted(object):
         if self.get('quotes', 'false').lower() == 'true':
             open_quote = self.get_single_term(name='open-quote')
             close_quote = self.get_single_term(name='close-quote')
-            string = open_quote + string + close_quote
+            string = (open_quote or "“") + string + (close_quote or "”") # this replaces the line below to provide a fall back if quotes are not provided in localisation in CSL. See https://github.com/citeproc-py/citeproc-py/issues/169
+##            string = open_quote + string + close_quote
 ##            quoted_string = QuotedString(string, open_quote, close_quote, piq)
         return string
 
