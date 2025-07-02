@@ -1,7 +1,4 @@
 [submodule "citeproc/data/schema"]
 	path = citeproc/data/schema
 	url = https://github.com/citation-style-language/schema.git
-[submodule "citeproc/data/locales"]
-	path = citeproc/data/locales
-	url = https://github.com/citation-style-language/locales.git
 	branch = master
