@@ -1,6 +1,4 @@
 # coding: utf-8
-import io
-import os
 from citeproc import (
     Citation,
     CitationItem,
@@ -22,82 +20,6 @@ template = {
         "location": "Firenze",
     }
 
-# A minimal harvard1-like style with an embedded <locale xml:lang="en"> that
-# defines non-ordinal terms only (simulating chicago-author-date).  Without the
-# fix in to_ordinal() this style would produce "2th", "3th" etc. for en-US.
-HARVARD1_WITH_EMBEDDED_EN_LOCALE = """\
-<?xml version="1.0" encoding="utf-8"?>
-<style xmlns="http://purl.org/net/xbiblio/csl" class="in-text" version="1.0"
-       demote-non-dropping-particle="sort-only">
-  <info>
-    <title>Harvard1 with embedded en locale (test)</title>
-    <id>http://example.com/test-embedded-locale</id>
-    <link href="http://example.com/test-embedded-locale" rel="self"/>
-    <updated>2024-01-01T00:00:00+00:00</updated>
-    <rights license="http://creativecommons.org/licenses/by-sa/3.0/">CC BY-SA 3.0</rights>
-  </info>
-  <locale xml:lang="en">
-    <terms>
-      <term name="anonymous">unsigned</term>
-    </terms>
-  </locale>
-  <macro name="author">
-    <names variable="author">
-      <name name-as-sort-order="all" and="symbol" sort-separator=", "
-            initialize-with="." delimiter-precedes-last="never" delimiter=", "/>
-      <substitute>
-        <text value="Anon."/>
-      </substitute>
-    </names>
-  </macro>
-  <macro name="year-date">
-    <date variable="issued">
-      <date-part name="year"/>
-    </date>
-  </macro>
-  <macro name="edition">
-    <choose>
-      <if is-numeric="edition">
-        <group delimiter=" ">
-          <number variable="edition" form="ordinal"/>
-          <text term="edition" form="short" suffix="." strip-periods="true"/>
-        </group>
-      </if>
-      <else>
-        <text variable="edition" suffix="."/>
-      </else>
-    </choose>
-  </macro>
-  <citation et-al-min="3" et-al-use-first="1">
-    <layout prefix="(" suffix=")" delimiter="; ">
-      <group delimiter=", ">
-        <text macro="author"/>
-        <text macro="year-date"/>
-      </group>
-    </layout>
-  </citation>
-  <bibliography>
-    <sort>
-      <key macro="author"/>
-    </sort>
-    <layout>
-      <text macro="author" suffix=","/>
-      <date variable="issued" prefix=" " suffix=".">
-        <date-part name="year"/>
-      </date>
-      <group prefix=" " delimiter=" " suffix=".">
-        <text variable="title" font-style="italic"/>
-        <text macro="edition"/>
-      </group>
-      <group prefix=" " delimiter=": " suffix=".">
-        <text variable="publisher-place"/>
-        <text variable="publisher"/>
-      </group>
-    </layout>
-  </bibliography>
-</style>
-"""
-
 
 def _pp(string):
     return string.split(" ")[5]
@@ -115,7 +37,7 @@ class TestBibliographyGeneration(TestCase):
         }
 
         for lg, ordinals in expected_ordinals.items():
-            bib_style = CitationStylesStyle("harvard1", lg, validate=False)
+            bib_style = CitationStylesStyle("harvard1", lg)
             entries = []
             for edition in range(1, 26):
                 template["id"] = str(edition)
@@ -131,18 +53,25 @@ class TestBibliographyGeneration(TestCase):
                 assert generated_ordinals[index] == expected_value, f"Failed for {lg} at index {index}. Expected: {expected_value}, Got: {generated_ordinals[index]}"
 
     def test_ordinals_with_embedded_locale(self):
-        """Styles with an embedded locale that defines no ordinal terms must still
-        produce correct ordinals by falling back to the file-based locale data.
+        """chicago-author-date has an embedded <locale xml:lang="en"> that defines
+        editor/translator terms but no ordinal terms.  Ordinals must still be
+        resolved from the file-based en-US locale data.
         Regression test for https://github.com/citeproc-py/citeproc-py/issues/183."""
-        style_xml = io.BytesIO(HARVARD1_WITH_EMBEDDED_EN_LOCALE.encode("utf-8"))
-        bib_style = CitationStylesStyle(style_xml, "en-US", validate=False)
+        bib_style = CitationStylesStyle("chicago-author-date", "en-US")
 
-        entries = []
-        for edition in range(1, 5):
-            entry = template.copy()
-            entry["id"] = str(edition)
-            entry["edition"] = edition
-            entries.append(entry)
+        entries = [
+            {
+                "id": str(n),
+                "type": "book",
+                "title": "Some Book",
+                "author": [{"family": "Smith", "given": "John"}],
+                "issued": {"date-parts": [[2020]]},
+                "publisher": "Publisher",
+                "publisher-place": "New York",
+                "edition": n,
+            }
+            for n in range(1, 5)
+        ]
 
         bib = source.json.CiteProcJSON(entries)
         bibliography = CitationStylesBibliography(bib_style, bib, formatter.plain)
@@ -150,7 +79,8 @@ class TestBibliographyGeneration(TestCase):
         bibliography.register(Citation(citations))
         rendered = bibliography.style.render_bibliography(citations)
 
-        # Extract the ordinal token (6th whitespace-delimited word)
+        # The ordinal edition token is the 6th whitespace-delimited word, e.g.:
+        # "Smith, John. 2020. Some Book. 2nd ed. New York: Publisher."
         ordinals = [r.split()[5] for r in rendered]
         assert ordinals[0] == "1st", f"Expected '1st', got '{ordinals[0]}'"
         assert ordinals[1] == "2nd", f"Expected '2nd', got '{ordinals[1]}'"
