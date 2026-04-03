@@ -1556,17 +1556,15 @@ def to_ordinal(number, context):
         else:
             ordinal_term = f'ordinal-{number}'
 
-        term = context.get_single_term(name=ordinal_term,
-                                       fallback_locale=fallback_locale,
-                                       zero_padded=False)
-        if term:
+        if (term := context.get_single_term(name=ordinal_term,
+                                            fallback_locale=fallback_locale,
+                                            zero_padded=False)):
             return term
 
         ordinal_term = f'ordinal-{int(str(number)[-1]):02}'
-        term = context.get_single_term(name=ordinal_term,
-                                       fallback_locale=fallback_locale,
-                                       zero_padded=True)
-        if term:
+        if (term := context.get_single_term(name=ordinal_term,
+                                            fallback_locale=fallback_locale,
+                                            zero_padded=True)):
             return term
 
         return context.get_single_term(name='ordinal',
