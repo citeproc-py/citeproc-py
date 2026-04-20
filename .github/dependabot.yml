@@ -1,0 +1,14 @@
+# -*- coding: utf-8 -*-
+#
+#
+# Documentation: https://docs.github.com/en/code-security/dependabot
+
+version: 2
+updates:
+  # Enable version updates for GitHub actions
+  - package-ecosystem: "github-actions"
+    # Exception as per documentation: "/" means to look for any files in `.github/workfows/`
+    directory: "/"
+    # Check for updates once a week on Monday
+    schedule:
+      interval: "weekly"
