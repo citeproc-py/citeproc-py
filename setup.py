@@ -73,6 +73,7 @@ setup(
     install_requires=['lxml'],
     extras_require={
         'full': ['citeproc-py-styles'],
+        'tests': ['citeproc-py-styles'],
     },
     provides=[PACKAGE],
     #test_suite='nose.collector',
