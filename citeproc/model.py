@@ -1550,27 +1550,31 @@ class Else(CitationStylesElement, Parent):
 # utility functions
 
 def to_ordinal(number, context):
-    zero_padded = False
-    fallback_locale = False
-    if len(str(number)) == 1:
-        ordinal_term = f'ordinal-{number:02}'
-    else:
-        ordinal_term = f'ordinal-{number}'
+    def _find_ordinal(fallback_locale):
+        if len(str(number)) == 1:
+            ordinal_term = f'ordinal-{number:02}'
+        else:
+            ordinal_term = f'ordinal-{number}'
 
-    def get_ordinal_term():
-        return context.get_single_term(name=ordinal_term,
-                                       fallback_locale=fallback_locale,
-                                       zero_padded=zero_padded)
+        if (term := context.get_single_term(name=ordinal_term,
+                                            fallback_locale=fallback_locale,
+                                            zero_padded=False)):
+            return term
 
-    if not get_ordinal_term():  # can be empty string
         ordinal_term = f'ordinal-{int(str(number)[-1]):02}'
-        zero_padded = True
-        if not get_ordinal_term():  # can be empty string
-            zero_padded = False
-            ordinal_term = f'ordinal'
-        if not get_ordinal_term():  # can be empty string
-            fallback_locale = True
-    return str(number) + get_ordinal_term()
+        if (term := context.get_single_term(name=ordinal_term,
+                                            fallback_locale=fallback_locale,
+                                            zero_padded=True)):
+            return term
+
+        return context.get_single_term(name='ordinal',
+                                       fallback_locale=fallback_locale,
+                                       zero_padded=False)
+
+    result = _find_ordinal(fallback_locale=False)
+    if not result:
+        result = _find_ordinal(fallback_locale=True)
+    return str(number) + result
 
 def romanize(n):
     # by Kay Schluehr - from http://billmill.org/python_roman.html
