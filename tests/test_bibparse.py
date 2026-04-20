@@ -1,14 +1,13 @@
 # coding: utf-8
 
-import os
-
 from io import StringIO
 from unittest import TestCase
 
 from citeproc.source.bibtex.bibparse import BibTeXParser, BibTeXDecodeError
+from importlib.resources import files
+import tests
 
-
-TEST_BIB = os.path.join(os.path.dirname(__file__), 'test.bib')
+TEST_BIB = files(tests) / "test.bib"
 
 
 class TestBibTeXParser(TestCase):

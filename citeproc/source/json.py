@@ -4,7 +4,7 @@ import unicodedata
 
 from . import BibliographySource, Reference
 from . import Name, Date, DateRange, LiteralDate
-from ..string import String, MixedString, NoCase
+from ..string_utils import String, MixedString, NoCase
 from .. import NAMES, DATES
 
 

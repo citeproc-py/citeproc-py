@@ -11,7 +11,7 @@ from lxml import etree
 
 from . import NAMES, DATES, NUMBERS, PRIMARY_DIALECTS, LANGUAGE_NAMES
 from .source import VariableError, DateRange, LiteralDate
-from .string import String, join
+from .string_utils import String, join
 
 
 # Base class

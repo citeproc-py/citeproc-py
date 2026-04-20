@@ -1,0 +1,74 @@
+[build-system]
+requires = [
+    "setuptools",
+    "versioneer[toml]",
+    "rnc2rng>=2.6.1,!=2.6.2",
+]
+build-backend = "setuptools.build_meta"
+
+[project]
+dynamic = [ "version", "readme" ]
+name = "citeproc-py"
+authors= [ { name = "Brecht Machiels", email = "brecht@mos6581.org" } ]
+urls = { homepage = "https://github.com/citeproc-py/citeproc-py" }
+description = "Citations and bibliography formatter"
+
+keywords = [ "csl", "citation", "html", "rst", "bibtex", "xml" ]
+license = "BSD-2-Clause-Views"
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Environment :: Console",
+    "Environment :: Other Environment",
+    "Environment :: Web Environment",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Education",
+    "Intended Audience :: End Users/Desktop",
+    "Intended Audience :: Legal Industry",
+    "Intended Audience :: Other Audience",
+    "Intended Audience :: Science/Research",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Documentation",
+    "Topic :: Printing",
+    "Topic :: Software Development :: Documentation",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+
+scripts = { csl_unsorted = "citeproc.scripts.csl_unsorted:main" }
+
+requires-python = ">=3.9"
+dependencies = [ "lxml" ]
+[project.optional-dependencies]
+test = [ "pytest", "pytest-cov" ]
+full = [ "citeproc-py-styles" ]
+
+[tool.setuptools]
+provides = [ "citeproc" ]
+[tool.setuptools.package-data]
+citeproc = [
+    "data/locales/*.xml",
+    "data/locales/locales.json",
+    "data/schema/*.rng",
+    "data/styles/*.csl",
+]
+
+[tool.pytest.ini_options]
+addopts = "--cov=citeproc"
+
+# Likely obsolete:
+# https://github.com/pypa/pip/issues/6334
+[tools.distutils.bdist_wheel]
+universal = false
+
+[tool.versioneer]
+VCS = "git"
+style = "pep440"
+versionfile_source = "citeproc/_version.py"
+versionfile_build = "citeproc/_version.py"
+tag_prefix = "v"
+parentdir_prefix = "citeproc-"

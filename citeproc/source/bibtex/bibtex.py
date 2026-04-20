@@ -6,7 +6,7 @@ from warnings import warn
 
 from ...types import (ARTICLE, ARTICLE_JOURNAL, BOOK, CHAPTER, MANUSCRIPT,
                       PAMPHLET, PAPER_CONFERENCE, REPORT, THESIS)
-from ...string import String, MixedString, NoCase
+from ...string_utils import String, MixedString, NoCase
 from .. import BibliographySource, Reference, Name, Date, DateRange
 from .bibparse import BibTeXParser
 from .latex import parse_latex

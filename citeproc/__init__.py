@@ -1,15 +1,15 @@
-
-import os
 import json
 
 from . import types, formatter
 
+import importlib.resources as resources
+import citeproc.data.schema as SCHEMA
+import citeproc.data.locales as LOCALES
+import citeproc.data.styles as STYLES
 
-DATA_PATH = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'data')
-
-SCHEMA_PATH = os.path.join(DATA_PATH, 'schema', 'csl.rng')
-LOCALES_PATH = os.path.join(DATA_PATH, 'locales')
-STYLES_PATH = os.path.join(DATA_PATH, 'styles')
+SCHEMA_PATH = resources.files(SCHEMA) / 'csl.rng'
+LOCALES_PATH = resources.files(LOCALES)
+STYLES_PATH = resources.files(STYLES)
 
 
 NAMES = ['author', 'collection_editor', 'composer', 'container_author',
@@ -35,8 +35,7 @@ VARIABLES = (['abstract', 'annote', 'archive', 'archive_location',
               'title_short', 'URL', 'version', 'year_suffix'] +
              NAMES + DATES + NUMBERS)
 
-with open(os.path.join(LOCALES_PATH, 'locales.json'),
-          encoding='utf-8') as file:
+with (LOCALES_PATH / 'locales.json').open(encoding='utf-8') as file:
     locales_json = json.load(file)
     PRIMARY_DIALECTS = locales_json['primary-dialects']
     LANGUAGE_NAMES = locales_json['language-names']

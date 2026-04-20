@@ -1,11 +1,12 @@
+from pathlib import Path
 
-import os
+import importlib.resources as resources
 
 from warnings import warn
 
 from lxml import etree
 
-from . import SCHEMA_PATH, LOCALES_PATH, STYLES_PATH
+from . import SCHEMA_PATH, LOCALES, STYLES
 from .model import CitationStylesElement
 from .formatter import html
 
@@ -34,7 +35,7 @@ class CitationStylesXML(object):
 
 class CitationStylesLocale(CitationStylesXML):
     def __init__(self, locale, validate=True):
-        locale_path = os.path.join(LOCALES_PATH, 'locales-{}.xml'.format(locale))
+        locale_path = resources.files(LOCALES) / 'locales-{}.xml'.format(locale)
         try:
             super(CitationStylesLocale, self).__init__(locale_path,
                                                        validate=validate)

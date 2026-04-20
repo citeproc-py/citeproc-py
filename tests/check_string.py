@@ -1,4 +1,4 @@
-from citeproc.string import String, NoCase
+from citeproc.string_utils import String, NoCase
 
 
 a = String('a ')
