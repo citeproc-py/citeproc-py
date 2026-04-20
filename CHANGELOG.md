@@ -1,3 +1,18 @@
+# v0.9.1 (Mon Apr 20 2026)
+
+#### 🐛 Bug Fix
+
+- Add Dependabot configuration for GitHub Actions [#185](https://github.com/citeproc-py/citeproc-py/pull/185) ([@tmorrell](https://github.com/tmorrell))
+- tests: drop python 3.9 [#179](https://github.com/citeproc-py/citeproc-py/pull/179) ([@tmorrell](https://github.com/tmorrell))
+- Fix ordinal suffixes when style has embedded locale without ordinal terms [#184](https://github.com/citeproc-py/citeproc-py/pull/184) ([@Copilot](https://github.com/Copilot))
+
+#### Authors: 2
+
+- [@Copilot](https://github.com/Copilot)
+- Tom Morrell ([@tmorrell](https://github.com/tmorrell))
+
+---
+
 # v0.9.0 (Mon Aug 25 2025)
 
 #### 🚀 Enhancement
