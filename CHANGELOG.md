@@ -1,3 +1,15 @@
+# v0.9.2 (Tue Apr 21 2026)
+
+#### 🐛 Bug Fix
+
+- setup: add citeproc-py-styles to tests [#189](https://github.com/citeproc-py/citeproc-py/pull/189) ([@tmorrell](https://github.com/tmorrell))
+
+#### Authors: 1
+
+- Tom Morrell ([@tmorrell](https://github.com/tmorrell))
+
+---
+
 # v0.9.1 (Mon Apr 20 2026)
 
 #### 🐛 Bug Fix
