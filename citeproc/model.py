@@ -1293,8 +1293,7 @@ class Name_Part(CitationStylesElement, Formatted, Affixed, TextCased):
 class Et_Al(CitationStylesElement, Formatted, Affixed):
     def process(self):
         variable = self.get('term', 'et-al')
-        term = self.get_term('variable')
-        return term
+        return self.get_single_term(variable)
 
     def markup(self, text):
         if text:
