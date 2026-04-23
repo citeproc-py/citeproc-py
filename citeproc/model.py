@@ -934,7 +934,9 @@ class Date_Part(CitationStylesElement, Formatted, Affixed, TextCased,
         except (AttributeError, IndexError):
             pass
 
-        if name == 'day':
+        text = None
+
+        if name == 'day' and date.day:
             form = self.get('form', 'numeric')
             if (form == 'ordinal'
                 and self.get_locale_option('limit-day-ordinals-to-day-1')
@@ -948,7 +950,7 @@ class Date_Part(CitationStylesElement, Formatted, Affixed, TextCased,
                 text = '{:02}'.format(date.day)
             elif form == 'ordinal':
                 text = to_ordinal(date.day, context)
-        elif name == 'month':
+        elif name == 'month' and date.month:
             form = self.get('form', 'long')
             strip_periods = self.get('form', False)
             try:
@@ -967,7 +969,7 @@ class Date_Part(CitationStylesElement, Formatted, Affixed, TextCased,
                     text = '{}'.format(index)
                 elif form == 'numeric-leading-zeros':
                     text = '{:02}'.format(index)
-        elif name == 'year':
+        elif name == 'year' and date.year:
             form = self.get('form', 'long')
             if form == 'long':
                 text = str(abs(date.year))
