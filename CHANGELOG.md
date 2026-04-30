@@ -1,3 +1,21 @@
+# v0.9.3 (Thu Apr 30 2026)
+
+#### 🐛 Bug Fix
+
+- fix: Et_Al looked up literal term name 'variable' instead of the local variable [#190](https://github.com/citeproc-py/citeproc-py/pull/190) ([@Jasaj4](https://github.com/Jasaj4))
+
+#### 🔩 Dependency Updates
+
+- Bump actions/checkout from 4 to 6 [#187](https://github.com/citeproc-py/citeproc-py/pull/187) ([@dependabot[bot]](https://github.com/dependabot[bot]))
+- Bump actions/setup-python from 5 to 6 [#186](https://github.com/citeproc-py/citeproc-py/pull/186) ([@dependabot[bot]](https://github.com/dependabot[bot]))
+
+#### Authors: 2
+
+- [@dependabot[bot]](https://github.com/dependabot[bot])
+- [@Jasaj4](https://github.com/Jasaj4)
+
+---
+
 # v0.9.2 (Tue Apr 21 2026)
 
 #### 🐛 Bug Fix
