@@ -53,3 +53,13 @@ package-data.citeproc = [
             "data/schema/*.rng",
             "data/styles/*.csl",
            ]
+[tool.setuptools.dynamic]
+version = { attr = "citeproc.__version__" }
+
+[tool.versioneer]
+VCS = "git"
+style = "pep440"
+versionfile_source = "citeproc/_version.py"
+versionfile_build = "citeproc/_version.py"
+tag_prefix = "v"
+parentdir_prefix = "citeproc-"
