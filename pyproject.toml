@@ -11,7 +11,7 @@ build-backend = "setuptools.build_meta"
 dynamic = [ "version", "readme" ]
 name = "citeproc-py"
 authors= [ { name = "Brecht Machiels", email = "brecht@mos6581.org" } ]
-urls = { homepage = "https://github.com/brechtm/citeproc-py" }
+urls = { homepage = "https://github.com/citeproc-py/citeproc-py" }
 description = "Citations and bibliography formatter"
 
 keywords = [ "csl", "citation", "html", "rst", "bibtex", "xml" ]
