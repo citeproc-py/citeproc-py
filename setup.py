@@ -11,7 +11,7 @@ import sys
 
 from datetime import datetime
 from subprocess import Popen, PIPE
-from setuptools import setup, find_packages
+from setuptools import setup
 from setuptools.command.build_py import build_py
 from setuptools.command.develop import develop
 import versioneer
@@ -61,7 +61,6 @@ class custom_develop(develop):
 setup(
     version=versioneer.get_version(),
     cmdclass=versioneer.get_cmdclass({'build_py': custom_build_py, 'develop': custom_develop}),
-    packages=find_packages(),
     scripts=['bin/csl_unsorted'],
     #test_suite='nose.collector',
 
