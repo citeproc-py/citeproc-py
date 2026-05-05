@@ -16,6 +16,7 @@ description = "Citations and bibliography formatter"
 
 keywords = [ "csl", "citation", "html", "rst", "bibtex", "xml" ]
 license = "BSD-2-Clause-Views"
+license-files = [ "LICENSE" ]
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Environment :: Console",
