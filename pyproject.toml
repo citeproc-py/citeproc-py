@@ -55,6 +55,7 @@ package-data.citeproc = [
            ]
 [tool.setuptools.dynamic]
 version = { attr = "citeproc.__version__" }
+readme = { file = [ "README.md", "CHANGELOG.md" ], content-type = "text/markdown" }
 
 [tool.versioneer]
 VCS = "git"

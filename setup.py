@@ -26,15 +26,6 @@ VERSION_FILE = os.path.join(PACKAGE_ABSPATH, 'version.py')
 os.chdir(BASE_PATH)
 
 
-def long_description():
-    with open(os.path.join(BASE_PATH, 'README.md'), encoding='utf-8') as readme:
-        result = readme.read()
-    result += '\n\n'
-    with open(os.path.join(BASE_PATH, 'CHANGELOG.md'), encoding='utf-8') as changes:
-        result += changes.read()
-    return result
-
-
 CSL_SCHEMA_RNC = 'citeproc/data/schema/csl.rnc'
 
 def convert_rnc():
@@ -63,7 +54,4 @@ setup(
     cmdclass=versioneer.get_cmdclass({'build_py': custom_build_py, 'develop': custom_develop}),
     scripts=['bin/csl_unsorted'],
     #test_suite='nose.collector',
-
-    long_description=long_description(),
-    long_description_content_type='text/markdown',
 )
