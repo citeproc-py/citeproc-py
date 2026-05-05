@@ -3,6 +3,7 @@ requires = [
     "setuptools",
     "versioneer[toml]",
     "rnc2rng>=2.6.1,!=2.6.2",
+    "lxml",
 ]
 build-backend = "setuptools.build_meta"
 
