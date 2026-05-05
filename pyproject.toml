@@ -45,6 +45,9 @@ dependencies = [ "lxml" ]
 full = [ "citeproc-py-styles" ]
 tests = [ "citeproc-py-styles" ]
 
+[project.scripts]
+csl_unsorted = "citeproc.scripts.csl_unsorted:main"
+
 [tool.setuptools]
 provides = [ "citeproc" ]
 package-data.citeproc = [
