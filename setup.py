@@ -52,6 +52,5 @@ class custom_develop(develop):
 setup(
     version=versioneer.get_version(),
     cmdclass=versioneer.get_cmdclass({'build_py': custom_build_py, 'develop': custom_develop}),
-    scripts=['bin/csl_unsorted'],
     #test_suite='nose.collector',
 )
