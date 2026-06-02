@@ -6,7 +6,7 @@
 
 
 citeproc-py is a [CSL](https://citationstyles.org/) processor for Python. It aims to implement the
-[CSL 1.0.1 specification](https://docs.citationstyles.org/en/1.0.1/specification.html).
+[CSL 1.0.2 specification](https://docs.citationstyles.org/en/v1.0.2/specification.html).
 citeproc-py can output styled citations and
 bibliographies in a number of different output formats. Currently
 supported are plain text, reStructuredText and HTML. Other formats can

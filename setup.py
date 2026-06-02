@@ -35,7 +35,7 @@ def long_description():
     return result
 
 
-CSL_SCHEMA_RNC = 'citeproc/data/schema/csl.rnc'
+CSL_SCHEMA_RNC = 'citeproc/data/schema/schemas/styles/csl.rnc'
 
 def convert_rnc():
     import rnc2rng
@@ -65,7 +65,7 @@ setup(
     packages=find_packages(),
     package_data={PACKAGE: ['data/locales/*.xml',
                             'data/locales/locales.json',
-                            'data/schema/*.rng',
+                            'data/schema/schemas/styles/*.rng',
                             'data/styles/*.csl']},
     python_requires='>=3.9',
     scripts=['bin/csl_unsorted'],

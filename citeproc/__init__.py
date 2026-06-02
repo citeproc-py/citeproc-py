@@ -7,7 +7,7 @@ from . import types, formatter
 
 DATA_PATH = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'data')
 
-SCHEMA_PATH = os.path.join(DATA_PATH, 'schema', 'csl.rng')
+SCHEMA_PATH = os.path.join(DATA_PATH, 'schema', 'schemas', 'styles', 'csl.rng')
 LOCALES_PATH = os.path.join(DATA_PATH, 'locales')
 STYLES_PATH = os.path.join(DATA_PATH, 'styles')
 
