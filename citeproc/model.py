@@ -388,7 +388,7 @@ class TextCased(object):
         text_case = self.get('text-case')
         if text_case is not None:
             if language != 'en' and text_case == 'title':
-                text_case = 'sentence'
+                return text
             if text_case == 'lowercase':
                 text = text.lower()
             elif text_case == 'uppercase':
