@@ -6,12 +6,8 @@ Setup script for citeproc-py
 
 import io
 import os
-import re
-import sys
 
-from datetime import datetime
-from subprocess import Popen, PIPE
-from setuptools import setup, find_packages
+from setuptools import setup
 from setuptools.command.build_py import build_py
 from setuptools.command.develop import develop
 import versioneer
@@ -24,15 +20,6 @@ VERSION_FILE = os.path.join(PACKAGE_ABSPATH, 'version.py')
 
 # All external commands are relative to BASE_PATH
 os.chdir(BASE_PATH)
-
-
-def long_description():
-    with open(os.path.join(BASE_PATH, 'README.md'), encoding='utf-8') as readme:
-        result = readme.read()
-    result += '\n\n'
-    with open(os.path.join(BASE_PATH, 'CHANGELOG.md'), encoding='utf-8') as changes:
-        result += changes.read()
-    return result
 
 
 CSL_SCHEMA_RNC = 'citeproc/data/schema/csl.rnc'
@@ -59,55 +46,7 @@ class custom_develop(develop):
 
 
 setup(
-    name='citeproc-py',
     version=versioneer.get_version(),
     cmdclass=versioneer.get_cmdclass({'build_py': custom_build_py, 'develop': custom_develop}),
-    packages=find_packages(),
-    package_data={PACKAGE: ['data/locales/*.xml',
-                            'data/locales/locales.json',
-                            'data/schema/*.rng',
-                            'data/styles/*.csl']},
-    python_requires='>=3.9',
-    scripts=['bin/csl_unsorted'],
-    setup_requires=['rnc2rng>=2.6.1,!=2.6.2'],
-    install_requires=['lxml'],
-    extras_require={
-        'full': ['citeproc-py-styles'],
-        'tests': ['citeproc-py-styles'],
-    },
-    provides=[PACKAGE],
     #test_suite='nose.collector',
-
-    author='Brecht Machiels',
-    author_email='brecht@mos6581.org',
-    description='Citations and bibliography formatter',
-    long_description=long_description(),
-    long_description_content_type='text/markdown',
-    url='https://github.com/brechtm/citeproc-py',
-    keywords='csl citation html rst bibtex xml',
-    license='BSD-2-Clause-Views',
-    classifiers = [
-        'Development Status :: 3 - Alpha',
-        'Environment :: Console',
-        'Environment :: Other Environment',
-        'Environment :: Web Environment',
-        'Intended Audience :: Developers',
-        'Intended Audience :: Education',
-        'Intended Audience :: End Users/Desktop',
-        'Intended Audience :: Legal Industry',
-        'Intended Audience :: Other Audience',
-        'Intended Audience :: Science/Research',
-        'License :: OSI Approved :: BSD License',
-        'Operating System :: OS Independent',
-        'Programming Language :: Python',
-        'Programming Language :: Python :: 3.9',
-        'Programming Language :: Python :: 3.10',
-        'Programming Language :: Python :: 3.11',
-        'Programming Language :: Python :: 3.12',
-        'Programming Language :: Python :: 3.13',
-        'Topic :: Documentation',
-        'Topic :: Printing',
-        'Topic :: Software Development :: Documentation',
-        'Topic :: Software Development :: Libraries :: Python Modules',
-    ]
 )
