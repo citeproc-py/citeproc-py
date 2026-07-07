@@ -1,3 +1,21 @@
+# v0.10.0 (Tue Jul 07 2026)
+
+#### 🚀 Enhancement
+
+- fix: preserve text case for non-english title case [#192](https://github.com/citeproc-py/citeproc-py/pull/192) ([@mairasalazar](https://github.com/mairasalazar))
+- Upgrade to csl 1.0.2 [#192](https://github.com/citeproc-py/citeproc-py/pull/192) ([@mairasalazar](https://github.com/mairasalazar))
+
+#### 🔩 Dependency Updates
+
+- Bump actions/checkout from 6 to 7 [#193](https://github.com/citeproc-py/citeproc-py/pull/193) ([@dependabot[bot]](https://github.com/dependabot[bot]))
+
+#### Authors: 2
+
+- [@dependabot[bot]](https://github.com/dependabot[bot])
+- Maira Salazar ([@mairasalazar](https://github.com/mairasalazar))
+
+---
+
 # v0.9.3 (Thu Apr 30 2026)
 
 #### 🐛 Bug Fix
