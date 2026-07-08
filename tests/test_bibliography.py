@@ -22,7 +22,10 @@ template = {
 
 
 def _pp(string):
-    return string.split(" ")[5]
+    # The edition renders as an ordinal (e.g. "2nd edn"); its word position
+    # varies by locale, but it is the only token that starts with a digit (the
+    # year is parenthesized), so pick that token out.
+    return next(word for word in string.split(" ") if word[:1].isdigit())
 
 
 class TestBibliographyGeneration(TestCase):
@@ -37,7 +40,7 @@ class TestBibliographyGeneration(TestCase):
         }
 
         for lg, ordinals in expected_ordinals.items():
-            bib_style = CitationStylesStyle("harvard1", lg)
+            bib_style = CitationStylesStyle("harvard-cite-them-right", lg)
             entries = []
             for edition in range(1, 26):
                 template["id"] = str(edition)

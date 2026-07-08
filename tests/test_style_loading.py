@@ -14,13 +14,13 @@ class TestStyleLoading(unittest.TestCase):
     """Test suite for flexible style loading"""
 
     def test_bundled_style_loads(self):
-        """Test that bundled harvard1 style loads correctly"""
-        style = CitationStylesStyle('harvard1', validate=False)
+        """Test that the bundled harvard-cite-them-right style loads correctly"""
+        style = CitationStylesStyle('harvard-cite-them-right', validate=False)
         self.assertIsNotNone(style)
 
     def test_full_path_style_loads(self):
         """Test that a style specified with full path loads correctly"""
-        harvard_path = os.path.join(STYLES_PATH, 'harvard1.csl')
+        harvard_path = os.path.join(STYLES_PATH, 'harvard-cite-them-right.csl')
         style = CitationStylesStyle(harvard_path, validate=False)
         self.assertIsNotNone(style)
 
