@@ -1368,7 +1368,11 @@ class Label(CitationStylesElement, Formatted, Affixed, StrippedPeriods,
         else:
             return None
 
-    RE_MULTIPLE_NUMBERS = re.compile(r'\d+[^\d]+\d+')
+    # Content is plural when it holds multiple numbers separated by a list or
+    # range separator (e.g. "1, 2" or "1-3"). A period is not such a separator:
+    # it is part of a single dotted number/version (e.g. "2.0"), which stays
+    # singular ("Version 2.0", not "Versions 2.0").
+    RE_MULTIPLE_NUMBERS = re.compile(r'\d+[^\d.]+\d+')
 
     def _is_plural(self, item):
         variable = self.get('variable')
