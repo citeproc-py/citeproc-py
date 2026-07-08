@@ -589,17 +589,24 @@ class Parent(object):
         else:
             return None
 
-    def render_children(self, item, **kwargs):
+    def render_children(self, item, delimiter='', **kwargs):
+        # `delimiter` is the delimiter inherited from an enclosing element (a
+        # `cs:group`). `cs:choose` is transparent, so this delimiter has to be
+        # threaded through `cs:if`/`cs:else-if`/`cs:else` to delimit their
+        # rendered children (and any nested `cs:choose`).
         output = []
         for child in self.iterchildren():
             try:
-                text = child.render(item, **kwargs)
+                if isinstance(child, Choose):
+                    text = child.render(item, delimiter=delimiter, **kwargs)
+                else:
+                    text = child.render(item, **kwargs)
                 if text is not None:
                     output.append(text)
             except VariableError:
                 pass
         if output:
-            return join(output)
+            return join(output, delimiter)
         else:
             return None
 
@@ -1387,10 +1394,17 @@ class Group(CitationStylesElement, Parent, Formatted, Affixed, Delimited):
         output = []
         variable_called = False
         variable_rendered = False
+        # A `cs:group` delimiter also delimits the children of a transparent
+        # `cs:choose` child, so pass it down (see `Parent.render_children`).
+        delimiter = self.get('delimiter', '')
         for child in self.iterchildren():
             variable_called = variable_called or child.calls_variable()
             try:
-                child_text = child.render(item, context=context, **kwargs)
+                if isinstance(child, Choose):
+                    child_text = child.render(item, context=context,
+                                              delimiter=delimiter, **kwargs)
+                else:
+                    child_text = child.render(item, context=context, **kwargs)
                 if child_text is not None:
                     output.append(child_text)
                     variable_rendered = (variable_rendered or
@@ -1416,10 +1430,13 @@ class ConditionFailed(Exception):
 
 
 class Choose(CitationStylesElement, Parent):
-    def render(self, item, context=None, **kwargs):
+    def render(self, item, context=None, delimiter='', **kwargs):
+        # `cs:choose` is transparent: the delimiter of the enclosing element is
+        # forwarded to the children of the matching branch.
         for child in self.getchildren():
             try:
-                return child.render(item, context=context, **kwargs)
+                return child.render(item, context=context,
+                                    delimiter=delimiter, **kwargs)
             except ConditionFailed:
                 continue
 
@@ -1427,7 +1444,7 @@ class Choose(CitationStylesElement, Parent):
 
 
 class If(CitationStylesElement, Parent):
-    def render(self, item, context=None, **kwargs):
+    def render(self, item, context=None, delimiter='', **kwargs):
         # TODO self.get('disambiguate')
         results = []
         if 'type' in self.attrib:
@@ -1454,7 +1471,8 @@ class If(CitationStylesElement, Parent):
         if not result:
             raise ConditionFailed
 
-        return self.render_children(item, context=context, **kwargs)
+        return self.render_children(item, context=context,
+                                    delimiter=delimiter, **kwargs)
 
     def _type(self, item):
         return [typ.lower() == item.reference.type
@@ -1542,8 +1560,9 @@ class Else_If(If, CitationStylesElement):
 
 
 class Else(CitationStylesElement, Parent):
-    def render(self, item, context=None, **kwargs):
-        return self.render_children(item, context=context, **kwargs)
+    def render(self, item, context=None, delimiter='', **kwargs):
+        return self.render_children(item, context=context,
+                                    delimiter=delimiter, **kwargs)
 
 
 # utility functions
