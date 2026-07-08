@@ -1,3 +1,17 @@
+# v0.10.1 (Wed Jul 08 2026)
+
+#### 🐛 Bug Fix
+
+- Update GitHub Actions for token and Python version [#196](https://github.com/citeproc-py/citeproc-py/pull/196) ([@tmorrell](https://github.com/tmorrell))
+- Better handle decimals in multiple number regex [#195](https://github.com/citeproc-py/citeproc-py/pull/195) ([@tmorrell](https://github.com/tmorrell))
+- fix spacing changes in csl 1.0.2 [#195](https://github.com/citeproc-py/citeproc-py/pull/195) ([@tmorrell](https://github.com/tmorrell))
+
+#### Authors: 1
+
+- Tom Morrell ([@tmorrell](https://github.com/tmorrell))
+
+---
+
 # v0.10.0 (Tue Jul 07 2026)
 
 #### 🚀 Enhancement
