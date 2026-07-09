@@ -30,7 +30,7 @@ FAILING_TESTS_FILE = 'failing_tests.txt'
 # The results of the following tests are ignored, since they don't test CSL
 # features, but citeproc-js specific features
 
-IGNORED_RESULS = {
+IGNORED_RESULTS = {
     'date_Accessed': 'raw date',
     'date_LopsidedDataYearSuffixCollapse': 'raw date',
     'date_SeasonRange1': 'raw date',
@@ -241,10 +241,11 @@ END = '\033[0m'
 
 
 if __name__ == '__main__':
-    usage = ('usage: %prog [options] glob_pattern\n\n'
-             'glob_pattern limits the tests that are executed, for example:\n'
-             '  %prog *Sort*\n'
-             'runs only test fixtures that have "Sort" in the filename')
+    usage = ('usage: %prog [options] [patterns]\n\n'
+             '[patterns] limits the tests that are executed, for example:\n'
+             '  %prog *Sort* *Apostrophe*\n'
+             'runs only test fixtures that have "Sort" or "Apostrophe" in the '
+             'filename')
     parser = OptionParser(usage)
     parser.add_option('-m', '--max', dest='max', default=-1,
                       help='run up to MAX tests', metavar='MAX')
@@ -282,11 +283,11 @@ if __name__ == '__main__':
         out(' {:<13} {:>3} / {:>3} ({:>4.0%})'.format(name, passed, total,
                                                       passed / total))
 
-    try:
-        glob_pattern = args[0]
+    if args:
+        glob_patterns = args
         run_all_tests = False
-    except IndexError:
-        glob_pattern = '*'
+    else:
+        glob_patterns = ['*']
         run_all_tests = True
 
     test_repo_has_updates = clone_test_suite()
@@ -307,55 +308,56 @@ if __name__ == '__main__':
     failed_tests = FailedTests(os.path.join(os.path.dirname(__file__),
                                             FAILING_TESTS_FILE))
     count = 0
-    test_files = list(glob.glob(os.path.join(TESTS_PATH, '{}.txt'.format(glob_pattern))))
-    test_files += list(glob.glob(os.path.join(LOCAL_TESTS_PATH, '{}.txt'.format(glob_pattern))))
-    for filename in sorted(test_files):
-        test_name, _ = os.path.basename(filename).split('.txt')
-        category, _ = os.path.basename(filename).split('_')
-        passed_count.setdefault(category, 0)
-        if count == max_tests:
-            break
+    for glob_pattern in glob_patterns:
+        test_files = list(glob.glob(os.path.join(TESTS_PATH, '{}.txt'.format(glob_pattern))))
+        test_files += list(glob.glob(os.path.join(LOCAL_TESTS_PATH, '{}.txt'.format(glob_pattern))))
+        for filename in sorted(test_files):
+            test_name, _ = os.path.basename(filename).split('.txt')
+            category, _ = os.path.basename(filename).split('_')
+            passed_count.setdefault(category, 0)
+            if count == max_tests:
+                break
 
-        reason = None
-        try:
-            if test_name not in IGNORED_RESULS:
-                total_count[category] = total_count.get(category, 0) + 1
-                count += 1
-            t = ProcessorTest(filename)
-            if run_all_tests and (t.data['mode'] == 'bibliography-header' or
-                                  t.data['bibsection']):
-                continue
-            if options.verbose:
-                out('>>> Testing {}'.format(os.path.basename(filename)))
-                out('EXP: ' + '\n     '.join(t.expected))
+            reason = None
+            try:
+                if test_name not in IGNORED_RESULTS:
+                    total_count[category] = total_count.get(category, 0) + 1
+                    count += 1
+                t = ProcessorTest(filename)
+                if run_all_tests and (t.data['mode'] == 'bibliography-header' or
+                                      t.data['bibsection']):
+                    continue
+                if options.verbose:
+                    out('>>> Testing {}'.format(os.path.basename(filename)))
+                    out('EXP: ' + '\n     '.join(t.expected))
 
-            results = t.execute()
-            results = reduce(lambda x, y: x+y,
-                             [item.split('\n') for item in results])
-            results = [item.replace('&amp;', '&#38;')
-                       for item in results]
-            if options.verbose:
-                out('RES: ' + '\n     '.join(results))
-            if results == t.expected:
-                if test_name not in IGNORED_RESULS:
-                    passed_count[category] += 1
+                results = t.execute()
+                results = reduce(lambda x, y: x+y,
+                                 [item.split('\n') for item in results])
+                results = [item.replace('&amp;', '&#38;')
+                           for item in results]
                 if options.verbose:
-                    out('<<< SUCCESS\n')
-                continue
-            else:
+                    out('RES: ' + '\n     '.join(results))
+                if results == t.expected:
+                    if test_name not in IGNORED_RESULTS:
+                        passed_count[category] += 1
+                    if options.verbose:
+                        out('<<< SUCCESS\n')
+                    continue
+                else:
+                    if options.verbose:
+                        out('<<< FAILED\n')
+                del t
+            except Exception as e:
+                if not options.catch_exceptions:
+                    raise
                 if options.verbose:
+                    out('Exception in', os.path.basename(filename))
+                    traceback.print_exc()
                     out('<<< FAILED\n')
-            del t
-        except Exception as e:
-            if not options.catch_exceptions:
-                raise
-            if options.verbose:
-                out('Exception in', os.path.basename(filename))
-                traceback.print_exc()
-                out('<<< FAILED\n')
-            reason = 'uncaught exception'
-        if test_name not in IGNORED_RESULS:
-            failed_tests.mark_failure(test_name, reason)
+                reason = 'uncaught exception'
+            if test_name not in IGNORED_RESULTS:
+                failed_tests.mark_failure(test_name, reason)
 
     success = False
     if sum(total_count.values()) == 0:
