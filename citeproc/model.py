@@ -701,7 +701,7 @@ class FormatNumber(object):
 
         range_format = self.get_root().get_option('page-range-format')
         common = find_common(first, last)
-        if range_format == 'chicago':
+        if range_format in ('chicago', 'chicago-15', 'chicago-16'):
             m = re.search(r'\d+', first)
             if not m:
                 return last
@@ -714,9 +714,8 @@ class FormatNumber(object):
                 range_format = 'minimal'
             elif first_number % 100 in range(10, 100):
                 range_format = 'minimal-two'
-        if range_format in ('expanded', None):
-            index = 0
-        elif range_format == 'minimal':
+        index = 0  # 'expanded' format (and default): return the full last page
+        if range_format == 'minimal':
             index = common
         elif range_format == 'minimal-two':
             index = min(common, len(first) - 2)
