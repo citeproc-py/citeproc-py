@@ -1,3 +1,15 @@
+# v0.10.2 (Tue Jul 21 2026)
+
+#### 🐛 Bug Fix
+
+- Additional chicago style page range formats in csl 1.0.2 [#198](https://github.com/citeproc-py/citeproc-py/pull/198) ([@tmorrell](https://github.com/tmorrell))
+
+#### Authors: 1
+
+- Tom Morrell ([@tmorrell](https://github.com/tmorrell))
+
+---
+
 # v0.10.1 (Wed Jul 08 2026)
 
 #### 🐛 Bug Fix
