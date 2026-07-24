@@ -2,6 +2,47 @@
 from functools import wraps, reduce
 
 
+# Punctuation characters that should not be duplicated when two of them end up
+# adjacent at a concatenation seam (e.g. a suffix '.' following text that
+# already ends in '.').
+SEAM_PUNCTUATION = frozenset('.,;:!?')
+
+
+def normalize_seam(left, other):
+    """Adjust the leading characters of `other` so that concatenating it onto
+    `left` does not introduce a double space or a duplicated punctuation mark.
+
+    `left` is the accumulated string so far and `other` the piece about to be
+    appended. Only the boundary between them is considered; the interior of
+    either side (e.g. an ellipsis inside a title) is never touched. Markup
+    segments start with '<', so they are left alone. Returns `other`, possibly
+    with its first character removed."""
+    left = str(left)
+    other_str = str(other)
+    if not left or not other_str:
+        return other
+    last, first = left[-1], other_str[0]
+    # collapse a double space
+    if last == ' ' and first == ' ':
+        return _strip_first_char(other)
+    # drop a duplicated punctuation mark ('..' -> '.', ',,' -> ',', ...)
+    if last == first and first in SEAM_PUNCTUATION:
+        return _strip_first_char(other)
+    return other
+
+
+def _strip_first_char(other):
+    """Return a copy of `other` with its first character removed, preserving
+    the (Mixed)String segment structure."""
+    if isinstance(other, MixedString):
+        segments = list(other)
+        head = segments[0]
+        stripped = type(head)(str(head)[1:])
+        segments[0:1] = [stripped] if stripped != '' else []
+        return MixedString(segments)
+    return type(other)(str(other)[1:])
+
+
 def discard_empty_other(method):
     """Decorator for addition operator methods that returns the object itself if
     `other` is the empty string."""
@@ -55,6 +96,9 @@ class String(str):
 class MixedString(list):
     @discard_empty_other
     def __add__(self, other):
+        other = normalize_seam(self, other)
+        if other == '' or other == []:
+            return self
         super_obj = super(MixedString, self)
         try:
             return self.__class__(super_obj.__add__(other))
