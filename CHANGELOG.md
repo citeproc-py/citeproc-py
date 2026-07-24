@@ -1,3 +1,21 @@
+# v0.10.3 (Fri Jul 24 2026)
+
+#### 🐛 Bug Fix
+
+- swap csl 1.0.1 harvard1 for harvard-cite-them-right [#197](https://github.com/citeproc-py/citeproc-py/pull/197) ([@tmorrell](https://github.com/tmorrell))
+- tests: add python 3.14 [#199](https://github.com/citeproc-py/citeproc-py/pull/199) ([@tmorrell](https://github.com/tmorrell))
+
+#### 🔩 Dependency Updates
+
+- build(deps): bump actions/setup-python from 6 to 7 [#200](https://github.com/citeproc-py/citeproc-py/pull/200) ([@dependabot[bot]](https://github.com/dependabot[bot]))
+
+#### Authors: 2
+
+- [@dependabot[bot]](https://github.com/dependabot[bot])
+- Tom Morrell ([@tmorrell](https://github.com/tmorrell))
+
+---
+
 # v0.10.2 (Tue Jul 21 2026)
 
 #### 🐛 Bug Fix
