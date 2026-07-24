@@ -44,13 +44,9 @@ cite references and render the bibliography.
 
 ## CSL Compatibility
 
-Currently, citeproc-py passes almost 60% of the (relevant) tests in the
+Currently, citeproc-py passes about 60% of the tests in the
 [citeproc-test suite](https://github.com/citation-style-language/test-suite).
-However, it is more than 60% complete, as
-citeproc-py doesn't take care of double spaces and repeated punctuation
-marks yet, making a good deal of the tests fail. In addition, the
-following features have not yet been implemented (there are probably
-some I forgot though):
+A non-exhaustive list of functionality that is missing includes:
 
 -  disambiguation/year-suffix
 -  et-al-subsequent-min/et-al-subsequent-use-first
