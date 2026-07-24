@@ -1247,7 +1247,7 @@ class Name(CitationStylesElement, Formatted, Affixed, Delimited):
                 if (delimiter_precedes_last == 'always' or
                     (delimiter_precedes_last == 'contextual' and
                      len(output) > 2)):
-                        text = self.join([text, ''])
+                        text = self.join([text, ''], ', ')
                 else:
                     text += ' '
                 text += '{} '.format(and_term) + output[-1]
