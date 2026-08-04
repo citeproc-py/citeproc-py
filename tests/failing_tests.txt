@@ -31,7 +31,6 @@ bugreports_EtAlSubsequent
 bugreports_FourAndFour
 bugreports_FrenchApostrophe
 bugreports_GreekStyleProblems                                      # uncaught exception
-bugreports_GreekStyleTwoEditors                                    # uncaught exception
 bugreports_IeeePunctuation
 bugreports_LegislationCrash
 bugreports_MatchedAuthorAndDate
@@ -46,10 +45,8 @@ bugreports_SingleQuote
 bugreports_SmallCapsEscape
 bugreports_SortSecondaryKey
 bugreports_SortedIeeeItalicsFail
-bugreports_StyleError001
 bugreports_ThesisUniversityAppearsTwice
 bugreports_TitleCase
-bugreports_UndefinedInName3
 bugreports_UndefinedNotString
 bugreports_UndefinedStr
 bugreports_YearSuffixInHarvard1
