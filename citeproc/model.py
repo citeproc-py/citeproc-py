@@ -731,7 +731,7 @@ class FormatNumber(object):
 
 class Text(CitationStylesElement, FormatNumber, Formatted, Affixed, Quoted,
            TextCased, StrippedPeriods):
-    generated_variables = ('year-suffix', 'citation-number')
+    generated_variables = ('year-suffix',)
 
     def calls_variable(self):
         if 'variable' in self.attrib:

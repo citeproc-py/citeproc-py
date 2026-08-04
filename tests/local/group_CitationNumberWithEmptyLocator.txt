@@ -1,0 +1,94 @@
+>>===== MODE =====>>
+citation
+<<===== MODE =====<<
+
+
+>>===== DESCRIPTION =====>>
+<https://github.com/citeproc-py/citeproc-py/issues/203>
+
+A numeric style whose citation layout groups `citation-number` with a locator
+macro -- IEEE is the widely used example -- must still render the number when
+the citation carries no locator. `citation-number` is a number variable, so the
+group calls a non-empty variable and is not suppressed.
+<<===== DESCRIPTION =====<<
+
+
+>>===== RESULT =====>>
+[1]
+[1, p. 23]
+<<===== RESULT =====<<
+
+
+>>===== CITATION-ITEMS =====>>
+[
+    [
+        {
+            "id": "ITEM-1"
+        }
+    ],
+    [
+        {
+            "id": "ITEM-1",
+            "label": "page",
+            "locator": 23
+        }
+    ]
+]
+<<===== CITATION-ITEMS =====<<
+
+
+>>===== CSL =====>>
+<style
+      xmlns="http://purl.org/net/xbiblio/csl"
+      class="in-text"
+      version="1.0">
+  <info>
+    <id />
+    <title />
+    <updated>2026-08-04T00:00:00+00:00</updated>
+  </info>
+  <macro name="citation-locator">
+    <group>
+      <label variable="locator" form="short" suffix=" "/>
+      <text variable="locator"/>
+    </group>
+  </macro>
+  <citation>
+    <layout delimiter=", ">
+      <group prefix="[" suffix="]" delimiter=", ">
+        <text variable="citation-number"/>
+        <text macro="citation-locator"/>
+      </group>
+    </layout>
+  </citation>
+</style>
+<<===== CSL =====<<
+
+
+>>===== INPUT =====>>
+[
+    {
+        "id": "ITEM-1",
+        "type": "book",
+        "author": [
+            {
+                "family": "Doe",
+                "given": "John"
+            }
+        ],
+        "issued": {
+            "date-parts": [
+                [
+                    "1984"
+                ]
+            ]
+        },
+        "title": "Title"
+    }
+]
+<<===== INPUT =====<<
+
+
+>>===== VERSION =====>>
+1.0
+<<===== VERSION =====<<
