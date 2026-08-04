@@ -43,6 +43,19 @@ def _strip_first_char(other):
     return type(other)(str(other)[1:])
 
 
+def concat(left, right):
+    """Append `right` to `left`, normalizing the seam between them.
+
+    String and MixedString normalize the seam in their own ``__add__``; the
+    formatters hand back plain ``str``, which does not, so do it here.
+    """
+    if isinstance(left, (String, MixedString)) or isinstance(right, (String, MixedString)):
+        return left + right
+    if not left or not right:
+        return left + right
+    return left + normalize_seam(left, right)
+
+
 def discard_empty_other(method):
     """Decorator for addition operator methods that returns the object itself if
     `other` is the empty string."""
@@ -172,4 +185,4 @@ class NoCase(String):
 
 
 def join(items, delimiter=''):
-    return reduce(lambda a, b: a + delimiter + b, items)
+    return reduce(lambda a, b: concat(concat(a, delimiter), b), items)

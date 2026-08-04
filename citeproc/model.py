@@ -11,7 +11,7 @@ from lxml import etree
 
 from . import NAMES, DATES, NUMBERS, PRIMARY_DIALECTS, LANGUAGE_NAMES
 from .source import VariableError, DateRange, LiteralDate
-from .string import String, join
+from .string import String, join, concat
 
 
 # Base class
@@ -341,7 +341,7 @@ class Affixed(object):
         if string is not None:
             prefix = self.get('prefix', '')
             suffix = self.get('suffix', '')
-            return prefix + string + suffix
+            return concat(concat(prefix, string), suffix)
         return None
 
 
