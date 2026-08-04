@@ -1,5 +1,5 @@
 
-from functools import wraps, reduce
+from functools import wraps
 
 
 # Punctuation characters that should not be duplicated when two of them end up
@@ -172,4 +172,14 @@ class NoCase(String):
 
 
 def join(items, delimiter=''):
-    return reduce(lambda a, b: a + delimiter + b, items)
+    items = iter(items)
+    try:
+        output = next(items)
+    except StopIteration:
+        return String('')
+
+    for item in items:
+        delimiter_part = normalize_seam(output, delimiter)
+        output = output + delimiter_part
+        output = output + normalize_seam(output, item)
+    return output
