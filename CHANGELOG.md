@@ -1,3 +1,24 @@
+# v0.10.4 (Wed Aug 05 2026)
+
+#### 🐛 Bug Fix
+
+- setup.py: Prune imports [#191](https://github.com/citeproc-py/citeproc-py/pull/191) ([@hseg](https://github.com/hseg))
+- Remove unneeded nonuniversal wheel declaration [#191](https://github.com/citeproc-py/citeproc-py/pull/191) ([@hseg](https://github.com/hseg))
+- Fix project URL [#191](https://github.com/citeproc-py/citeproc-py/pull/191) ([@hseg](https://github.com/hseg))
+- Specify license file [#191](https://github.com/citeproc-py/citeproc-py/pull/191) ([@hseg](https://github.com/hseg))
+- Add missing build dep: lxml [#191](https://github.com/citeproc-py/citeproc-py/pull/191) ([@hseg](https://github.com/hseg))
+- Use entry points for running scripts [#191](https://github.com/citeproc-py/citeproc-py/pull/191) ([@hseg](https://github.com/hseg))
+- Use setuptools' builtin multifile longdesc support [#191](https://github.com/citeproc-py/citeproc-py/pull/191) ([@hseg](https://github.com/hseg))
+- Rely on setuptools' automatic package discovery [#191](https://github.com/citeproc-py/citeproc-py/pull/191) ([@hseg](https://github.com/hseg))
+- Migrate versioneer to pyproject.toml [#191](https://github.com/citeproc-py/citeproc-py/pull/191) ([@hseg](https://github.com/hseg))
+- Migrate simple metadata to pyproject.toml [#191](https://github.com/citeproc-py/citeproc-py/pull/191) ([@hseg](https://github.com/hseg))
+
+#### Authors: 1
+
+- [@hseg](https://github.com/hseg)
+
+---
+
 # v0.10.3 (Fri Jul 24 2026)
 
 #### 🐛 Bug Fix
