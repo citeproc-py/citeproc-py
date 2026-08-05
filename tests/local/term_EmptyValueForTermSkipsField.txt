@@ -10,7 +10,7 @@ bibliography
 
 >>===== RESULT =====>>
 <div class="csl-bib-body">
-  <div class="csl-entry">Doe, J.. (2015). <i>Page Title</i>. Website Title. https://example.com</div>
+  <div class="csl-entry">Doe, J. (2015). <i>Page Title</i>. Website Title. https://example.com</div>
 </div>
 <<===== RESULT =====<<
 
