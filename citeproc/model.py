@@ -140,7 +140,11 @@ class CitationStylesElement(SomewhatObjectifiedElement):
                 continue
 
     def get_locale_option(self, name):
-        for locale in self.get_root().locales:
+        root = self.get_root()
+        if not hasattr(root, 'locales') or root.locales is None:
+            # root element is Locale, not an iterable of Locales
+            return root.get_option(name)
+        for locale in root.locales:
             try:
                 return locale.get_option(name)
             except IndexError:
