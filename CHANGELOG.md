@@ -1,3 +1,15 @@
+# v0.10.6 (Mon Aug 10 2026)
+
+#### 🐛 Bug Fix
+
+- Count citation-number as a variable call in cs:group [#206](https://github.com/citeproc-py/citeproc-py/pull/206) ([@eseifert](https://github.com/eseifert))
+
+#### Authors: 1
+
+- Erich Seifert ([@eseifert](https://github.com/eseifert))
+
+---
+
 # v0.10.5 (Mon Aug 10 2026)
 
 #### 🐛 Bug Fix
