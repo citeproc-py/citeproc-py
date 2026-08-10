@@ -1,3 +1,15 @@
+# v0.10.7 (Mon Aug 10 2026)
+
+#### 🐛 Bug Fix
+
+- fix default delimiter [#201](https://github.com/citeproc-py/citeproc-py/pull/201) ([@tmorrell](https://github.com/tmorrell))
+
+#### Authors: 1
+
+- Tom Morrell ([@tmorrell](https://github.com/tmorrell))
+
+---
+
 # v0.10.6 (Mon Aug 10 2026)
 
 #### 🐛 Bug Fix
