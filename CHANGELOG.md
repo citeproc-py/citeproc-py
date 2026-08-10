@@ -1,3 +1,15 @@
+# v0.10.5 (Mon Aug 10 2026)
+
+#### 🐛 Bug Fix
+
+- fix(model): add defensive check in get_locale_option() for Locale roots [#209](https://github.com/citeproc-py/citeproc-py/pull/209) ([@kyodai0000](https://github.com/kyodai0000))
+
+#### Authors: 1
+
+- Ondřej Ruml ([@kyodai0000](https://github.com/kyodai0000))
+
+---
+
 # v0.10.4 (Wed Aug 05 2026)
 
 #### 🐛 Bug Fix
