@@ -29,7 +29,7 @@ def convert_rnc():
 
     filename_root, _ = os.path.splitext(CSL_SCHEMA_RNC)
     root = rnc2rng.load(CSL_SCHEMA_RNC)
-    with io.open(filename_root + '.rng', 'w', encoding='utf-8') as rng:
+    with open(filename_root + '.rng', 'w', encoding='utf-8') as rng:
         rnc2rng.dump(root, rng)
 
 

@@ -1,5 +1,3 @@
-# coding: utf-8
-
 from unittest import TestCase
 
 from citeproc.source.bibtex.latex import parse_latex, substitute_ligatures

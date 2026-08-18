@@ -1,5 +1,3 @@
-# coding: utf-8
-
 import os
 
 from io import StringIO
@@ -31,7 +29,7 @@ class TestBibTeXParser(TestCase):
         for key, entry in bib.items():
             print(key)
             for name, value in entry.items():
-                print('   {}: {}'.format(name, value))
+                print(f'   {name}: {value}')
 
 
 # based on the sample BibTeX database by Xavier Décoret
