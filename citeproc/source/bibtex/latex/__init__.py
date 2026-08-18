@@ -27,7 +27,7 @@ START_MACRO = 'START-MACRO'
 CHARACTER = 'CHARACTER'
 
 
-class Tokenizer(object):
+class Tokenizer:
     def __init__(self, string):
         self.string = string
         self._tokens = self.tokenize(string)
@@ -83,7 +83,7 @@ def dispatch(tokens, macros, level=0):
             next_token = tokens.peek()
         except StopIteration:
             if level > 0:
-                warn("Unbalanced parenthesis in '{}'".format(tokens.string))
+                warn(f"Unbalanced parenthesis in '{tokens.string}'")
             break
         if next_token.type == OPEN_SCOPE:
             yield handle_scope(tokens, macros, level)

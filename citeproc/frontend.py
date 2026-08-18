@@ -10,7 +10,7 @@ from .model import CitationStylesElement
 from .formatter import html
 
 
-class CitationStylesXML(object):
+class CitationStylesXML:
     def __init__(self, f, validate=True):
         lookup = etree.ElementNamespaceClassLookup()
         namespace = lookup.get_namespace('http://purl.org/net/xbiblio/csl')
@@ -34,12 +34,11 @@ class CitationStylesXML(object):
 
 class CitationStylesLocale(CitationStylesXML):
     def __init__(self, locale, validate=True):
-        locale_path = os.path.join(LOCALES_PATH, 'locales-{}.xml'.format(locale))
+        locale_path = os.path.join(LOCALES_PATH, f'locales-{locale}.xml')
         try:
-            super(CitationStylesLocale, self).__init__(locale_path,
-                                                       validate=validate)
-        except IOError:
-            raise ValueError("'{}' is not a known locale".format(locale))
+            super().__init__(locale_path, validate=validate)
+        except OSError:
+            raise ValueError(f"'{locale}' is not a known locale")
 
 
 class CitationStylesStyle(CitationStylesXML):
@@ -91,9 +90,8 @@ class CitationStylesStyle(CitationStylesXML):
                 raise ValueError(f"'{style}' is not a known style")
 
         try:
-            super(CitationStylesStyle, self).__init__(
-                style_src, validate=validate)
-        except IOError:
+            super().__init__(style_src, validate=validate)
+        except OSError:
             raise ValueError(f"'{style}' is not a known style")
         if locale is None:
             locale = self.root.get('default-locale', 'en-US')
@@ -112,7 +110,7 @@ class CitationStylesStyle(CitationStylesXML):
         return self.root.bibliography.render(citation_items)
 
 
-class CitationStylesBibliography(object):
+class CitationStylesBibliography:
     def __init__(self, style, source, formatter=html):
         self.style = style
         self.source = source

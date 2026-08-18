@@ -1,4 +1,4 @@
-﻿
+
 import re
 import unicodedata
 
@@ -86,7 +86,7 @@ class BibTeX(BibliographySource):
                 csl_field = self.fields[field]
             except KeyError:
                 if field not in ('year', 'month', 'filename'):
-                    warn("Unsupported BibTeX field '{}'".format(field))
+                    warn(f"Unsupported BibTeX field '{field}'")
                 continue
             if field in ('number', 'volume'):
                 try:
@@ -206,7 +206,7 @@ class BibTeX(BibliographySource):
             else:
                 string += char
         if level != 0:
-            raise SyntaxError('Non-matching braces in "{}"'.format(title))
+            raise SyntaxError(f'Non-matching braces in "{title}"')
         if string:
             output += make_string(string)
         return output

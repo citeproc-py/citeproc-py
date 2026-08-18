@@ -4,7 +4,7 @@
 
 class BibTeXEntry(dict):
     def __init__(self, document_type, attributes):
-        super(BibTeXEntry, self).__init__(attributes)
+        super().__init__(attributes)
         self.document_type = document_type
 
 
@@ -12,10 +12,10 @@ class BibTeXDecodeError(Exception):
     """Exception raised when the encoding passed to BibTeXParser cannot decode
     the BibTeX database file."""
     def __init__(self, decode_error, line_number):
-        msg = ("'{}' decode error on line {}: {}. Please specify the BibTeX's "
-               "database character encoding when instantiating BibTeXParser."
-               .format(decode_error.encoding, line_number, decode_error.reason))
-        super(BibTeXDecodeError, self).__init__(msg)
+        msg = (f"'{decode_error.encoding}' decode error on line {line_number}: "
+               f"{decode_error.reason}. Please specify the BibTeX's "
+               "database character encoding when instantiating BibTeXParser.")
+        super().__init__(msg)
         self.line_number = line_number
         self.decode_error = decode_error
 
@@ -36,7 +36,7 @@ class BibTeXParser(dict):
 
     def __init__(self, file_or_filename, encoding='ascii'):
         try:
-            self.file = open(file_or_filename, 'rt', encoding=encoding)
+            self.file = open(file_or_filename, encoding=encoding)
         except TypeError:
             self.file = file_or_filename
         self.variables = {}
