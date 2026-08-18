@@ -46,4 +46,5 @@ from .frontend import CitationStylesStyle, CitationStylesBibliography
 from .source import Citation, CitationItem, Locator
 
 from . import _version
+
 __version__ = _version.get_versions()['version']

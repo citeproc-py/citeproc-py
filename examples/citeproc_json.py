@@ -92,10 +92,10 @@ json_data = json.loads(json_input)
 # Process the JSON data to generate a citeproc-py BibliographySource.
 
 bib_source = CiteProcJSON(json_data)
-##for key, entry in bib_source.items():
-##    print(key)
-##    for name, value in entry.items():
-##        print('   {}: {}'.format(name, value))
+# for key, entry in bib_source.items():
+#     print(key)
+#     for name, value in entry.items():
+#         print('   {}: {}'.format(name, value))
 
 # load a CSL style (from the current directory)
 
@@ -135,6 +135,7 @@ bibliography.register(citation5)
 
 def warn(citation_item):
     print(f"WARNING: Reference with key '{citation_item.key}' not found in the bibliography.")
+
 
 print('Citations')
 print('---------')

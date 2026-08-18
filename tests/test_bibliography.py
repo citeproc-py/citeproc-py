@@ -52,7 +52,10 @@ class TestBibliographyGeneration(TestCase):
             generated_ordinals = [_pp(x) for x in bibliography.style.render_bibliography(citations)]
 
             for index, expected_value in ordinals.items():
-                assert generated_ordinals[index] == expected_value, f"Failed for {lg} at index {index}. Expected: {expected_value}, Got: {generated_ordinals[index]}"
+                assert (
+                    generated_ordinals[index] == expected_value,
+                    f"Failed for {lg} at index {index}. Expected: {expected_value}, Got: {generated_ordinals[index]}"
+                )
 
     def test_ordinals_with_embedded_locale(self):
         """chicago-author-date has an embedded <locale xml:lang="en"> that defines

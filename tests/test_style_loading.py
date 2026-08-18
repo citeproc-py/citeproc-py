@@ -10,6 +10,7 @@ from unittest.mock import patch, MagicMock
 
 from citeproc import CitationStylesStyle, STYLES_PATH
 
+
 class TestStyleLoading(unittest.TestCase):
     """Test suite for flexible style loading"""
 
@@ -54,7 +55,7 @@ class TestStyleLoading(unittest.TestCase):
             with patch.dict('sys.modules', {'citeproc_styles': mock_module}):
                 # Mock the parent class __init__ to set root properly
                 def mock_init(self, path, validate=False):
-                    # Create a mock root object 
+                    # Create a mock root object
                     self.root = MagicMock()
                     self.root.get.return_value = 'en-US'
                     self.root.set_locale_list = MagicMock()
