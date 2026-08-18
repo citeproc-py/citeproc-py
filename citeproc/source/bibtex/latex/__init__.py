@@ -6,7 +6,10 @@ from warnings import warn
 __all__ = ['parse_latex', 'substitute_ligatures']
 
 
-def parse_latex(string, macros={}):
+def parse_latex(string, macros=None):
+    if macros is None:
+        macros = {}
+
     tokens = Tokenizer(string)
     output = ''
     for result in dispatch(tokens, macros):
@@ -81,7 +84,7 @@ def dispatch(tokens, macros, level=0):
             next_token = tokens.peek()
         except StopIteration:
             if level > 0:
-                warn(f"Unbalanced parenthesis in '{tokens.string}'")
+                warn(f"Unbalanced parenthesis in '{tokens.string}'", stacklevel=2)
             break
         if next_token.type == OPEN_SCOPE:
             yield handle_scope(tokens, macros, level)

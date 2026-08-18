@@ -84,7 +84,7 @@ class BibTeX(BibliographySource):
                 csl_field = self.fields[field]
             except KeyError:
                 if field not in ('year', 'month', 'filename'):
-                    warn(f"Unsupported BibTeX field '{field}'")
+                    warn(f"Unsupported BibTeX field '{field}'", stacklevel=3)
                 continue
             if field in ('number', 'volume'):
                 try:
