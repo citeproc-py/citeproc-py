@@ -1,13 +1,12 @@
 
 import os
-
 from warnings import warn
 
 from lxml import etree
 
-from . import SCHEMA_PATH, LOCALES_PATH, STYLES_PATH
-from .model import CitationStylesElement
+from . import LOCALES_PATH, SCHEMA_PATH, STYLES_PATH
 from .formatter import html
+from .model import CitationStylesElement
 
 
 class CitationStylesXML:

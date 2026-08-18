@@ -1,19 +1,17 @@
 
 import re
 import unicodedata
-
 from functools import cmp_to_key
 from operator import itemgetter
 
 from lxml import etree
 
-from . import NAMES, DATES, NUMBERS, PRIMARY_DIALECTS, LANGUAGE_NAMES
-from .source import VariableError, DateRange, LiteralDate
+from . import DATES, LANGUAGE_NAMES, NAMES, NUMBERS, PRIMARY_DIALECTS
+from .source import DateRange, LiteralDate, VariableError
 from .string import String, join, normalize_seam
 
 
 # Base class
-
 class SomewhatObjectifiedElement(etree.ElementBase):
     nsmap = {'cs': 'http://purl.org/net/xbiblio/csl',
              'xml': 'http://www.w3.org/XML/1998/namespace'}
@@ -210,7 +208,7 @@ class Locale(CitationStylesElement):
         try:
             return self.terms.xpath_search(expr)[0]
         except AttributeError:
-            raise IndexError
+            raise IndexError from None
 
     def get_date(self, form):
         expr = f"./cs:date[@form='{form}']"
@@ -1118,7 +1116,7 @@ class Names(CitationStylesElement, Parent, Formatted, Affixed, Delimited):
         try:
             return text
         except NameError:
-            raise VariableError
+            raise VariableError from None
 
     def markup(self, text):
         if text:

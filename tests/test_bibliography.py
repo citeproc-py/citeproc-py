@@ -1,3 +1,5 @@
+from unittest import TestCase
+
 from citeproc import (
     Citation,
     CitationItem,
@@ -6,7 +8,6 @@ from citeproc import (
     formatter,
     source,
 )
-from unittest import TestCase
 
 template = {
         "type": "book",

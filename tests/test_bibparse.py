@@ -1,10 +1,8 @@
 import os
-
 from io import StringIO
 from unittest import TestCase
 
-from citeproc.source.bibtex.bibparse import BibTeXParser, BibTeXDecodeError
-
+from citeproc.source.bibtex.bibparse import BibTeXDecodeError, BibTeXParser
 
 TEST_BIB = os.path.join(os.path.dirname(__file__), 'test.bib')
 

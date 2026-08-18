@@ -1,7 +1,6 @@
-from . import BibliographySource, Reference
-from . import Name, Date, DateRange, LiteralDate
-from ..string import String, MixedString, NoCase
-from .. import NAMES, DATES
+from .. import DATES, NAMES
+from ..string import MixedString, NoCase, String
+from . import BibliographySource, Date, DateRange, LiteralDate, Name, Reference
 
 
 class CiteProcJSON(BibliographySource):

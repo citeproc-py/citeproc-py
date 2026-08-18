@@ -4,11 +4,8 @@
 import json
 
 # Import the citeproc-py classes we'll use below.
-from citeproc import CitationStylesStyle, CitationStylesBibliography
-from citeproc import Citation, CitationItem
-from citeproc import formatter
+from citeproc import Citation, CitationItem, CitationStylesBibliography, CitationStylesStyle, formatter
 from citeproc.source.json import CiteProcJSON
-
 
 # The following JSON data describes 5 references picked from the CSL test suite.
 

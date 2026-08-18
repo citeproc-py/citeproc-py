@@ -1,6 +1,5 @@
 
 import unicodedata
-
 from collections import namedtuple
 from warnings import warn
 
