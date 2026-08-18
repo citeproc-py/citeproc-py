@@ -26,7 +26,8 @@ class CitationStylesXML:
             if not self.schema.validate(self.xml):
                 err = self.schema.error_log
                 # raise Exception("XML file didn't pass schema validation:\n%s" % err)
-                warn("XML file didn't pass schema validation:\n%s" % err)
+                warn(f"XML file didn't pass schema validation:\n{err}",
+                     stacklevel=2)
                 # TODO: proper error reporting
         self.root = self.xml.getroot()
 
@@ -37,7 +38,7 @@ class CitationStylesLocale(CitationStylesXML):
         try:
             super().__init__(locale_path, validate=validate)
         except OSError:
-            raise ValueError(f"'{locale}' is not a known locale")
+            raise ValueError(f"'{locale}' is not a known locale") from None
 
 
 class CitationStylesStyle(CitationStylesXML):
@@ -67,7 +68,7 @@ class CitationStylesStyle(CitationStylesXML):
                             f"'{style}' not found in bundled styles ({STYLES_PATH}). "
                             f"To access more styles, install the citeproc-py-styles package with: "
                             f"pip install citeproc-py-styles"
-                        )
+                        ) from None
                     try:
                         from citeproc_styles import get_style_filepath
                         style_src = get_style_filepath(style)
@@ -76,7 +77,7 @@ class CitationStylesStyle(CitationStylesXML):
                         raise ValueError(
                             f"'{style}' not found in bundled styles ({bundled_path}) "
                             f"or in citeproc-py-styles package"
-                        )
+                        ) from None
         except TypeError:
             pass
 
@@ -91,7 +92,7 @@ class CitationStylesStyle(CitationStylesXML):
         try:
             super().__init__(style_src, validate=validate)
         except OSError:
-            raise ValueError(f"'{style}' is not a known style")
+            raise ValueError(f"'{style}' is not a known style") from None
         if locale is None:
             locale = self.root.get('default-locale', 'en-US')
         self.root.set_locale_list(locale, validate=validate)

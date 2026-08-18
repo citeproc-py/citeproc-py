@@ -8,7 +8,16 @@ from .. import VARIABLES
 
 
 class CustomDict(dict):
-    def __init__(self, args, required=set(), optional=set(), required_or=[]):
+    def __init__(self, args, required=None, optional=None, required_or=None):
+        if required is None:
+            required = set()
+
+        if optional is None:
+            optional = set()
+
+        if required_or is None:
+            required_or = []
+
         passed_keywords = set(args.keys())
         missing = required - passed_keywords
         if missing:
@@ -24,7 +33,7 @@ class CustomDict(dict):
         if unsupported:
             cls_name = self.__class__.__name__
             warn(f'The following arguments for {cls_name} are unsupported: '
-                 + ', '.join(unsupported))
+                 + ', '.join(unsupported), stacklevel=2)
         self.update(args)
 
     def __setattr__(self, name, value):
@@ -37,7 +46,7 @@ class CustomDict(dict):
         try:
             return super().__getitem__(key)
         except KeyError:
-            raise VariableError
+            raise VariableError from None
 
 
 class Reference(CustomDict):
@@ -77,7 +86,13 @@ class Name(CustomDict):
 
 
 class DateBase(CustomDict):
-    def __init__(self, args, required=set(), optional=set()):
+    def __init__(self, args, required=None, optional=None):
+        if required is None:
+            required = set()
+
+        if optional is None:
+            optional = set()
+
         optional = {'circa'} | optional
         super().__init__(args, required, optional)
         # defaults

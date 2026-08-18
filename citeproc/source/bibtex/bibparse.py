@@ -59,7 +59,7 @@ class BibTeXParser(dict):
                 if offset > 0:
                     file.seek(0)
                     line_number += file.read(offset).count(file.newlines)
-                raise BibTeXDecodeError(decode_error, line_number)
+                raise BibTeXDecodeError(decode_error, line_number) from decode_error
             except EOFError:
                 break
 
