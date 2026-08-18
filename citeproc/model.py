@@ -93,7 +93,7 @@ class CitationStylesElement(SomewhatObjectifiedElement):
 
     # TODO: Locale methods
     def get_term(self, name, form=None, fallback_locale=True, zero_padded=False):
-        lg_key = "{http://www.w3.org/XML/1998/namespace}lang"
+        lg_key = '{http://www.w3.org/XML/1998/namespace}lang'
         if isinstance(self.get_root(), Locale):
             return self.get_root().get_term(name, form)
         else:
@@ -200,7 +200,7 @@ class Locale(CitationStylesElement):
         if form is not None:
             attributes += f" and @form='{form}'"
         else:
-            attributes += " and not(@form)"
+            attributes += ' and not(@form)'
         if zero_padded:
             attributes += "and not(@match='whole-number')"
             attributes += "and not(@match='last-two-digits')"

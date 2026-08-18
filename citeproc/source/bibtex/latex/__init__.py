@@ -152,18 +152,18 @@ def substitute_ligatures(string):
     return string
 
 
-SUBSTITUTIONS = {"~": 'NO-BREAK SPACE',
+SUBSTITUTIONS = {'~': 'NO-BREAK SPACE',
 
                  # ligatures defined in Computer Modern (symbol shortcuts)
-                 "--": 'EN DASH',
-                 "---": 'EM DASH',
+                 '--': 'EN DASH',
+                 '---': 'EM DASH',
                  "''": 'RIGHT DOUBLE QUOTATION MARK',
-                 "``": 'LEFT DOUBLE QUOTATION MARK',
-                 "!`": 'INVERTED EXCLAMATION MARK',
-                 "?`": 'INVERTED QUESTION MARK',
-                 ",,": 'DOUBLE LOW-9 QUOTATION MARK',
-                 "<<": 'LEFT-POINTING DOUBLE ANGLE QUOTATION MARK',
-                 ">>": 'RIGHT-POINTING DOUBLE ANGLE QUOTATION MARK',
+                 '``': 'LEFT DOUBLE QUOTATION MARK',
+                 '!`': 'INVERTED EXCLAMATION MARK',
+                 '?`': 'INVERTED QUESTION MARK',
+                 ',,': 'DOUBLE LOW-9 QUOTATION MARK',
+                 '<<': 'LEFT-POINTING DOUBLE ANGLE QUOTATION MARK',
+                 '>>': 'RIGHT-POINTING DOUBLE ANGLE QUOTATION MARK',
 }
 
 from .macro import MACROS
