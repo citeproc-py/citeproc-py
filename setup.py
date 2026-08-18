@@ -17,12 +17,11 @@ BASE_PATH = os.path.dirname(os.path.abspath(__file__))
 PACKAGE_ABSPATH = os.path.join(BASE_PATH, PACKAGE)
 VERSION_FILE = os.path.join(PACKAGE_ABSPATH, 'version.py')
 
-
 # All external commands are relative to BASE_PATH
 os.chdir(BASE_PATH)
 
-
 CSL_SCHEMA_RNC = 'citeproc/data/schema/schemas/styles/csl.rnc'
+
 
 def convert_rnc():
     import rnc2rng
@@ -48,5 +47,5 @@ class custom_develop(develop):
 setup(
     version=versioneer.get_version(),
     cmdclass=versioneer.get_cmdclass({'build_py': custom_build_py, 'develop': custom_develop}),
-    #test_suite='nose.collector',
+    # test_suite='nose.collector',
 )

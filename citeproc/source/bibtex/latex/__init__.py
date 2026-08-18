@@ -4,7 +4,6 @@ import unicodedata
 from collections import namedtuple
 from warnings import warn
 
-
 __all__ = ['parse_latex', 'substitute_ligatures']
 
 
@@ -167,6 +166,5 @@ SUBSTITUTIONS = {"~": 'NO-BREAK SPACE',
                  "<<": 'LEFT-POINTING DOUBLE ANGLE QUOTATION MARK',
                  ">>": 'RIGHT-POINTING DOUBLE ANGLE QUOTATION MARK',
 }
-
 
 from .macro import MACROS

@@ -15,7 +15,6 @@ class MacroBase:
         raise NotImplementedError
 
 
-
 class NewCommand(MacroBase):
     r""" \newcommand{cmd}[args]{def} """
 

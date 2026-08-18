@@ -44,7 +44,7 @@ class BibTeX(BibliographySource):
               'isbn': 'ISBN',
               'issn': 'ISSN'}
 
-    types = {# standard entry types
+    types = {  # standard entry types
              'article': ARTICLE_JOURNAL,
              'book': BOOK,
              'booklet': PAMPHLET,
@@ -247,6 +247,7 @@ class BibTeX(BibliographySource):
 #    (http://tug.ctan.org/info/bibtex/tamethebeast/ttb_en.pdf)
 
 AND = ' and '
+
 
 def split_names(string):
     """Split a string of names separated by 'and' into a list of names."""
