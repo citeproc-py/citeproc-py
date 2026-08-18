@@ -111,7 +111,7 @@ class TestStyleLoading(unittest.TestCase):
         try:
             import citeproc_styles  # ruff: ignore[unused-import]
         except ImportError:
-            self.skipTest("citeproc-py-styles (provides citeproc_styles package) not installed")
+            self.skipTest('citeproc-py-styles (provides citeproc_styles package) not installed')
 
         from citeproc_styles import get_style_filepath
 

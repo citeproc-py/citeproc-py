@@ -31,9 +31,9 @@ class TestBibTeX(TestCase):
         for january in ['jan', 'JAN', '01']:
             self.assertEqual(BibTeX._parse_month(january),
                              ({'month': 1}, ) * 2)
-        self.assertEqual(BibTeX._parse_month("10~jan"),
+        self.assertEqual(BibTeX._parse_month('10~jan'),
                          ({'month': 1, 'day': 10}, ) * 2)
-        self.assertEqual(BibTeX._parse_month("jul~4"),
+        self.assertEqual(BibTeX._parse_month('jul~4'),
                          ({'month': 7, 'day': 4}, ) * 2)
 
     def test_pages(self):
@@ -105,15 +105,15 @@ DECORET_NAMES = [
     ( 'bb CC,xx, AA'   , ('AA'        , 'bb'         , 'CC'        , 'xx'     )),  # Idem.
     ( 'BB,, AA'        , ('AA'        , None         , 'BB'        , None     )),  # Testing that jr can be empty in between comas.
 
-    (r"Paul \'Emile Victor"   , (r"Paul \'Emile"     , None        , "Victor", None)),
-    (r"Paul {\'E}mile Victor" , (r"Paul {\'E}mile"   , None        , "Victor", None)),
-    (r"Paul \'emile Victor"   , ( "Paul"             , r"\'emile"  , "Victor", None)),
-    (r"Paul {\'e}mile Victor" , ( "Paul"             , r"{\'e}mile", "Victor", None)),
+    (r"Paul \'Emile Victor"   , (r"Paul \'Emile"     , None        , 'Victor', None)),
+    (r"Paul {\'E}mile Victor" , (r"Paul {\'E}mile"   , None        , 'Victor', None)),
+    (r"Paul \'emile Victor"   , ( 'Paul'             , r"\'emile"  , 'Victor', None)),
+    (r"Paul {\'e}mile Victor" , ( 'Paul'             , r"{\'e}mile", 'Victor', None)),
 
-    (r"Victor, Paul \'Emile"  , (r"Paul \'Emile"     , None        , "Victor", None)),
-    (r"Victor, Paul {\'E}mile", (r"Paul {\'E}mile"   , None        , "Victor", None)),
-    (r"Victor, Paul \'emile"  , (r"Paul \'emile"     , None        , "Victor", None)),
-    (r"Victor, Paul {\'e}mile", (r"Paul {\'e}mile"   , None        , "Victor", None)),
+    (r"Victor, Paul \'Emile"  , (r"Paul \'Emile"     , None        , 'Victor', None)),
+    (r"Victor, Paul {\'E}mile", (r"Paul {\'E}mile"   , None        , 'Victor', None)),
+    (r"Victor, Paul \'emile"  , (r"Paul \'emile"     , None        , 'Victor', None)),
+    (r"Victor, Paul {\'e}mile", (r"Paul {\'e}mile"   , None        , 'Victor', None)),
 
     ('Dominique Galouzeau de Villepin',
       ('Dominique Galouzeau', 'de'            , 'Villepin'             , None)),
