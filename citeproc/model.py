@@ -1,10 +1,8 @@
 
 import re
 import unicodedata
-import os
 
 from functools import cmp_to_key
-from glob import glob
 from operator import itemgetter
 
 from lxml import etree
@@ -370,7 +368,7 @@ class Displayed:
 
 class Quoted:
     def quote(self, string):
-        piq = self.get_locale_option('punctuation-in-quote').lower() == 'true'
+        # piq = self.get_locale_option('punctuation-in-quote').lower() == 'true'
         if self.get('quotes', 'false').lower() == 'true':
             open_quote = self.get_single_term(name='open-quote')
             close_quote = self.get_single_term(name='close-quote')
@@ -828,7 +826,6 @@ class Date(CitationStylesElement, Parent, Formatted, Affixed, Delimited):
             return False
 
     def render_single_date(self, date, show_parts=None, context=None):
-        form = self.get('form')
         if context != self:
             parts = self.parts(date, show_parts, context)
         else:
@@ -940,7 +937,6 @@ class Date_Part(CitationStylesElement, Formatted, Affixed, TextCased,
                 StrippedPeriods):
     def process(self, date, context=None):
         name = self.get('name')
-        range_delimiter = self.get('range-delimiter', '-')
         attrib = self.attrib
 
         if context is None:
@@ -967,7 +963,6 @@ class Date_Part(CitationStylesElement, Formatted, Affixed, TextCased,
                 text = to_ordinal(date.day, context)
         elif name == 'month':
             form = self.get('form', 'long')
-            strip_periods = self.get('form', False)
             try:
                 index = date.month
                 term = 'month'
@@ -1173,8 +1168,8 @@ class Name(CitationStylesElement, Formatted, Affixed, Delimited):
 
         et_al_min = get_option('et-al-min')
         et_al_use_first = get_option('et-al-use-first')
-        et_al_subseq_min = get_option('et-al-subsequent-min')
-        et_al_subseq_use_first = get_option('et-al-subsequent-use-first')
+        # et_al_subseq_min = get_option('et-al-subsequent-min')
+        # et_al_subseq_use_first = get_option('et-al-subsequent-use-first')
         et_al_use_last = get_option('et-al-use-last')
 
         initialize_with = get_option('initialize-with')

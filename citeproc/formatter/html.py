@@ -20,7 +20,7 @@ class TagWrapper(str):
                                      for key, value in cls.attributes.items()])
         else:
             attrib = ''
-        return f'<{tag}{attrib}>{text}</{tag}>'
+        return f'<{cls.tag}{attrib}>{text}</{cls.tag}>'
 
     def __new__(cls, text):
         return super().__new__(cls, cls._wrap(text))

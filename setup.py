@@ -4,7 +4,6 @@
 Setup script for citeproc-py
 """
 
-import io
 import os
 
 from setuptools import setup

@@ -192,4 +192,4 @@ class BibliographySource(dict):
         self[entry.key] = entry
 
 
-from . import bibtex, json
+from . import bibtex, json  # ruff: ignore[unused-import]
