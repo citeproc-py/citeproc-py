@@ -1,16 +1,14 @@
 
 import re
 import unicodedata
-
 from warnings import warn
 
-from ...types import (ARTICLE, ARTICLE_JOURNAL, BOOK, CHAPTER, MANUSCRIPT,
-                      PAMPHLET, PAPER_CONFERENCE, REPORT, THESIS)
-from ...string import String, MixedString, NoCase
-from .. import BibliographySource, Reference, Name, Date, DateRange
+from ...string import MixedString, NoCase, String
+from ...types import ARTICLE, ARTICLE_JOURNAL, BOOK, CHAPTER, MANUSCRIPT, PAMPHLET, PAPER_CONFERENCE, REPORT, THESIS
+from .. import BibliographySource, Date, DateRange, Name, Reference
 from .bibparse import BibTeXParser
 from .latex import parse_latex
-from .latex.macro import NewCommand, Macro
+from .latex.macro import Macro, NewCommand
 
 
 class BibTeX(BibliographySource):

@@ -1,8 +1,6 @@
 import unicodedata
 
-from . import (parse_argument, eat_whitespace, parse_macro_name,
-               OPEN_SCOPE, CLOSE_SCOPE, START_MACRO)
-
+from . import CLOSE_SCOPE, OPEN_SCOPE, START_MACRO, eat_whitespace, parse_argument, parse_macro_name
 
 __all__ = ['MACROS', 'NewCommand', 'Macro']
 

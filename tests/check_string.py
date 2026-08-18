@@ -1,5 +1,4 @@
-from citeproc.string import String, NoCase
-
+from citeproc.string import NoCase, String
 
 a = String('a ')
 b = String(' b ')

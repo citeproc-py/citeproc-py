@@ -4,9 +4,9 @@ Tests for flexible style loading from citeproc-py-styles package
 
 import os
 import unittest
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
 
-from citeproc import CitationStylesStyle, STYLES_PATH
+from citeproc import STYLES_PATH, CitationStylesStyle
 
 
 class TestStyleLoading(unittest.TestCase):

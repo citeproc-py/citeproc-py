@@ -1,7 +1,7 @@
 from unittest import TestCase
 
 from citeproc.source.bibtex import BibTeX
-from citeproc.source.bibtex.bibtex import split_names, split_name, parse_name
+from citeproc.source.bibtex.bibtex import parse_name, split_name, split_names
 
 
 class TestBibTeX(TestCase):
