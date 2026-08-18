@@ -342,7 +342,7 @@ if __name__ == '__main__':
                 if options.verbose:
                     out('<<< FAILED\n')
             del t
-        except Exception as e:
+        except Exception:
             if not options.catch_exceptions:
                 raise
             if options.verbose:

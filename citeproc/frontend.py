@@ -61,7 +61,7 @@ class CitationStylesStyle(CitationStylesXML):
                 else:
                     # Try to load from citeproc-py-styles if available
                     try:
-                        import citeproc_styles
+                        import citeproc_styles  # ruff: ignore[unused-import]
                     except ImportError:
                         # citeproc-py-styles not installed, raise with helpful message
                         raise ValueError(

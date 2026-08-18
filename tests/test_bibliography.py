@@ -7,7 +7,6 @@ from citeproc import (
     source,
 )
 from unittest import TestCase
-from citeproc.source.bibtex.bibparse import BibTeXParser
 
 template = {
         "type": "book",
@@ -52,8 +51,7 @@ class TestBibliographyGeneration(TestCase):
             generated_ordinals = [_pp(x) for x in bibliography.style.render_bibliography(citations)]
 
             for index, expected_value in ordinals.items():
-                assert (
-                    generated_ordinals[index] == expected_value,
+                assert generated_ordinals[index] == expected_value, (
                     f"Failed for {lg} at index {index}. Expected: {expected_value}, Got: {generated_ordinals[index]}"
                 )
 

@@ -3,8 +3,6 @@ Tests for flexible style loading from citeproc-py-styles package
 """
 
 import os
-import sys
-import tempfile
 import unittest
 from unittest.mock import patch, MagicMock
 
@@ -111,10 +109,12 @@ class TestStyleLoading(unittest.TestCase):
     def test_citeproc_py_styles_load(self):
         """Test loading a real style from citeproc-py-styles if installed"""
         try:
-            import citeproc_styles
+            import citeproc_styles  # ruff: ignore[unused-import]
         except ImportError:
             self.skipTest("citeproc-py-styles (provides citeproc_styles package) not installed")
+
         from citeproc_styles import get_style_filepath
+
         # Attempt to load a known style from citeproc-py-styles
         style_name = 'chicago-author-date'
         style_path = get_style_filepath(style_name)
