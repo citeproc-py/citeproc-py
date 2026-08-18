@@ -102,8 +102,10 @@ class ProcessorTest:
         if self.style.has_bibliography():
             self.bibliography.sort()
 
+        def do_nothing(x):
+            return None
+
         results = []
-        do_nothing = lambda x: None     # callback passed to cite()
         if self.data['mode'] == 'citation':
             if self.data['citations']:
                 for i, citation in enumerate(citations):
@@ -327,7 +329,7 @@ if __name__ == '__main__':
                 out('EXP: ' + '\n     '.join(t.expected))
 
             results = t.execute()
-            results = reduce(lambda x, y: x+y,
+            results = reduce(lambda x, y: x + y,
                              [item.split('\n') for item in results])
             results = [item.replace('&amp;', '&#38;')
                        for item in results]

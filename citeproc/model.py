@@ -26,7 +26,8 @@ class SomewhatObjectifiedElement(etree.ElementBase):
 
 
 class CitationStylesElement(SomewhatObjectifiedElement):
-    _default_options = {# global options
+    _default_options = {
+                        # global options
                         'initialize-with-hyphen': 'true',
                         'page-range-format': None,
                         'demote-non-dropping-particle': 'display-and-sort',
@@ -113,7 +114,7 @@ class CitationStylesElement(SomewhatObjectifiedElement):
             for locale in locales:
                 try:
                     return locale.get_term(name, form, zero_padded=zero_padded)
-                except IndexError: # TODO: create custom exception
+                except IndexError:  # TODO: create custom exception
                     continue
 
     def get_plural_term(self, name, *args, **kwargs):
@@ -239,7 +240,8 @@ class FormattingInstructions:
 
 
 class Citation(FormattingInstructions, CitationStylesElement):
-    _default_options = {# disambiguation
+    _default_options = {
+                        # disambiguation
                         'disambiguate-add-names': False,
                         'disambiguate-add-givenname': False,
                         'givenname-disambiguation-rule': 'all-names',
@@ -259,7 +261,8 @@ class Citation(FormattingInstructions, CitationStylesElement):
 
 
 class Bibliography(FormattingInstructions, CitationStylesElement):
-    _default_options = {# whitespace
+    _default_options = {
+                        # whitespace
                         'hanging-indent': False,
                         'second-field-align': None,
                         'line-spacing': 1,
@@ -356,7 +359,7 @@ class Delimited:
         delimiter = self.get('delimiter', default_delimiter)
         try:
             text = join((s for s in strings if s is not None), delimiter)
-        except:
+        except Exception:
             text = String('')
         return text
 
@@ -372,7 +375,7 @@ class Quoted:
             open_quote = self.get_single_term(name='open-quote')
             close_quote = self.get_single_term(name='close-quote')
             string = open_quote + string + close_quote
-##            quoted_string = QuotedString(string, open_quote, close_quote, piq)
+            # quoted_string = QuotedString(string, open_quote, close_quote, piq)
         return string
 
 
@@ -409,12 +412,12 @@ class TextCased:
                 text = ' '.join(output)
             elif text_case == 'title':
                 output = []
-                prev = ':' #This ensures first word is capitilized
+                prev = ':'   # This ensures first word is capitilized
                 for word in text.words():
                     if word.islower() and (str(word) not in self._stop_words or
                         prev in (':', '.')):
                         word = word.capitalize_first()
-                    elif word.islower(): #Lowercase stop words
+                    elif word.islower():  # Lowercase stop words
                         word = word.soft_lower()
                     prev = word[-1]
                     output.append(word)
@@ -462,6 +465,7 @@ class Sort(CitationStylesElement):
             lst = zip(items, *keys)
             comparers = [(itemgetter(i + 1), descending[i])
                          for i in range(len(keys))]
+
             def mycmp(left, right):
                 for getter, desc in comparers:
                     left_key, right_key = getter(left), getter(right)
@@ -679,6 +683,7 @@ class FormatNumber:
                            or self.unicode_character('EN DASH'))
 
         en_dash = unicodedata.lookup('EN DASH')
+
         def format_number_or_range(item):
             try:
                 first, last = (number.strip() for number
@@ -700,7 +705,7 @@ class FormatNumber:
     def _format_last_page(self, first, last):
         def find_common(first, last):
             count = 0
-            for count, (f, l) in enumerate(zip(first, last)):
+            for count, (f, l) in enumerate(zip(first, last)):  # ruff: ignore[ambiguous-variable-name]
                 if f != l:
                     return count
             return count + 1
@@ -1250,10 +1255,9 @@ class Name(CitationStylesElement, Formatted, Affixed, Delimited):
                     text = self.join(output, delimiter) + ' ' + et_al
             elif and_ is not None and len(output) > 1:
                 text = self.join(output[:-1], ', ')
-                if (delimiter_precedes_last == 'always' or
-                    (delimiter_precedes_last == 'contextual' and
-                     len(output) > 2)):
-                        text = self.join([text, ''], ', ')
+                if (delimiter_precedes_last == 'always'
+                    or (delimiter_precedes_last == 'contextual' and len(output) > 2)):
+                    text = self.join([text, ''], ', ')
                 else:
                     text += ' '
                 text += f'{and_term} ' + output[-1]
@@ -1603,10 +1607,11 @@ def to_ordinal(number, context):
         result = _find_ordinal(fallback_locale=True)
     return str(number) + result
 
+
 def romanize(n):
     # by Kay Schluehr - from http://billmill.org/python_roman.html
     numerals = (('M', 1000), ('CM', 900), ('D', 500), ('CD', 400),
-                ('C', 100),('XC', 90),('L', 50),('XL', 40), ('X', 10),
+                ('C', 100), ('XC', 90), ('L', 50), ('XL', 40), ('X', 10),
                 ('IX', 9), ('V', 5), ('IV', 4), ('I', 1))
     roman = []
     for ltr, num in numerals:
