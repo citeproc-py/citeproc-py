@@ -5,16 +5,14 @@ import io
 import os
 import sys
 import traceback
-
 from codecs import utf_8_encode
 from functools import reduce
 from optparse import OptionParser
-from subprocess import Popen, PIPE
+from subprocess import PIPE, Popen
 
-from citeproc import CitationStylesStyle, CitationStylesBibliography
+from citeproc import CitationStylesBibliography, CitationStylesStyle
 from citeproc.source import Citation, CitationItem, Locator
 from citeproc.source.json import CiteProcJSON
-
 
 CITEPROC_TEST_REPOSITORY = 'https://github.com/citation-style-language/test-suite.git'
 CITEPROC_TEST_COMMIT = '6eefc5b07c6969ab8999e48542acbcc131cba864'

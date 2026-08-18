@@ -95,7 +95,7 @@ select = [
     "G",   # flake8-logging-format
     "I",   # flake8-isort
     "PGH", # pygrep-hooks
-    "Q",   # flake8-quotes
+    # "Q",   # flake8-quotes
     "UP",  # pyupgrade
     "W",   # pycodestyle
 ]

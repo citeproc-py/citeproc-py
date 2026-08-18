@@ -5,15 +5,12 @@ import sys
 import warnings
 from optparse import OptionParser
 
+# Import the citeproc-py classes we'll use below.
+from citeproc import Citation, CitationItem, CitationStylesBibliography, CitationStylesStyle, formatter, frontend
+
 # The references are parsed from a BibTeX database, so we import the
 # corresponding parser.
 from citeproc.source.bibtex import BibTeX
-
-# Import the citeproc-py classes we'll use below.
-from citeproc import frontend
-from citeproc import CitationStylesStyle, CitationStylesBibliography
-from citeproc import formatter
-from citeproc import Citation, CitationItem
 
 
 def main():
