@@ -55,8 +55,7 @@ bibliography.register(citation5)
 # bibliography.
 
 def warn(citation_item):
-    print("WARNING: Reference with key '{}' not found in the bibliography."
-          .format(citation_item.key))
+    print(f"WARNING: Reference with key '{citation_item.key}' not found in the bibliography.")
 
 
 print('Citations')

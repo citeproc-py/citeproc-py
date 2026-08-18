@@ -1,5 +1,3 @@
-# coding: utf-8
-
 import unicodedata
 
 from . import (parse_argument, eat_whitespace, parse_macro_name,
@@ -9,7 +7,7 @@ from . import (parse_argument, eat_whitespace, parse_macro_name,
 __all__ = ['MACROS', 'NewCommand', 'Macro']
 
 
-class MacroBase(object):
+class MacroBase:
     def parse_arguments(self, tokens):
         raise NotImplementedError
 
@@ -58,13 +56,13 @@ class NewCommand(MacroBase):
         num_args = self._parse_optional_arguments(tokens, macros)
         definition = parse_argument(tokens, macros)
         for i in range(10):
-            definition = definition.replace('#{}'.format(i + 1),
+            definition = definition.replace(f'#{i + 1}',
                                             '{' + str(i) + '}')
         self.macros[name] = Macro(num_args, definition)
         return ''
 
 
-class Macro(object):
+class Macro:
     def __init__(self, num_args, format_string):
         self.num_args = num_args
         self.format_string = format_string
@@ -80,19 +78,19 @@ class Macro(object):
 
 class Symbol(Macro):
     def __init__(self, symbol):
-        super(Symbol, self).__init__(0, symbol)
+        super().__init__(0, symbol)
 
 
 class SymbolByName(Macro):
     def __init__(self, unicode_symbol_name):
         unicode_symbol = unicodedata.lookup(unicode_symbol_name)
-        super(SymbolByName, self).__init__(0, unicode_symbol)
+        super().__init__(0, unicode_symbol)
 
 
 class Combining(Macro):
     def __init__(self, unicode_accent_name):
         unicode_accent = unicodedata.lookup('COMBINING ' + unicode_accent_name)
-        super(Combining, self).__init__(1, '{0}' + unicode_accent)
+        super().__init__(1, '{0}' + unicode_accent)
 
     DOTTED_CHARS = {'ı': 'i',
                     'ȷ': 'j'}
@@ -101,7 +99,7 @@ class Combining(Macro):
         assert len(arguments) == self.num_args
         accented, rest = arguments[0][0], arguments[0][1:]
         accented = self.DOTTED_CHARS.get(accented, accented)
-        expanded = super(Combining, self).expand([accented])
+        expanded = super().expand([accented])
         return unicodedata.normalize('NFC', expanded) + rest
 
 

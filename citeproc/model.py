@@ -63,8 +63,8 @@ class CitationStylesElement(SomewhatObjectifiedElement):
             xpath += '/' + node
             element = self.xpath(xpath)[0]
             namespace, tag = element.tag.split('}', 1)
-            attribs = ''.join(' {}="{}"'.format(key, value)
-                               for key, value in element.attrib.items())
+            attribs = ''.join(f' {key}="{value}"'
+                              for key, value in element.attrib.items())
             tree.append('{:>4}: {}<{}{}>'.format(element.sourceline,
                                                  i * '  ', tag, attribs))
         print('\n'.join(tree))
@@ -73,7 +73,7 @@ class CitationStylesElement(SomewhatObjectifiedElement):
         return self.get(name, self._default_options[name])
 
     def get_macro(self, name):
-        expression = "cs:macro[@name='{}'][1]".format(name)
+        expression = f"cs:macro[@name='{name}'][1]"
         return self.get_root().xpath_search(expression)[0]
 
     def get_layout(self):
@@ -162,7 +162,7 @@ class Style(CitationStylesElement):
         system_locales_added = set()
 
         def add_instyle_locale(locale):
-            expr = ('./cs:locale[@xml:lang="{}"]'.format(locale)
+            expr = (f'./cs:locale[@xml:lang="{locale}"]'
                     if locale else './cs:locale[not(@xml:lang)]')
             results = self.xpath_search(expr)
             if results:
@@ -199,22 +199,22 @@ class Locale(CitationStylesElement):
                         'punctuation-in-quote': 'false'}
 
     def get_term(self, name, form=None, zero_padded=False):
-        attributes = "@name='{}'".format(name)
+        attributes = f"@name='{name}'"
         if form is not None:
-            attributes += " and @form='{}'".format(form)
+            attributes += f" and @form='{form}'"
         else:
             attributes += " and not(@form)"
         if zero_padded:
             attributes += "and not(@match='whole-number')"
             attributes += "and not(@match='last-two-digits')"
-        expr = './cs:term[{}]'.format(attributes)
+        expr = f'./cs:term[{attributes}]'
         try:
             return self.terms.xpath_search(expr)[0]
         except AttributeError:
             raise IndexError
 
     def get_date(self, form):
-        expr = "./cs:date[@form='{}']".format(form)
+        expr = f"./cs:date[@form='{form}']"
         return self.xpath_search(expr)[0]
 
     def get_option(self, name):
@@ -227,7 +227,7 @@ class Locale(CitationStylesElement):
         return self.style.formatter
 
 
-class FormattingInstructions(object):
+class FormattingInstructions:
     def get_option(self, name):
         if name in self._default_options:
             return self.get(name, self._default_options[name])
@@ -277,7 +277,7 @@ class Bibliography(FormattingInstructions, CitationStylesElement):
 
 # Style behavior
 
-class Formatted(object):
+class Formatted:
     def format(self, string):
         if isinstance(string, (int, float)):
             string = str(string)
@@ -340,7 +340,7 @@ class Formatted(object):
         return formatted
 
 
-class Affixed(object):
+class Affixed:
     def wrap(self, string):
         if string is not None:
             prefix = self.get('prefix', '')
@@ -351,7 +351,7 @@ class Affixed(object):
         return None
 
 
-class Delimited(object):
+class Delimited:
     def join(self, strings, default_delimiter=''):
         delimiter = self.get('delimiter', default_delimiter)
         try:
@@ -361,11 +361,11 @@ class Delimited(object):
         return text
 
 
-class Displayed(object):
+class Displayed:
     pass
 
 
-class Quoted(object):
+class Quoted:
     def quote(self, string):
         piq = self.get_locale_option('punctuation-in-quote').lower() == 'true'
         if self.get('quotes', 'false').lower() == 'true':
@@ -376,7 +376,7 @@ class Quoted(object):
         return string
 
 
-class StrippedPeriods(object):
+class StrippedPeriods:
     def strip_periods(self, string):
         strip_periods = self.get('strip-periods', 'false').lower() == 'true'
         if strip_periods:
@@ -384,7 +384,7 @@ class StrippedPeriods(object):
         return string
 
 
-class TextCased(object):
+class TextCased:
     _stop_words = ['a', 'an', 'and', 'as', 'at', 'but', 'by', 'down', 'for',
                    'from', 'in', 'into', 'nor', 'of', 'on', 'onto', 'or',
                    'over', 'so', 'the', 'till', 'to', 'up', 'via', 'with',
@@ -577,7 +577,7 @@ class Key(CitationStylesElement):
 
 # Rendering elements
 
-class Parent(object):
+class Parent:
     def calls_variable(self):
         return any([child.calls_variable() for child in self.getchildren()])
 
@@ -652,7 +652,7 @@ class Layout(CitationStylesElement, Parent, Formatted, Affixed, Delimited):
                 pass
         for item in bad_cites:
             callback_value = callback(item)
-            out.append(callback_value or '{}?'.format(item.key))
+            out.append(callback_value or f'{item.key}?')
         return self.format(self.wrap(self.join(out)))
 
     def sort_bibliography(self, citation_items):
@@ -671,7 +671,7 @@ class Layout(CitationStylesElement, Parent, Formatted, Affixed, Delimited):
         return output_items
 
 
-class FormatNumber(object):
+class FormatNumber:
     def _process(self, value, variable):
         page_range_delimiter = self.get_single_term(name='page-range-delimiter') \
             if variable.startswith('page') else None
@@ -941,7 +941,7 @@ class Date_Part(CitationStylesElement, Formatted, Affixed, TextCased,
         if context is None:
             context = self
         try:
-            expr = './cs:date-part[@name="{}"]'.format(name)
+            expr = f'./cs:date-part[@name="{name}"]'
             attrib.update(dict(context.xpath_search(expr)[0].attrib))
         except (AttributeError, IndexError):
             pass
@@ -957,7 +957,7 @@ class Date_Part(CitationStylesElement, Formatted, Affixed, TextCased,
             if form == 'numeric':
                 text = date.day
             elif form == 'numeric-leading-zeros':
-                text = '{:02}'.format(date.day)
+                text = f'{date.day:02}'
             elif form == 'ordinal':
                 text = to_ordinal(date.day, context)
         elif name == 'month':
@@ -971,14 +971,14 @@ class Date_Part(CitationStylesElement, Formatted, Affixed, TextCased,
                 term = 'season'
 
             if form == 'long' or form == 'short':
-                text = context.get_single_term(name='{}-{:02}'.format(term, index),
+                text = context.get_single_term(name=f'{term}-{index:02}',
                                                form='short' if form == 'short' else None)
             else:
                 assert term == 'month'
                 if form == 'numeric':
-                    text = '{}'.format(index)
+                    text = f'{index}'
                 elif form == 'numeric-leading-zeros':
-                    text = '{:02}'.format(index)
+                    text = f'{index:02}'
         elif name == 'year':
             form = self.get('form', 'long')
             if form == 'long':
@@ -1029,7 +1029,7 @@ class Number(CitationStylesElement, FormatNumber, Formatted, Affixed, Displayed,
         elif form == 'ordinal' or form == 'long-ordinal' and number > 10:
             text = to_ordinal(number, self)
         elif form == 'long-ordinal':
-            text = self.get_single_term(name='long-ordinal-{:02}'.format(number))
+            text = self.get_single_term(name=f'long-ordinal-{number:02}')
         elif form == 'roman':
             text = romanize(number).lower()
         return text
@@ -1256,7 +1256,7 @@ class Name(CitationStylesElement, Formatted, Affixed, Delimited):
                         text = self.join([text, ''], ', ')
                 else:
                     text += ' '
-                text += '{} '.format(and_term) + output[-1]
+                text += f'{and_term} ' + output[-1]
             else:
                 text = self.join(output, delimiter)
 

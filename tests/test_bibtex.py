@@ -1,5 +1,3 @@
-# coding: utf-8
-
 from unittest import TestCase
 
 from citeproc.source.bibtex import BibTeX
@@ -18,15 +16,15 @@ class TestBibTeX(TestCase):
 
     def test_parse_name(self):
         for name, reference in DECORET_NAMES:
-            print('{:24}  {}'.format(name, parse_name(name)))
+            print(f'{name:24}  {parse_name(name)}')
             self.assertEqual(parse_name(name), reference)
         for name, parts in PYBTEX_NAMES:
             reference = tuple(' '.join(pieces) if pieces else None
                               for pieces in parts)
-            print('{:24}  {}'.format(name, parse_name(name)))
+            print(f'{name:24}  {parse_name(name)}')
             self.assertEqual(parse_name(name), reference)
         for name, reference in EXTRA_NAMES:
-            print('{:24}  {}'.format(name, parse_name(name)))
+            print(f'{name:24}  {parse_name(name)}')
             self.assertEqual(parse_name(name), reference)
 
     def test_date_months(self):
