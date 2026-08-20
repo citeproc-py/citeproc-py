@@ -1349,6 +1349,13 @@ class Label(CitationStylesElement, Formatted, Affixed, StrippedPeriods,
     def process(self, item, variable=None, plural=None, context=None, **kwargs):
         if variable is None:
             variable = self.get('variable')
+            # A cs:label that names its own variable renders the term only if
+            # that variable is non-empty. When cs:names passes the variable in
+            # it has already established that the name variable is set, and
+            # what it passes may be the "editortranslator" term rather than a
+            # variable at all -- so the check belongs here and not below.
+            if not self._variable_is_set(item, variable):
+                return None
         form = self.get('form', 'long')
         plural_option = self.get('plural', 'contextual')
         if plural is None:
@@ -1378,6 +1385,28 @@ class Label(CitationStylesElement, Formatted, Affixed, StrippedPeriods,
     # it is part of a single dotted number/version (e.g. "2.0"), which stays
     # singular ("Version 2.0", not "Versions 2.0").
     RE_MULTIPLE_NUMBERS = re.compile(r'\d+[^\d.]+\d+')
+
+    def _variable_is_set(self, item, variable):
+        """Whether the labelled variable holds a value for this item.
+
+        The lookup follows the one in `Text._variable`: `locator` lives on the
+        citation item rather than the reference, `citation-number` is generated
+        and is set for every registered item, and the `page-first` virtual
+        variable is derived from `page`.
+        """
+        if variable == 'locator':
+            return item.has_locator
+        elif variable == 'citation-number':
+            return True
+        elif variable.startswith('page'):
+            variable = 'page'
+
+        try:
+            value = item.reference[variable.replace('-', '_')]
+        except VariableError:
+            return False
+
+        return value is not None and str(value) != ''
 
     def _is_plural(self, item):
         variable = self.get('variable')
