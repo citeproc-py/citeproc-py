@@ -1,5 +1,6 @@
 
 import glob
+import importlib.util
 import io
 import os
 import sys
@@ -292,15 +293,11 @@ if __name__ == '__main__':
     test_repo_has_updates = clone_test_suite()
 
     # import the text fixture parser included with citeproc-test
-    try:  # Python 3.3+
-        from importlib.machinery import SourceFileLoader
-        loader = SourceFileLoader('processor', TEST_PARSER_PATH)
-        processor = loader.load_module()
-    except ImportError:  # older Python versions
-        from imp import load_source
-        processor = load_source('processor', TEST_PARSER_PATH)
-    from processor import CslTest
-    global CslTest
+    spec = importlib.util.spec_from_file_location('processor', TEST_PARSER_PATH)
+    processor = importlib.util.module_from_spec(spec)
+    sys.modules['processor'] = processor
+    spec.loader.exec_module(processor)
+    CslTest = processor.CslTest
 
     total_count = {}
     passed_count = {}
