@@ -57,15 +57,13 @@ Ready to contribute? Here's how to set up `citeproc-py` for local development.
 2. Clone your fork locally:
 
     ```shell
-    $ git clone git@github.com:your_name_here/citeproc-py.git
-    $ cd citeproc-py
-    $ git submodule update --init
+    $ git clone --recurse-submodules git@github.com:your_name_here/citeproc-py.git
     ```
 
 3. Create a branch for local development:
 
     ```shell
-    $ git checkout -b name-of-your-bugfix-or-feature
+    $ git switch -c name-of-your-bugfix-or-feature
     ```
 
    Now you can make your changes locally.
@@ -73,15 +71,22 @@ Ready to contribute? Here's how to set up `citeproc-py` for local development.
 4. When you're done making changes, check that your changes pass tests:
 
     ```shell
-    $ cd tests
-    $ python citeproc-test.py
+    $ python tests/citeproc-test.py
+    $ python -m unittest discover --buffer --verbose tests
     ```
 
-   This command will list and fixed or newly failing tests. You should
-   fix any failures, and commit the ``failing_tests.txt`` file with any
-   updates.
+   The `citeproc-test.py` command will list any fixed or newly failing tests.
+   You should fix any failures, and commit the `tests/failing_tests.txt` file with
+   any updates.
 
-5. Commit your changes and push your branch to GitHub:
+5. When all tests pass, make sure that the new code is correctly linted as well.
+   `citeproc-py` uses `ruff` for its linting, which is run with
+
+   ```shell
+   ruff check
+   ```
+
+6. Commit your changes and push your branch to GitHub:
 
     ```shell
     $ git add .
@@ -89,22 +94,22 @@ Ready to contribute? Here's how to set up `citeproc-py` for local development.
     $ git push origin name-of-your-bugfix-or-feature
     ```
 
-5. Submit a pull request through the GitHub website.
+7. Submit a pull request through the GitHub website.
 
 ## Pull Request Guidelines
 
 Before you submit a pull request, check that it meets these guidelines:
 
-1. The pull request should not break existing tests. 
-2. If you're fixing something or adding a new feature please add test 
-   cases so we can see what has been fixed or improved and make sure 
+1. The pull request should not break existing tests and linting rules.
+2. If you're fixing something or adding a new feature please add test
+   cases so we can see what has been fixed or improved and make sure
    it doesn't break in the future.
 
-All pull requests need at least one review before they can be merged. 
+All pull requests need at least one review before they can be merged.
 
 ## Releasing with GitHub Actions, auto, and pull requests
 
-New releases of dandi-cli are created via a GitHub Actions workflow built
+New releases of `citeproc-py` are created via a GitHub Actions workflow built
 around [`auto`](https://github.com/intuit/auto).  Whenever a pull request is
 merged that has the "`release`" label, `auto` updates the changelog based on
 the pull requests since the last release, commits the results, tags the new
