@@ -1,3 +1,19 @@
+# v0.11.0 (Thu Aug 20 2026)
+
+#### 🚀 Enhancement
+
+- test: refresh citeproc seam expectations [#208](https://github.com/citeproc-py/citeproc-py/pull/208) ([@tomatotomata](https://github.com/tomatotomata))
+- fix: normalize punctuation at formatter seams [#208](https://github.com/citeproc-py/citeproc-py/pull/208) ([@tomatotomata](https://github.com/tomatotomata))
+- Update compatability description [#208](https://github.com/citeproc-py/citeproc-py/pull/208) ([@tmorrell](https://github.com/tmorrell))
+- Normalize whitespace and duplicate punctuation at string seams [#208](https://github.com/citeproc-py/citeproc-py/pull/208) ([@tmorrell](https://github.com/tmorrell))
+
+#### Authors: 2
+
+- Tom Morrell ([@tmorrell](https://github.com/tmorrell))
+- tomatotomata ([@tomatotomata](https://github.com/tomatotomata))
+
+---
+
 # v0.10.7 (Mon Aug 10 2026)
 
 #### 🐛 Bug Fix
