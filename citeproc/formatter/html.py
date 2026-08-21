@@ -16,15 +16,14 @@ class TagWrapper(str):
     @classmethod
     def _wrap(cls, text):
         if cls.attributes:
-            attrib = ' ' + ' '.join(['{}="{}"'.format(key, value)
+            attrib = ' ' + ' '.join([f'{key}="{value}"'
                                      for key, value in cls.attributes.items()])
         else:
             attrib = ''
-        return '<{tag}{attrib}>{text}</{tag}>'.format(tag=cls.tag,
-                                                      attrib=attrib,text=text)
+        return f'<{cls.tag}{attrib}>{text}</{cls.tag}>'
 
     def __new__(cls, text):
-        return super(TagWrapper, cls).__new__(cls, cls._wrap(text))
+        return super().__new__(cls, cls._wrap(text))
 
 
 class Italic(TagWrapper):

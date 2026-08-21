@@ -4,11 +4,8 @@
 import json
 
 # Import the citeproc-py classes we'll use below.
-from citeproc import CitationStylesStyle, CitationStylesBibliography
-from citeproc import Citation, CitationItem
-from citeproc import formatter
+from citeproc import Citation, CitationItem, CitationStylesBibliography, CitationStylesStyle, formatter
 from citeproc.source.json import CiteProcJSON
-
 
 # The following JSON data describes 5 references picked from the CSL test suite.
 
@@ -92,10 +89,10 @@ json_data = json.loads(json_input)
 # Process the JSON data to generate a citeproc-py BibliographySource.
 
 bib_source = CiteProcJSON(json_data)
-##for key, entry in bib_source.items():
-##    print(key)
-##    for name, value in entry.items():
-##        print('   {}: {}'.format(name, value))
+# for key, entry in bib_source.items():
+#     print(key)
+#     for name, value in entry.items():
+#         print('   {}: {}'.format(name, value))
 
 # load a CSL style (from the current directory)
 
@@ -134,8 +131,8 @@ bibliography.register(citation5)
 # bibliography.
 
 def warn(citation_item):
-    print("WARNING: Reference with key '{}' not found in the bibliography."
-          .format(citation_item.key))
+    print(f"WARNING: Reference with key '{citation_item.key}' not found in the bibliography.")
+
 
 print('Citations')
 print('---------')

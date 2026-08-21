@@ -1,16 +1,14 @@
-﻿
+
 import re
 import unicodedata
-
 from warnings import warn
 
-from ...types import (ARTICLE, ARTICLE_JOURNAL, BOOK, CHAPTER, MANUSCRIPT,
-                      PAMPHLET, PAPER_CONFERENCE, REPORT, THESIS)
-from ...string import String, MixedString, NoCase
-from .. import BibliographySource, Reference, Name, Date, DateRange
+from ...string import MixedString, NoCase, String
+from ...types import ARTICLE, ARTICLE_JOURNAL, BOOK, CHAPTER, MANUSCRIPT, PAMPHLET, PAPER_CONFERENCE, REPORT, THESIS
+from .. import BibliographySource, Date, DateRange, Name, Reference
 from .bibparse import BibTeXParser
 from .latex import parse_latex
-from .latex.macro import NewCommand, Macro
+from .latex.macro import Macro, NewCommand
 
 
 class BibTeX(BibliographySource):
@@ -44,7 +42,7 @@ class BibTeX(BibliographySource):
               'isbn': 'ISBN',
               'issn': 'ISSN'}
 
-    types = {# standard entry types
+    types = {  # standard entry types
              'article': ARTICLE_JOURNAL,
              'book': BOOK,
              'booklet': PAMPHLET,
@@ -86,7 +84,7 @@ class BibTeX(BibliographySource):
                 csl_field = self.fields[field]
             except KeyError:
                 if field not in ('year', 'month', 'filename'):
-                    warn("Unsupported BibTeX field '{}'".format(field))
+                    warn(f"Unsupported BibTeX field '{field}'", stacklevel=3)
                 continue
             if field in ('number', 'volume'):
                 try:
@@ -206,7 +204,7 @@ class BibTeX(BibliographySource):
             else:
                 string += char
         if level != 0:
-            raise SyntaxError('Non-matching braces in "{}"'.format(title))
+            raise SyntaxError(f'Non-matching braces in "{title}"')
         if string:
             output += make_string(string)
         return output
@@ -247,6 +245,7 @@ class BibTeX(BibliographySource):
 #    (http://tug.ctan.org/info/bibtex/tamethebeast/ttb_en.pdf)
 
 AND = ' and '
+
 
 def split_names(string):
     """Split a string of names separated by 'and' into a list of names."""

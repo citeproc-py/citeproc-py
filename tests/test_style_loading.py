@@ -3,12 +3,11 @@ Tests for flexible style loading from citeproc-py-styles package
 """
 
 import os
-import sys
-import tempfile
 import unittest
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
 
-from citeproc import CitationStylesStyle, STYLES_PATH
+from citeproc import STYLES_PATH, CitationStylesStyle
+
 
 class TestStyleLoading(unittest.TestCase):
     """Test suite for flexible style loading"""
@@ -54,7 +53,7 @@ class TestStyleLoading(unittest.TestCase):
             with patch.dict('sys.modules', {'citeproc_styles': mock_module}):
                 # Mock the parent class __init__ to set root properly
                 def mock_init(self, path, validate=False):
-                    # Create a mock root object 
+                    # Create a mock root object
                     self.root = MagicMock()
                     self.root.get.return_value = 'en-US'
                     self.root.set_locale_list = MagicMock()
@@ -110,10 +109,12 @@ class TestStyleLoading(unittest.TestCase):
     def test_citeproc_py_styles_load(self):
         """Test loading a real style from citeproc-py-styles if installed"""
         try:
-            import citeproc_styles
+            import citeproc_styles  # ruff: ignore[unused-import]
         except ImportError:
-            self.skipTest("citeproc-py-styles (provides citeproc_styles package) not installed")
+            self.skipTest('citeproc-py-styles (provides citeproc_styles package) not installed')
+
         from citeproc_styles import get_style_filepath
+
         # Attempt to load a known style from citeproc-py-styles
         style_name = 'chicago-author-date'
         style_path = get_style_filepath(style_name)

@@ -1,11 +1,9 @@
 #!/bin/env/python
 
 import os
-
 from contextlib import suppress
 from distutils.sysconfig import get_python_lib
 from subprocess import call
-
 
 if __name__ == '__main__':
     # chdir to the site-packages directory so the report lists relative paths

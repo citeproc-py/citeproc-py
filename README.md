@@ -69,33 +69,34 @@ If you would like to contribute, please follow the guidelines in the
 
 ## Local Install and Running the Tests
 
-First clone the `citeproc-py` repository and install the submodules with
+First clone the `citeproc-py` repository and its submodules with
 ```bash
-git submodule update --init
+git clone --recurse-submodules https://github.com/citeproc-py/citeproc-py
+```
+and install `citeproc-py` with
+```bash
+python -m pip install --editable .
 ```
 
-Then install with
+If installed correctly, you should be able to run the tests. For example, you
+can run the full `citeproc` test suite using
 ```bash
-pip install --editable .
+python tests/citeproc-test.py
+```
+and the `citeproc-py` specific test suite using
+```bash
+python -m unittest discover --buffer --verbose tests
+# or
+python -m pytest --capture=no --verbose tests
 ```
 
-Then move to the `tests` directory and run
-```bash
-python citeproc-test.py
-```
+You can check out `citeproc-test.py --help` to see more usage information for
+this script. The first time you run the script it will clone the [citeproc-test
+suite](https://github.com/citation-style-language/test-suite) repository into
+the `tests` directory and checkout the last tested version. By default failed
+tests are automatically added into the `tests/failing_tests.txt` file and are not
+shown when running the test suite again.
 
-Run
-```bash
-citeproc-test.py --help
-```
-to see its usage information. The first time
-you run the script it will clone the
-[citeproc-test suite](https://github.com/citation-style-language/test-suite) repository into the
-`tests` directory and checkout the last tested version. By default failed tests are
-automatically added into the `failing_tests.txt` file and aren't shown when
-running the test suite again.
-
-If you want git to fully ignore the submodule, you can type
-```bash
-git update-index --assume-unchanged citeproc/data/schema
-```
+`citeproc-py` uses `ruff` for linting. You can run it directly using `ruff check`.
+Any test failures or linting errors will show up on the CI and will need to be
+fixed before a Pull Request can be merged.

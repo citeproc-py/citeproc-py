@@ -1,7 +1,6 @@
 
 from functools import wraps
 
-
 # Punctuation characters that should not be duplicated when two of them end up
 # adjacent at a concatenation seam (e.g. a suffix '.' following text that
 # already ends in '.').
@@ -68,16 +67,16 @@ class String(str):
         return self.__add__(other)
 
     def replace(self, *args, **kwargs):
-        return self.__class__(super(String, self).replace(*args, **kwargs))
+        return self.__class__(super().replace(*args, **kwargs))
 
     def rstrip(self, *args, **kwargs):
-        return self.__class__(super(String, self).rstrip(*args, **kwargs))
+        return self.__class__(super().rstrip(*args, **kwargs))
 
     def lower(self):
-        return self.__class__(super(String, self).lower())
+        return self.__class__(super().lower())
 
     def upper(self):
-        return self.__class__(super(String, self).upper())
+        return self.__class__(super().upper())
 
     def soft_lower(self):
         return self.lower()
@@ -99,11 +98,11 @@ class MixedString(list):
         other = normalize_seam(self, other)
         if other == '' or other == []:
             return self
-        super_obj = super(MixedString, self)
+
         try:
-            return self.__class__(super_obj.__add__(other))
+            return self.__class__(super().__add__(other))
         except TypeError:
-            return self.__class__(super_obj.__add__(MixedString([other])))
+            return self.__class__(super().__add__(MixedString([other])))
 
     @discard_empty_other
     def __radd__(self, other):
@@ -153,13 +152,12 @@ class MixedString(list):
 
     def words(self):
         for string in self:
-            for word in string.words():
-                yield word
+            yield from string.words()
 
 
 class NoCase(String):
     def __repr__(self):
-        return '{}({})'.format(self.__class__.__name__, str(self))
+        return f'{self.__class__.__name__}({self})'
 
     def soft_lower(self):
         return self
