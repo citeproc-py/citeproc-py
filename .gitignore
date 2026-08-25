@@ -9,7 +9,7 @@ __pycache__
 /.tox
 /.python-version
 /tests/test-suite
-/.coverage
+/.coverage*
 
 # PyCharm configuration
 .idea
