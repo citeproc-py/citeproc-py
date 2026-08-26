@@ -87,7 +87,22 @@ class Disambiguation:
         self.bib = bib
         self.registry = {}      # str(item_id) → {'ambig': akey, 'disambig': AmbigConfig}
         self.ambigcites = {}    # akey → [str(item_id), ...]
+        self._name_vars = self._collect_name_vars()
         self._build_registry()
+
+    def _collect_name_vars(self) -> frozenset[str]:
+        """Collect name variables from all <names> elements in the loaded style.
+
+        Searching the full style tree (not just the citation layout) captures
+        variables defined in macros. This is style-driven rather than based on
+        a static CSL spec list, so it stays accurate as styles evolve.
+        """
+        style_root = self.bib.style.root
+        name_vars: set[str] = set()
+        for names_el in style_root.findall('.//cs:names', style_root.nsmap):
+            for v in (names_el.get('variable') or '').split():
+                name_vars.add(v)
+        return frozenset(name_vars)
 
     def _build_registry(self):
         layout = self.bib.style.root.citation.layout
@@ -114,51 +129,80 @@ class Disambiguation:
             if len(item_ids) < 2:
                 continue
             resolved = False
-            if add_names:
+            if add_names or (add_givenname and gd_rule == 'by-cite'):
                 resolved = self._dis_names(item_ids)
-            if add_givenname and gd_rule == 'by-cite' and not resolved:
-                resolved = self._dis_givens_by_cite(item_ids)
             if add_year_suffix and not resolved:
                 self._dis_years(item_ids)
 
     def _dis_names(self, item_ids: list[str]) -> bool:
-        """Expand name counts until all items are distinguishable.
+        """Expand name counts and given names using the citeproc-js incrementDisambig order.
 
-        Returns True if all items in the group are now unique, False if some
-        remain ambiguous (e.g. identical authors) and another mode is needed.
+        When disambiguate-add-givenname with by-cite is active, given name expansion
+        is interleaved with name count expansion: the current author's given name is
+        tried before the next author is revealed. givens_max=0 disables that
+        dimension so only name count expansion runs.
+
+        Returns True if all items in the group are now unique, False otherwise.
         """
         layout = self.bib.style.root.citation.layout
-        betterbase = None
-        prev_renders = None
+        citation = self.bib.style.root.citation
+        add_names = citation.get_option('disambiguate-add-names')
+        add_givenname = citation.get_option('disambiguate-add-givenname')
+        gd_rule = citation.get_option('givenname-disambiguation-rule')
+        givens_max = 2 if (add_givenname and gd_rule == 'by-cite') else 0
 
-        for count in range(2, 51):
-            base = AmbigConfig(names=[count], givens=[], maxvals=[count])
+        # Max name count from actual item data (citeproc-js: maxNamesByItemId)
+        names_max = max(
+            max((len(self.registry[iid]['item'].reference.get(v, []))
+                 for v in self._name_vars),
+                default=1)
+            for iid in item_ids
+        )
+
+        # Pre-initialize base and betterbase with givens slots for all author
+        # positions (citeproc-js: padBase — all levels start at 0)
+        base = AmbigConfig(names=[1], givens=[[0] * names_max], maxvals=[names_max])
+        betterbase = AmbigConfig(names=[1], givens=[[0] * names_max], maxvals=[names_max])
+        improved = False
+        gname = 0  # cursor: which author position we're currently expanding givens for
+
+        while True:
             renders = {
-                item_id: get_ambiguous_cite(self.registry[item_id]['item'], layout,
-                                            disambig=base)
-                for item_id in item_ids
+                iid: get_ambiguous_cite(self.registry[iid]['item'], layout, disambig=base)
+                for iid in item_ids
             }
 
-            if renders == prev_renders:
-                break  # showing more names changes nothing; all names already shown
-
             if len(set(renders.values())) > 1:
-                betterbase = base  # improvement — record minimum sufficient count
+                # improvement — partial capture (citeproc-js: captureStepToBase)
+                # Only write the changed position so earlier over-incremented
+                # levels don't pollute betterbase.
+                betterbase.names[0] = base.names[0]
+                betterbase.givens[0][gname] = base.givens[0][gname]
+                improved = True
 
             if len(set(renders.values())) == len(item_ids):
                 break  # fully resolved
 
-            prev_renders = renders
+            # incrementDisambig: priority order from citeproc-js
+            if givens_max and base.givens[0][gname] < givens_max:
+                # Step 1: expand given name for current author
+                base.givens[0][gname] += 1
+            elif add_names and base.names[0] < names_max:
+                # Step 2: reveal next author, advance cursor to newly exposed position
+                base.names[0] += 1
+                gname += 1
+            else:
+                break  # all options exhausted
 
-        if betterbase is None:
+        if not improved:
             return False
 
         for item_id in item_ids:
             old = self.registry[item_id]['disambig']
             new_config = AmbigConfig(
                 names=list(betterbase.names),
-                givens=[],
-                maxvals=list(betterbase.maxvals),
+                givens=[list(betterbase.givens[0])],
+                maxvals=[names_max],
                 year_suffix=old.year_suffix,
                 disambiguate=old.disambiguate,
             )
@@ -166,70 +210,7 @@ class Disambiguation:
             self.bib.source[item_id]['_disambig'] = new_config
 
         final_renders = {
-            item_id: get_ambiguous_cite(self.registry[item_id]['item'], layout,
-                                        disambig=betterbase)
-            for item_id in item_ids
-        }
-        return len(set(final_renders.values())) == len(item_ids)
-
-    def _dis_givens_by_cite(self, item_ids: list[str]) -> bool:
-        """Expand given-name detail per author until all items are distinguishable.
-
-        Tries initials (level 1) then full given name (level 2) for each author
-        position in sequence. Returns True if fully resolved.
-        """
-        layout = self.bib.style.root.citation.layout
-        betterbase = None
-        prev_renders = None
-        resolved = False
-
-        first_disambig = self.registry[item_ids[0]]['disambig']
-        names_val = first_disambig.names[0] if first_disambig.names else 1
-        base = AmbigConfig(names=[names_val], givens=[[0] * 20], maxvals=[names_val])
-
-        for name_pos in range(20):
-            if resolved:
-                break
-            for level in (1, 2):
-                new_givens = list(base.givens[0])
-                new_givens[name_pos] = level
-                base = AmbigConfig(
-                    names=list(base.names),
-                    givens=[new_givens],
-                    maxvals=list(base.maxvals),
-                )
-                renders = {
-                    iid: get_ambiguous_cite(self.registry[iid]['item'], layout,
-                                            disambig=base)
-                    for iid in item_ids
-                }
-                if renders == prev_renders:
-                    continue  # no visual change at this level; try the next
-                if len(set(renders.values())) > 1:
-                    betterbase = base
-                if len(set(renders.values())) == len(item_ids):
-                    resolved = True
-                    break
-                prev_renders = renders
-
-        if betterbase is None:
-            return False
-
-        for item_id in item_ids:
-            old = self.registry[item_id]['disambig']
-            new_config = AmbigConfig(
-                names=list(betterbase.names),
-                givens=[list(g) for g in betterbase.givens],
-                maxvals=list(betterbase.maxvals),
-                year_suffix=old.year_suffix,
-                disambiguate=old.disambiguate,
-            )
-            self.registry[item_id]['disambig'] = new_config
-            self.bib.source[item_id]['_disambig'] = new_config
-
-        final_renders = {
-            iid: get_ambiguous_cite(self.registry[iid]['item'], layout,
-                                    disambig=betterbase)
+            iid: get_ambiguous_cite(self.registry[iid]['item'], layout, disambig=betterbase)
             for iid in item_ids
         }
         return len(set(final_renders.values())) == len(item_ids)
