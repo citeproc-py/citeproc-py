@@ -254,7 +254,7 @@ class Citation(FormattingInstructions, CitationStylesElement):
                         # disambiguation
                         'disambiguate-add-names': False,
                         'disambiguate-add-givenname': False,
-                        'givenname-disambiguation-rule': 'all-names',
+                        'givenname-disambiguation-rule': 'by-cite',
                         'disambiguate-add-year-suffix': False,
 
                         # citation collapsing
