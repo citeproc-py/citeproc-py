@@ -152,13 +152,16 @@ class Disambiguation:
         gd_rule = citation.get_option('givenname-disambiguation-rule')
         givens_max = 2 if (add_givenname and gd_rule == 'by-cite') else 0
 
-        # Max name count from actual item data (citeproc-js: maxNamesByItemId)
+        # Max name count from actual item data (citeproc-js: maxNamesByItemId).
+        # Clamped to 1: anonymous items (no names for any variable) must still
+        # get a valid givens slot so the loop can run to exhaustion safely.
         names_max = max(
             max((len(self.registry[iid]['item'].reference.get(v, []))
                  for v in self._name_vars),
-                default=1)
+                default=0)
             for iid in item_ids
         )
+        names_max = max(names_max, 1)
 
         # Pre-initialize base and betterbase with givens slots for all author
         # positions (citeproc-js: padBase — all levels start at 0)
