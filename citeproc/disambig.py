@@ -129,13 +129,13 @@ class Disambiguation:
         for item_ids in self.ambigcites.values():
             if len(item_ids) < 2:
                 continue
-            resolved = False
+            still_clashing = list(item_ids)
             if add_names or (add_givenname and gd_rule == 'by-cite'):
-                resolved = self._dis_names(item_ids)
-            if add_year_suffix and not resolved:
-                self._dis_years(item_ids)
+                still_clashing = self._dis_names(item_ids)
+            if add_year_suffix and still_clashing:
+                self._dis_years(still_clashing)
 
-    def _dis_names(self, item_ids: list[str]) -> bool:
+    def _dis_names(self, item_ids: list[str]) -> list[str]:
         """Expand name counts and given names using the citeproc-js incrementDisambig order.
 
         When disambiguate-add-givenname with by-cite is active, given name expansion
@@ -230,7 +230,7 @@ class Disambiguation:
                 break  # all options exhausted
 
         if not improved:
-            return False
+            return list(item_ids)
 
         for item_id in item_ids:
             if item_id in registered:
@@ -252,7 +252,8 @@ class Disambiguation:
                                     disambig=self.registry[iid]['disambig'])
             for iid in item_ids
         }
-        return len(set(final_renders.values())) == len(item_ids)
+        final_counts = Counter(final_renders.values())
+        return [iid for iid in item_ids if final_counts[final_renders[iid]] > 1]
 
     def _dis_years(self, item_ids: list[str]):
         # item_ids is already in bibliography sort order (bib.items order)
