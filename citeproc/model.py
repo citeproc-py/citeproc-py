@@ -154,7 +154,8 @@ class CitationStylesElement(SomewhatObjectifiedElement):
 # Top level elements
 
 class Style(CitationStylesElement):
-    just_looking = False  # set True during probe renders to suppress disambiguation output
+    just_looking = False      # set True during probe renders to suppress disambiguation output
+    disambig_request = None   # AmbigConfig set during name-expansion probe renders
 
     _UNSET = object()
     _has_explicit_year_suffix = _UNSET
@@ -1198,6 +1199,9 @@ class Name(CitationStylesElement, Formatted, Affixed, Delimited):
 
         et_al_min = get_option('et-al-min')
         et_al_use_first = get_option('et-al-use-first')
+        _disambig = self.get_root().disambig_request or item.reference.get('_disambig')
+        if _disambig and _disambig.names:
+            et_al_use_first = max(et_al_use_first, _disambig.names[0])
         et_al_subseq_min = get_option('et-al-subsequent-min')
         et_al_subseq_use_first = get_option('et-al-subsequent-use-first')
         et_al_use_last = get_option('et-al-use-last')
