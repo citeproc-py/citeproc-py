@@ -1241,7 +1241,11 @@ class Name(CitationStylesElement, Formatted, Affixed, Delimited):
             for i, name in enumerate(names):
                 given, family, dp, ndp, suffix = name.parts()
 
-                if given is not None and initialize_with is not None:
+                given_level = 0
+                if _disambig and _disambig.givens and i < len(_disambig.givens[0]):
+                    given_level = _disambig.givens[0][i]
+
+                if given is not None and initialize_with is not None and given_level != 2:
                     given = self.initialize(given, initialize_with, context)
 
                 if form == 'long':
@@ -1264,7 +1268,11 @@ class Name(CitationStylesElement, Formatted, Affixed, Delimited):
                 elif form == 'short':
                     family = ' '.join([n for n in (ndp, family) if n])
                     given, family = format_name_parts(given, family)
-                    text = family
+                    if given_level >= 1 and given:
+                        order = given, family, suffix
+                        text = ' '.join([n for n in order if n])
+                    else:
+                        text = family
 
                 output.append(text)
 
