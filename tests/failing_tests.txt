@@ -76,8 +76,6 @@ date_EmptyStrings                                                  # uncaught ex
 date_RangeDelimiter
 date_VariousInvalidDates                                           # uncaught exception
 date_YearSuffixDelimiter
-date_YearSuffixImplicitWithNoDate
-date_YearSuffixWithNoDate
 decorations_AndTermUnaffectedByNameDecorations
 decorations_Baseline
 decorations_NestedQuotes

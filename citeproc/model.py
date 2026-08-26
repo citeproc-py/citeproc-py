@@ -903,6 +903,10 @@ class Date(CitationStylesElement, Parent, Formatted, Affixed, Delimited):
         if context is None:
             context = self
 
+        # During probe renders, accessed dates are excluded from the ambig key.
+        if context.get_root().just_looking and variable == 'accessed':
+            return None
+
         form = self.get('form')
         date_parts = self.get('date-parts')
         if not self.is_locale_date() and form is not None:
