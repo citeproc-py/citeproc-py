@@ -107,6 +107,8 @@ class Disambiguation:
     def run(self):
         citation = self.bib.style.root.citation
         add_names = citation.get_option('disambiguate-add-names')
+        add_givenname = citation.get_option('disambiguate-add-givenname')
+        gd_rule = citation.get_option('givenname-disambiguation-rule')
         add_year_suffix = citation.get_option('disambiguate-add-year-suffix')
         for item_ids in self.ambigcites.values():
             if len(item_ids) < 2:
@@ -114,6 +116,8 @@ class Disambiguation:
             resolved = False
             if add_names:
                 resolved = self._dis_names(item_ids)
+            if add_givenname and gd_rule == 'by-cite' and not resolved:
+                resolved = self._dis_givens_by_cite(item_ids)
             if add_year_suffix and not resolved:
                 self._dis_years(item_ids)
 
@@ -165,6 +169,68 @@ class Disambiguation:
             item_id: get_ambiguous_cite(self.registry[item_id]['item'], layout,
                                         disambig=betterbase)
             for item_id in item_ids
+        }
+        return len(set(final_renders.values())) == len(item_ids)
+
+    def _dis_givens_by_cite(self, item_ids: list[str]) -> bool:
+        """Expand given-name detail per author until all items are distinguishable.
+
+        Tries initials (level 1) then full given name (level 2) for each author
+        position in sequence. Returns True if fully resolved.
+        """
+        layout = self.bib.style.root.citation.layout
+        betterbase = None
+        prev_renders = None
+        resolved = False
+
+        first_disambig = self.registry[item_ids[0]]['disambig']
+        names_val = first_disambig.names[0] if first_disambig.names else 1
+        base = AmbigConfig(names=[names_val], givens=[[0] * 20], maxvals=[names_val])
+
+        for name_pos in range(20):
+            if resolved:
+                break
+            for level in (1, 2):
+                new_givens = list(base.givens[0])
+                new_givens[name_pos] = level
+                base = AmbigConfig(
+                    names=list(base.names),
+                    givens=[new_givens],
+                    maxvals=list(base.maxvals),
+                )
+                renders = {
+                    iid: get_ambiguous_cite(self.registry[iid]['item'], layout,
+                                            disambig=base)
+                    for iid in item_ids
+                }
+                if renders == prev_renders:
+                    continue  # no visual change at this level; try the next
+                if len(set(renders.values())) > 1:
+                    betterbase = base
+                if len(set(renders.values())) == len(item_ids):
+                    resolved = True
+                    break
+                prev_renders = renders
+
+        if betterbase is None:
+            return False
+
+        for item_id in item_ids:
+            old = self.registry[item_id]['disambig']
+            new_config = AmbigConfig(
+                names=list(betterbase.names),
+                givens=[list(g) for g in betterbase.givens],
+                maxvals=list(betterbase.maxvals),
+                year_suffix=old.year_suffix,
+                disambiguate=old.disambiguate,
+            )
+            self.registry[item_id]['disambig'] = new_config
+            self.bib.source[item_id]['_disambig'] = new_config
+
+        final_renders = {
+            iid: get_ambiguous_cite(self.registry[iid]['item'], layout,
+                                    disambig=betterbase)
+            for iid in item_ids
         }
         return len(set(final_renders.values())) == len(item_ids)
 
