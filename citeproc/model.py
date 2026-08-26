@@ -156,6 +156,17 @@ class CitationStylesElement(SomewhatObjectifiedElement):
 class Style(CitationStylesElement):
     just_looking = False  # set True during probe renders to suppress disambiguation output
 
+    _UNSET = object()
+    _has_explicit_year_suffix = _UNSET
+
+    def has_explicit_year_suffix_element(self):
+        """Return True if any cs:text[@variable="year-suffix"] exists in the style."""
+        if self._has_explicit_year_suffix is self._UNSET:
+            self._has_explicit_year_suffix = bool(
+                self.xpath_search('.//cs:text[@variable="year-suffix"]')
+            )
+        return self._has_explicit_year_suffix
+
     def set_locale_list(self, output_locale, validate=True):
         """Set up list of locales in which to search for localizable units"""
         from .frontend import CitationStylesLocale
@@ -915,6 +926,7 @@ class Date(CitationStylesElement, Parent, Formatted, Affixed, Delimited):
             if text is not None:
                 if (variable == 'issued'
                         and not self.get_root().just_looking
+                        and not context.get_root().has_explicit_year_suffix_element()
                         and not item.get('has_done_year_suffix', False)):
                     try:
                         year_suffix = item.reference['year_suffix']
