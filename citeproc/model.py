@@ -540,7 +540,12 @@ class Key(CitationStylesElement):
         elif 'macro' in self.attrib:
             layout = context.get_layout()
             # override name options
-            sort_options = {'name-as-sort-order': 'all'}
+            # Suppress display-only formatting in sort keys: no "and" conjunction,
+            # and no context-inherited et-al truncation (999 is an effective
+            # sentinel — explicit names-min/use-first on the key element override
+            # it below, matching citeproc-js behaviour).
+            sort_options = {'name-as-sort-order': 'all', 'and': None,
+                            'et-al-min': '999'}
             for option in ('names-min', 'names-use-first', 'names-use-last'):
                 if option in self.attrib:
                     name = option.replace('names', 'et-al')
