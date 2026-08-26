@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections import Counter
 from contextlib import contextmanager
 from dataclasses import dataclass
 
@@ -166,10 +167,13 @@ class Disambiguation:
         improved = False
         gname = 0  # cursor: which author position we're currently expanding givens for
 
+        active_ids = list(item_ids)
+        registered: dict[str, AmbigConfig] = {}
+
         while True:
             renders = {
                 iid: get_ambiguous_cite(self.registry[iid]['item'], layout, disambig=base)
-                for iid in item_ids
+                for iid in active_ids
             }
 
             if len(set(renders.values())) > 1:
@@ -180,8 +184,36 @@ class Disambiguation:
                 betterbase.givens[0][gname] = base.givens[0][gname]
                 improved = True
 
-            if len(set(renders.values())) == len(item_ids):
-                break  # fully resolved
+                # Register any items that are now uniquely rendered, snapshotting
+                # betterbase at this moment so they don't inherit later expansion.
+                render_counts = Counter(renders.values())
+                for iid in list(active_ids):
+                    if render_counts[renders[iid]] == 1:
+                        old = self.registry[iid]['disambig']
+                        registered[iid] = AmbigConfig(
+                            names=list(betterbase.names),
+                            givens=[list(betterbase.givens[0])],
+                            maxvals=[names_max],
+                            year_suffix=old.year_suffix,
+                            disambiguate=old.disambiguate,
+                        )
+                        active_ids.remove(iid)
+
+                # If one item remains it has no one left to clash with.
+                if len(active_ids) == 1:
+                    iid = active_ids[0]
+                    old = self.registry[iid]['disambig']
+                    registered[iid] = AmbigConfig(
+                        names=list(betterbase.names),
+                        givens=[list(betterbase.givens[0])],
+                        maxvals=[names_max],
+                        year_suffix=old.year_suffix,
+                        disambiguate=old.disambiguate,
+                    )
+                    active_ids = []
+
+            if not active_ids:
+                break
 
             # incrementDisambig: priority order from citeproc-js
             if givens_max and base.givens[0][gname] < givens_max:
@@ -198,19 +230,23 @@ class Disambiguation:
             return False
 
         for item_id in item_ids:
-            old = self.registry[item_id]['disambig']
-            new_config = AmbigConfig(
-                names=list(betterbase.names),
-                givens=[list(betterbase.givens[0])],
-                maxvals=[names_max],
-                year_suffix=old.year_suffix,
-                disambiguate=old.disambiguate,
-            )
+            if item_id in registered:
+                new_config = registered[item_id]
+            else:
+                old = self.registry[item_id]['disambig']
+                new_config = AmbigConfig(
+                    names=list(betterbase.names),
+                    givens=[list(betterbase.givens[0])],
+                    maxvals=[names_max],
+                    year_suffix=old.year_suffix,
+                    disambiguate=old.disambiguate,
+                )
             self.registry[item_id]['disambig'] = new_config
             self.bib.source[item_id]['_disambig'] = new_config
 
         final_renders = {
-            iid: get_ambiguous_cite(self.registry[iid]['item'], layout, disambig=betterbase)
+            iid: get_ambiguous_cite(self.registry[iid]['item'], layout,
+                                    disambig=self.registry[iid]['disambig'])
             for iid in item_ids
         }
         return len(set(final_renders.values())) == len(item_ids)
