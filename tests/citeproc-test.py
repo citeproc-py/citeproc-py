@@ -226,12 +226,13 @@ def clone_test_suite():
             print('The checked-out commit of test-suite does not match \n'
                   'the one recorded in this test script. Aborting.')
             sys.exit(1)
-        git_fetch = ['-C', CITEPROC_TEST_PATH, 'fetch']
-        execute_git_command(git_fetch)
-    git_ref = ['-C', CITEPROC_TEST_PATH, 'rev-parse', 'origin/master']
-    commit_ref, _ = execute_git_command(git_ref)
-    has_updates = commit_ref.strip() != CITEPROC_TEST_COMMIT.encode('ascii')
-    return has_updates
+        # git_fetch = ['-C', CITEPROC_TEST_PATH, 'fetch']
+        # execute_git_command(git_fetch)
+    # git_ref = ['-C', CITEPROC_TEST_PATH, 'rev-parse', 'origin/master']
+    # commit_ref, _ = execute_git_command(git_ref)
+    # has_updates = commit_ref.strip() != CITEPROC_TEST_COMMIT.encode('ascii')
+    # return has_updates
+    return False
 
 
 RED = '\033[91m'

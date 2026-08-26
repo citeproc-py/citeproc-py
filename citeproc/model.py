@@ -154,6 +154,8 @@ class CitationStylesElement(SomewhatObjectifiedElement):
 # Top level elements
 
 class Style(CitationStylesElement):
+    just_looking = False  # set True during probe renders to suppress disambiguation output
+
     def set_locale_list(self, output_locale, validate=True):
         """Set up list of locales in which to search for localizable units"""
         from .frontend import CitationStylesLocale
@@ -640,6 +642,7 @@ class Layout(CitationStylesElement, Parent, Formatted, Affixed, Delimited):
         out = []
         for item in good_cites:
             self.repressed = {}
+            item.has_done_year_suffix = False
             prefix = item.get('prefix', '')
             suffix = item.get('suffix', '')
             try:
@@ -665,6 +668,7 @@ class Layout(CitationStylesElement, Parent, Formatted, Affixed, Delimited):
         output_items = []
         for item in citation_items:
             self.repressed = {}
+            item.has_done_year_suffix = False
             text = self.format(self.wrap(self.render_children(item)))
             if text is not None:
                 output_items.append(text)
@@ -909,6 +913,16 @@ class Date(CitationStylesElement, Parent, Formatted, Affixed, Delimited):
                 text = self.render_single_date(date_or_range, show_parts,
                                                context)
             if text is not None:
+                if (variable == 'issued'
+                        and not self.get_root().just_looking
+                        and not item.get('has_done_year_suffix', False)):
+                    try:
+                        year_suffix = item.reference['year_suffix']
+                        if year_suffix:
+                            item.has_done_year_suffix = True
+                            text = text + year_suffix
+                    except (KeyError, AttributeError, VariableError):
+                        pass
                 style_context = context if self.is_locale_date() else self
                 return style_context.wrap(text)
             else:
