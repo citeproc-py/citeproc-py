@@ -12,7 +12,7 @@ class AmbigConfig:
                               # 0 = no given, 1 = initials, 2 = full given name
     maxvals: list[int]        # max available names per nameset
     year_suffix: int | None = None  # None = not assigned; 0 → "a", 1 → "b", ...
-    disambiguate: bool = False      # whether <if disambiguate> should fire
+    disambiguate: int = 0           # <if disambiguate> activation level: 0 = off, N = fire first N blocks
 
 
 def clone_ambig_config(config: AmbigConfig, oldconfig: AmbigConfig | None = None) -> AmbigConfig:
@@ -170,7 +170,7 @@ class Disambiguation:
         add_givenname = citation.get_option('disambiguate-add-givenname')
         gd_rule = citation.get_option('givenname-disambiguation-rule')
         add_year_suffix = citation.get_option('disambiguate-add-year-suffix')
-        has_extra_text = self._has_disambiguate_condition()
+        extra_text_levels = self._index_disambiguate_conditions()
         layout = self.bib.style.root.citation.layout
         # Global givenname expansion must run first so that name-count probe
         # renders (in _dis_names) see the globally-expanded given names.
@@ -190,8 +190,8 @@ class Disambiguation:
                 for group in render_groups.values():
                     self._dis_years(group)
                 still_clashing = []  # year-suffix assigns unique suffixes to all remaining
-            if has_extra_text and still_clashing:
-                self._dis_extra_text(still_clashing)
+            if extra_text_levels and still_clashing:
+                self._dis_extra_text(still_clashing, extra_text_levels)
 
     def _dis_names(self, item_ids: list[str]) -> list[str]:
         """Expand name counts and given names using the citeproc-js incrementDisambig order.
@@ -321,19 +321,41 @@ class Disambiguation:
         final_counts = Counter(final_renders.values())
         return [iid for iid in item_ids if final_counts[final_renders[iid]] > 1]
 
-    def _has_disambiguate_condition(self) -> bool:
-        style_root = self.bib.style.root
-        ns = style_root.nsmap
-        for tag in ('cs:if', 'cs:else-if'):
-            for el in style_root.findall(f'.//{tag}', ns):
-                if el.get('disambiguate') == 'true':
-                    return True
-        return False
+    def _index_disambiguate_conditions(self) -> int:
+        """Stamp each <if disambiguate="true"> element with a sequential index.
 
-    def _dis_extra_text(self, item_ids: list[str]):
-        for iid in item_ids:
-            self.registry[iid]['disambig'].disambiguate = True
-            self.bib.source[iid]['_disambig'] = self.registry[iid]['disambig']
+        Returns the total count. Index 1 fires when disambiguate >= 1, index 2
+        fires when disambiguate >= 2, etc. — allowing incremental extra-text
+        expansion one block at a time.
+        """
+        # Index only within the citation layout — bibliography <if disambiguate>
+        # elements use the default index (1) and fire whenever level >= 1.
+        citation_layout = self.bib.style.root.citation.layout
+        ns = citation_layout.nsmap
+        csl_ns = ns.get('cs', 'http://purl.org/net/xbiblio/csl')
+        count = 0
+        for el in citation_layout.iter(f'{{{csl_ns}}}if', f'{{{csl_ns}}}else-if'):
+            if el.get('disambiguate') == 'true':
+                count += 1
+                el.set('_disambig_index', str(count))
+        return count
+
+    def _dis_extra_text(self, item_ids: list[str], max_level: int):
+        layout = self.bib.style.root.citation.layout
+        still_clashing = list(item_ids)
+        for level in range(1, max_level + 1):
+            for iid in still_clashing:
+                self.registry[iid]['disambig'].disambiguate = level
+                self.bib.source[iid]['_disambig'] = self.registry[iid]['disambig']
+            render_groups: dict[str, list[str]] = {}
+            for iid in still_clashing:
+                r = get_ambiguous_cite(self.registry[iid]['item'], layout,
+                                      disambig=self.registry[iid]['disambig'])
+                render_groups.setdefault(r, []).append(iid)
+            still_clashing = [iid for grp in render_groups.values()
+                              if len(grp) > 1 for iid in grp]
+            if not still_clashing:
+                break
 
     def _dis_years(self, item_ids: list[str]):
         # item_ids is already in bibliography sort order (bib.items order)

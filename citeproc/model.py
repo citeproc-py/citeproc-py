@@ -1518,7 +1518,8 @@ class If(CitationStylesElement, Parent):
         results = []
         if 'disambiguate' in self.attrib:
             disambig = item.reference.get('_disambig')
-            results.append(bool(disambig and disambig.disambiguate))
+            index = int(self.get('_disambig_index', '1'))
+            results.append(bool(disambig and disambig.disambiguate >= index))
         if 'type' in self.attrib:
             results += self._type(item)
         if 'variable' in self.attrib:
