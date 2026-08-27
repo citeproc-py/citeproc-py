@@ -38,6 +38,31 @@ def clone_ambig_config(config: AmbigConfig, oldconfig: AmbigConfig | None = None
 _SUFFIX_CHARS = list("abcdefghijklmnopqrstuvwxyz")
 
 
+def _merge_givens(a: list[int], b: list[int]) -> list[int]:
+    """Merge two givens lists by taking the max at each position."""
+    length = max(len(a), len(b))
+    return [max(a[i] if i < len(a) else 0, b[i] if i < len(b) else 0)
+            for i in range(length)]
+
+
+def _compute_ikey(given: str | None, initialize_with: str | None) -> str:
+    """Compute the initials key used for name frequency tracking.
+
+    When initialize-with is set, produces the initials form (e.g. "J." for "John").
+    When not set, returns the full given name as-is — the level-2 escalation path
+    then handles the case where there's no abbreviation to show.
+    """
+    if not given:
+        return ''
+    if initialize_with is None:
+        return given
+    parts = given.replace('.', ' ').split()
+    caps = [p[0] for p in parts if p and p[0].isupper()]
+    if not caps:
+        return given
+    return initialize_with.join(caps) + initialize_with
+
+
 def index_to_suffix(n: int) -> str:
     """Convert a zero-based integer index to a letter suffix.
 
@@ -76,7 +101,26 @@ def get_ambiguous_cite(item, layout, disambig=None) -> str:
     if citation_element.cites is None:
         citation_element.cites = []
     prev_request = root.disambig_request
-    root.disambig_request = disambig
+    # When probing with a specific config, merge any globally-set givenname
+    # levels from the item's stored _disambig so name-count probe renders
+    # reflect all-names/primary-name expansion that was applied beforehand.
+    effective_disambig = disambig
+    if disambig is not None:
+        stored = item.reference.get('_disambig')
+        if stored and stored.givens:
+            merged = _merge_givens(
+                disambig.givens[0] if disambig.givens else [],
+                stored.givens[0],
+            )
+            if merged != (disambig.givens[0] if disambig.givens else []):
+                effective_disambig = AmbigConfig(
+                    names=list(disambig.names),
+                    givens=[merged],
+                    maxvals=list(disambig.maxvals),
+                    year_suffix=disambig.year_suffix,
+                    disambiguate=disambig.disambiguate,
+                )
+    root.disambig_request = effective_disambig
     with _just_looking(root):
         result = layout.render_children(item)
     root.disambig_request = prev_request
@@ -126,6 +170,9 @@ class Disambiguation:
         add_givenname = citation.get_option('disambiguate-add-givenname')
         gd_rule = citation.get_option('givenname-disambiguation-rule')
         add_year_suffix = citation.get_option('disambiguate-add-year-suffix')
+        # Global givenname expansion must run first so that name-count probe
+        # renders (in _dis_names) see the globally-expanded given names.
+        self._dis_givens_global()
         for item_ids in self.ambigcites.values():
             if len(item_ids) < 2:
                 continue
@@ -205,7 +252,7 @@ class Disambiguation:
                         old = self.registry[iid]['disambig']
                         registered[iid] = AmbigConfig(
                             names=list(betterbase.names),
-                            givens=[list(betterbase.givens[0])],
+                            givens=[_merge_givens(betterbase.givens[0], old.givens[0] if old.givens else [])],
                             maxvals=[names_max],
                             year_suffix=old.year_suffix,
                             disambiguate=old.disambiguate,
@@ -218,7 +265,7 @@ class Disambiguation:
                     old = self.registry[iid]['disambig']
                     registered[iid] = AmbigConfig(
                         names=list(betterbase.names),
-                        givens=[list(betterbase.givens[0])],
+                        givens=[_merge_givens(betterbase.givens[0], old.givens[0] if old.givens else [])],
                         maxvals=[names_max],
                         year_suffix=old.year_suffix,
                         disambiguate=old.disambiguate,
@@ -254,7 +301,7 @@ class Disambiguation:
                 old = self.registry[item_id]['disambig']
                 new_config = AmbigConfig(
                     names=list(betterbase.names),
-                    givens=[list(betterbase.givens[0])],
+                    givens=[_merge_givens(betterbase.givens[0], old.givens[0] if old.givens else [])],
                     maxvals=[names_max],
                     year_suffix=old.year_suffix,
                     disambiguate=old.disambiguate,
@@ -276,3 +323,98 @@ class Disambiguation:
             self.registry[item_id]['disambig'].year_suffix = pos
             # Write the letter into the Reference so the renderer picks it up
             self.bib.source[item_id]['year_suffix'] = index_to_suffix(pos)
+
+    def _dis_givens_global(self):
+        """Expand given names globally for all-names and primary-name rules.
+
+        Unlike by-cite expansion (which only fires when two cites actually clash),
+        these rules expand given names whenever a family name appears more than once
+        in the bibliography, regardless of whether the items would be confused.
+        """
+        citation = self.bib.style.root.citation
+        if not citation.get_option('disambiguate-add-givenname'):
+            return
+        gd_rule = citation.get_option('givenname-disambiguation-rule')
+        if gd_rule == 'by-cite':
+            return
+
+        primary_only = gd_rule.startswith('primary-name')
+        with_initials_only = 'with-initials' in gd_rule
+
+        # Get initialize-with from the first <name> element in the citation layout
+        layout = citation.layout
+        initialize_with: str | None = None
+        for name_el in layout.findall('.//cs:name', layout.nsmap):
+            iw = name_el.get('initialize-with')
+            if iw is not None:
+                initialize_with = iw
+                break
+
+        # Build namereg: rendered_family → {ikey: set_of_normalized_given_names}
+        # A family name gets level 1 when it has >1 distinct ikey (distinct initials).
+        # An ikey gets level 2 when it maps to >1 distinct given name (same initials clash).
+        # pkey uses the rendered family form (ndp + family) so "dos Santos" ≠ "Santos".
+        # skey is the normalized given name so "J. J." == "J.J." don't trigger expansion.
+        namereg: dict[str, dict[str, set[str]]] = {}
+        for entry in self.registry.values():
+            item = entry['item']
+            for var in self._name_vars:
+                names_list = item.reference.get(var, [])
+                for pos, name in enumerate(names_list):
+                    if primary_only and pos > 0:
+                        break
+                    given, family, _dp, ndp, _suffix = name.parts()
+                    if not family:
+                        continue
+                    pkey = ' '.join(n for n in (ndp, family) if n)
+                    ikey = _compute_ikey(given, initialize_with)
+                    skey = ' '.join(given.replace('.', ' ').split()).lower() if given else ''
+                    namereg.setdefault(pkey, {}).setdefault(ikey, set()).add(skey)
+
+        # Assign levels and write back to each item's AmbigConfig
+        for item_id, entry in self.registry.items():
+            item = entry['item']
+            modified = False
+            for var in self._name_vars:
+                names_list = item.reference.get(var, [])
+                if not names_list:
+                    continue
+                names_max = len(names_list)
+                for pos, name in enumerate(names_list):
+                    if primary_only and pos > 0:
+                        break
+                    given, family, _dp, ndp, _suffix = name.parts()
+                    if not family:
+                        continue
+                    pkey = ' '.join(n for n in (ndp, family) if n)
+                    if pkey not in namereg:
+                        continue
+                    ikeys_for_family = namereg[pkey]
+                    ikey = _compute_ikey(given, initialize_with)
+
+                    level = 0
+                    if len(ikeys_for_family) > 1:
+                        level = 1
+                    if not with_initials_only:
+                        if initialize_with is None and level > 0:
+                            level = 2
+                        elif ikey in ikeys_for_family and len(ikeys_for_family[ikey]) > 1:
+                            level = 2
+
+                    if level == 0:
+                        continue
+
+                    disambig = entry['disambig']
+                    if not disambig.givens:
+                        disambig.names = [1]
+                        disambig.maxvals = [names_max]
+                        disambig.givens = [[0] * names_max]
+                    elif len(disambig.givens[0]) < names_max:
+                        disambig.givens[0].extend([0] * (names_max - len(disambig.givens[0])))
+
+                    if pos < len(disambig.givens[0]):
+                        disambig.givens[0][pos] = max(disambig.givens[0][pos], level)
+                        modified = True
+
+            if modified:
+                self.bib.source[item_id]['_disambig'] = entry['disambig']
