@@ -133,7 +133,14 @@ class Disambiguation:
             if add_names or (add_givenname and gd_rule == 'by-cite'):
                 still_clashing = self._dis_names(item_ids)
             if add_year_suffix and still_clashing:
-                self._dis_years(still_clashing)
+                layout = self.bib.style.root.citation.layout
+                render_groups: dict[str, list[str]] = {}
+                for iid in still_clashing:
+                    r = get_ambiguous_cite(self.registry[iid]['item'], layout,
+                                          disambig=self.registry[iid]['disambig'])
+                    render_groups.setdefault(r, []).append(iid)
+                for group in render_groups.values():
+                    self._dis_years(group)
 
     def _dis_names(self, item_ids: list[str]) -> list[str]:
         """Expand name counts and given names using the citeproc-js incrementDisambig order.
@@ -169,6 +176,7 @@ class Disambiguation:
         betterbase = AmbigConfig(names=[1], givens=[[0] * names_max], maxvals=[names_max])
         improved = False
         gname = 0  # cursor: which author position we're currently expanding givens for
+        prev_distinct = 1  # distinct render count at the last improvement step
 
         active_ids = list(item_ids)
         registered: dict[str, AmbigConfig] = {}
@@ -179,13 +187,15 @@ class Disambiguation:
                 for iid in active_ids
             }
 
-            if len(set(renders.values())) > 1:
+            current_distinct = len(set(renders.values()))
+            if current_distinct > prev_distinct:
                 # improvement — partial capture (citeproc-js: captureStepToBase)
                 # Only write the changed position so earlier over-incremented
                 # levels don't pollute betterbase.
                 betterbase.names[0] = base.names[0]
                 betterbase.givens[0][gname] = base.givens[0][gname]
                 improved = True
+                prev_distinct = current_distinct
 
                 # Register any items that are now uniquely rendered, snapshotting
                 # betterbase at this moment so they don't inherit later expansion.
@@ -214,6 +224,11 @@ class Disambiguation:
                         disambiguate=old.disambiguate,
                     )
                     active_ids = []
+
+                # After resolving some items, reset prev_distinct relative to
+                # the remaining group so the next improvement is measured correctly.
+                if active_ids:
+                    prev_distinct = len(set(renders[iid] for iid in active_ids))
 
             if not active_ids:
                 break
