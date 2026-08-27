@@ -1515,8 +1515,10 @@ class Choose(CitationStylesElement, Parent):
 
 class If(CitationStylesElement, Parent):
     def render(self, item, context=None, delimiter='', **kwargs):
-        # TODO self.get('disambiguate')
         results = []
+        if 'disambiguate' in self.attrib:
+            disambig = item.reference.get('_disambig')
+            results.append(bool(disambig and disambig.disambiguate))
         if 'type' in self.attrib:
             results += self._type(item)
         if 'variable' in self.attrib:

@@ -170,6 +170,8 @@ class Disambiguation:
         add_givenname = citation.get_option('disambiguate-add-givenname')
         gd_rule = citation.get_option('givenname-disambiguation-rule')
         add_year_suffix = citation.get_option('disambiguate-add-year-suffix')
+        has_extra_text = self._has_disambiguate_condition()
+        layout = self.bib.style.root.citation.layout
         # Global givenname expansion must run first so that name-count probe
         # renders (in _dis_names) see the globally-expanded given names.
         self._dis_givens_global()
@@ -180,7 +182,6 @@ class Disambiguation:
             if add_names or (add_givenname and gd_rule == 'by-cite'):
                 still_clashing = self._dis_names(item_ids)
             if add_year_suffix and still_clashing:
-                layout = self.bib.style.root.citation.layout
                 render_groups: dict[str, list[str]] = {}
                 for iid in still_clashing:
                     r = get_ambiguous_cite(self.registry[iid]['item'], layout,
@@ -188,6 +189,9 @@ class Disambiguation:
                     render_groups.setdefault(r, []).append(iid)
                 for group in render_groups.values():
                     self._dis_years(group)
+                still_clashing = []  # year-suffix assigns unique suffixes to all remaining
+            if has_extra_text and still_clashing:
+                self._dis_extra_text(still_clashing)
 
     def _dis_names(self, item_ids: list[str]) -> list[str]:
         """Expand name counts and given names using the citeproc-js incrementDisambig order.
@@ -316,6 +320,20 @@ class Disambiguation:
         }
         final_counts = Counter(final_renders.values())
         return [iid for iid in item_ids if final_counts[final_renders[iid]] > 1]
+
+    def _has_disambiguate_condition(self) -> bool:
+        style_root = self.bib.style.root
+        ns = style_root.nsmap
+        for tag in ('cs:if', 'cs:else-if'):
+            for el in style_root.findall(f'.//{tag}', ns):
+                if el.get('disambiguate') == 'true':
+                    return True
+        return False
+
+    def _dis_extra_text(self, item_ids: list[str]):
+        for iid in item_ids:
+            self.registry[iid]['disambig'].disambiguate = True
+            self.bib.source[iid]['_disambig'] = self.registry[iid]['disambig']
 
     def _dis_years(self, item_ids: list[str]):
         # item_ids is already in bibliography sort order (bib.items order)
