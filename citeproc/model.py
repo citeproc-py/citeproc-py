@@ -1204,11 +1204,24 @@ class Name(CitationStylesElement, Formatted, Affixed, Delimited):
 
         et_al_min = get_option('et-al-min')
         et_al_use_first = get_option('et-al-use-first')
+        et_al_subseq_min = get_option('et-al-subsequent-min')
+        et_al_subseq_use_first = get_option('et-al-subsequent-use-first')
+        if et_al_subseq_min > 0:
+            root = self.get_root()
+            if getattr(root, 'just_looking', False):
+                et_al_min = et_al_subseq_min
+                et_al_use_first = et_al_subseq_use_first
+            elif context is not None:
+                try:
+                    cites = context.get_layout().getparent().cites or []
+                except Exception:
+                    cites = []
+                if item.key in (c.key for c in cites):
+                    et_al_min = et_al_subseq_min
+                    et_al_use_first = et_al_subseq_use_first
         _disambig = self.get_root().disambig_request or item.reference.get('_disambig')
         if _disambig and _disambig.names:
             et_al_use_first = max(et_al_use_first, _disambig.names[0])
-        et_al_subseq_min = get_option('et-al-subsequent-min')
-        et_al_subseq_use_first = get_option('et-al-subsequent-use-first')
         et_al_use_last = get_option('et-al-use-last')
 
         initialize_with = get_option('initialize-with')

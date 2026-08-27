@@ -25,7 +25,6 @@ bugreports_DuplicateSpaces
 bugreports_DuplicateSpaces2
 bugreports_DuplicateTerminalPunctuationInBibliography
 bugreports_EnvAndUrb
-bugreports_EtAlSubsequent
 bugreports_FourAndFour
 bugreports_FrenchApostrophe
 bugreports_GreekStyleProblems                                      # uncaught exception
@@ -87,7 +86,6 @@ disambiguate_AllNamesSimpleSequence
 disambiguate_AllNamesWithInitialsGenerally
 disambiguate_AndreaEg2
 disambiguate_AndreaEg3
-disambiguate_BasedOnEtAlSubsequent
 disambiguate_BasedOnSubsequentFormWithBackref2
 disambiguate_CitationLabelDefault
 disambiguate_CitationLabelInData
