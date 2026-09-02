@@ -154,6 +154,20 @@ class CitationStylesElement(SomewhatObjectifiedElement):
 # Top level elements
 
 class Style(CitationStylesElement):
+    just_looking = False      # set True during probe renders to suppress disambiguation output
+    disambig_request = None   # AmbigConfig set during name-expansion probe renders
+
+    _UNSET = object()
+    _has_explicit_year_suffix = _UNSET
+
+    def has_explicit_year_suffix_element(self):
+        """Return True if any cs:text[@variable="year-suffix"] exists in the style."""
+        if self._has_explicit_year_suffix is self._UNSET:
+            self._has_explicit_year_suffix = bool(
+                self.xpath_search('.//cs:text[@variable="year-suffix"]')
+            )
+        return self._has_explicit_year_suffix
+
     def set_locale_list(self, output_locale, validate=True):
         """Set up list of locales in which to search for localizable units"""
         from .frontend import CitationStylesLocale
@@ -242,7 +256,7 @@ class Citation(FormattingInstructions, CitationStylesElement):
     _default_options = {# disambiguation
                         'disambiguate-add-names': False,
                         'disambiguate-add-givenname': False,
-                        'givenname-disambiguation-rule': 'all-names',
+                        'givenname-disambiguation-rule': 'by-cite',
                         'disambiguate-add-year-suffix': False,
 
                         # citation collapsing
@@ -526,7 +540,12 @@ class Key(CitationStylesElement):
         elif 'macro' in self.attrib:
             layout = context.get_layout()
             # override name options
-            sort_options = {'name-as-sort-order': 'all'}
+            # Suppress display-only formatting in sort keys: no "and" conjunction,
+            # and no context-inherited et-al truncation (999 is an effective
+            # sentinel — explicit names-min/use-first on the key element override
+            # it below, matching citeproc-js behaviour).
+            sort_options = {'name-as-sort-order': 'all', 'and': None,
+                            'et-al-min': '999'}
             for option in ('names-min', 'names-use-first', 'names-use-last'):
                 if option in self.attrib:
                     name = option.replace('names', 'et-al')
@@ -640,6 +659,7 @@ class Layout(CitationStylesElement, Parent, Formatted, Affixed, Delimited):
         out = []
         for item in good_cites:
             self.repressed = {}
+            item.has_done_year_suffix = False
             prefix = item.get('prefix', '')
             suffix = item.get('suffix', '')
             try:
@@ -665,6 +685,7 @@ class Layout(CitationStylesElement, Parent, Formatted, Affixed, Delimited):
         output_items = []
         for item in citation_items:
             self.repressed = {}
+            item.has_done_year_suffix = False
             text = self.format(self.wrap(self.render_children(item)))
             if text is not None:
                 output_items.append(text)
@@ -888,6 +909,10 @@ class Date(CitationStylesElement, Parent, Formatted, Affixed, Delimited):
         if context is None:
             context = self
 
+        # During probe renders, accessed dates are excluded from the ambig key.
+        if context.get_root().just_looking and variable == 'accessed':
+            return None
+
         form = self.get('form')
         date_parts = self.get('date-parts')
         if not self.is_locale_date() and form is not None:
@@ -909,6 +934,17 @@ class Date(CitationStylesElement, Parent, Formatted, Affixed, Delimited):
                 text = self.render_single_date(date_or_range, show_parts,
                                                context)
             if text is not None:
+                if (variable == 'issued'
+                        and not self.get_root().just_looking
+                        and not context.get_root().has_explicit_year_suffix_element()
+                        and not item.get('has_done_year_suffix', False)):
+                    try:
+                        year_suffix = item.reference['year_suffix']
+                        if year_suffix:
+                            item.has_done_year_suffix = True
+                            text = text + year_suffix
+                    except (KeyError, AttributeError, VariableError):
+                        pass
                 style_context = context if self.is_locale_date() else self
                 return style_context.wrap(text)
             else:
@@ -1170,6 +1206,22 @@ class Name(CitationStylesElement, Formatted, Affixed, Delimited):
         et_al_use_first = get_option('et-al-use-first')
         et_al_subseq_min = get_option('et-al-subsequent-min')
         et_al_subseq_use_first = get_option('et-al-subsequent-use-first')
+        if et_al_subseq_min > 0:
+            root = self.get_root()
+            if getattr(root, 'just_looking', False):
+                et_al_min = et_al_subseq_min
+                et_al_use_first = et_al_subseq_use_first
+            elif context is not None:
+                try:
+                    cites = context.get_layout().getparent().cites or []
+                except Exception:
+                    cites = []
+                if item.key in (c.key for c in cites):
+                    et_al_min = et_al_subseq_min
+                    et_al_use_first = et_al_subseq_use_first
+        _disambig = self.get_root().disambig_request or item.reference.get('_disambig')
+        if _disambig and _disambig.names:
+            et_al_use_first = max(et_al_use_first, _disambig.names[0])
         et_al_use_last = get_option('et-al-use-last')
 
         initialize_with = get_option('initialize-with')
@@ -1199,7 +1251,8 @@ class Name(CitationStylesElement, Formatted, Affixed, Delimited):
             return sum(output)
         else:
             et_al_truncate = (len(names) > 1 and et_al_min and
-                              len(names) >= et_al_min)
+                              len(names) >= et_al_min
+                              and et_al_use_first < len(names))
             et_al_last = et_al_use_last and et_al_use_first <= et_al_min - 2
             if et_al_truncate:
                 if et_al_last:
@@ -1209,7 +1262,11 @@ class Name(CitationStylesElement, Formatted, Affixed, Delimited):
             for i, name in enumerate(names):
                 given, family, dp, ndp, suffix = name.parts()
 
-                if given is not None and initialize_with is not None:
+                given_level = 0
+                if _disambig and _disambig.givens and i < len(_disambig.givens[0]):
+                    given_level = _disambig.givens[0][i]
+
+                if given is not None and initialize_with is not None and given_level != 2:
                     given = self.initialize(given, initialize_with, context)
 
                 if form == 'long':
@@ -1232,7 +1289,11 @@ class Name(CitationStylesElement, Formatted, Affixed, Delimited):
                 elif form == 'short':
                     family = ' '.join([n for n in (ndp, family) if n])
                     given, family = format_name_parts(given, family)
-                    text = family
+                    if given_level >= 1 and given:
+                        order = given, family, suffix
+                        text = ' '.join([n for n in order if n])
+                    else:
+                        text = family
 
                 output.append(text)
 
@@ -1454,8 +1515,11 @@ class Choose(CitationStylesElement, Parent):
 
 class If(CitationStylesElement, Parent):
     def render(self, item, context=None, delimiter='', **kwargs):
-        # TODO self.get('disambiguate')
         results = []
+        if 'disambiguate' in self.attrib:
+            disambig = item.reference.get('_disambig')
+            index = int(self.get('_disambig_index', '1'))
+            results.append(bool(disambig and disambig.disambiguate >= index))
         if 'type' in self.attrib:
             results += self._type(item)
         if 'variable' in self.attrib:

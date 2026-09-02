@@ -120,6 +120,7 @@ class CitationStylesBibliography(object):
         self.keys = []
         self.items = []
         self._cites = []
+        self._needs_disambig = False
 
     def register(self, citation, callback=None):
         citation.bibliography = self
@@ -130,13 +131,22 @@ class CitationStylesBibliography(object):
                     self.items.append(item)
             elif callback is not None:
                 callback(item)
+        self._needs_disambig = True
 
     def sort(self):
         self.items = self.style.sort_bibliography(self.items)
         self.keys = [item.key for item in self.items]
 
+    def _ensure_disambiguated(self):
+        if self._needs_disambig:
+            from .disambig import Disambiguation
+            Disambiguation(self).run()
+            self._needs_disambig = False
+
     def cite(self, citation, callback):
+        self._ensure_disambiguated()
         return self.style.render_citation(citation, self._cites, callback)
 
     def bibliography(self):
+        self._ensure_disambiguated()
         return self.style.render_bibliography(self.items)
