@@ -74,6 +74,12 @@ First clone the `citeproc-py` repository and install the submodules with
 git submodule update --init
 ```
 
+If you want git to fully ignore the submodules, you can type
+```bash
+git update-index --assume-unchanged citeproc/data/schema
+git update-index --assume-unchanged citeproc/data/locales
+```
+
 Then install with
 ```bash
 pip install --editable .[tests]
@@ -89,14 +95,12 @@ Or you can manually run citeproc-test tests using
 python tests/citeproc-test.py
 ```
 
-The first time
-you run the script it will clone the
-[citeproc-test suite](https://github.com/citation-style-language/test-suite) repository into the
-`tests` directory and checkout the last tested version. By default failed tests are
-automatically added into the `failing_tests.txt` file and aren't shown when
-running the test suite again.
+The first time you run the script it will clone the [citeproc-test
+suite](https://github.com/citation-style-language/test-suite) repository into
+the `tests` directory and checkout the last tested version. By default failed
+tests are automatically added into the `failing_tests.txt` file and aren't
+shown when running the test suite again.
 
-If you want git to fully ignore the submodule, you can type
-```bash
-git update-index --assume-unchanged citeproc/data/schema
-```
+`citeproc-py` uses `ruff` for linting. You can run it directly using `ruff check`.
+Any test failures or linting errors will show up on the CI and will need to be
+fixed before a Pull Request can be merged.
