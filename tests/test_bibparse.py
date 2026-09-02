@@ -1,12 +1,8 @@
-# coding: utf-8
-
 import os
-
 from io import StringIO
 from unittest import TestCase
 
-from citeproc.source.bibtex.bibparse import BibTeXParser, BibTeXDecodeError
-
+from citeproc.source.bibtex.bibparse import BibTeXDecodeError, BibTeXParser
 
 TEST_BIB = os.path.join(os.path.dirname(__file__), 'test.bib')
 
@@ -31,7 +27,7 @@ class TestBibTeXParser(TestCase):
         for key, entry in bib.items():
             print(key)
             for name, value in entry.items():
-                print('   {}: {}'.format(name, value))
+                print(f'   {name}: {value}')
 
 
 # based on the sample BibTeX database by Xavier Décoret

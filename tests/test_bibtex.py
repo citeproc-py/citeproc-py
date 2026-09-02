@@ -1,9 +1,7 @@
-# coding: utf-8
-
 from unittest import TestCase
 
 from citeproc.source.bibtex import BibTeX
-from citeproc.source.bibtex.bibtex import split_names, split_name, parse_name
+from citeproc.source.bibtex.bibtex import parse_name, split_name, split_names
 
 
 class TestBibTeX(TestCase):
@@ -18,24 +16,24 @@ class TestBibTeX(TestCase):
 
     def test_parse_name(self):
         for name, reference in DECORET_NAMES:
-            print('{:24}  {}'.format(name, parse_name(name)))
+            print(f'{name:24}  {parse_name(name)}')
             self.assertEqual(parse_name(name), reference)
         for name, parts in PYBTEX_NAMES:
             reference = tuple(' '.join(pieces) if pieces else None
                               for pieces in parts)
-            print('{:24}  {}'.format(name, parse_name(name)))
+            print(f'{name:24}  {parse_name(name)}')
             self.assertEqual(parse_name(name), reference)
         for name, reference in EXTRA_NAMES:
-            print('{:24}  {}'.format(name, parse_name(name)))
+            print(f'{name:24}  {parse_name(name)}')
             self.assertEqual(parse_name(name), reference)
 
     def test_date_months(self):
         for january in ['jan', 'JAN', '01']:
             self.assertEqual(BibTeX._parse_month(january),
                              ({'month': 1}, ) * 2)
-        self.assertEqual(BibTeX._parse_month("10~jan"),
+        self.assertEqual(BibTeX._parse_month('10~jan'),
                          ({'month': 1, 'day': 10}, ) * 2)
-        self.assertEqual(BibTeX._parse_month("jul~4"),
+        self.assertEqual(BibTeX._parse_month('jul~4'),
                          ({'month': 7, 'day': 4}, ) * 2)
 
     def test_pages(self):
@@ -73,45 +71,49 @@ SPLIT_NAME = [
 
 
 # http://maverick.inria.fr/~Xavier.Decoret/resources/xdkbibtex/bibtex_summary.html
+# ruff: ignore[multiple-spaces-after-keyword]
+# ruff: ignore[whitespace-before-punctuation]
+# ruff: ignore[whitespace-after-open-bracket,whitespace-before-close-bracket]
+# ruff: ignore[line-too-long]
 DECORET_NAMES = [
     # name string          First        von           Last          Jr
-    ( 'AA BB'          , ( 'AA'       , None        , 'BB'        , None     )),  # Testing simple case with no von.
-    ( 'AA'             , (  None      , None        , 'AA'        , None     )),  # Testing that Last cannot be empty.
-    ( 'AA bb'          , ( 'AA'       , None        , 'bb'        , None     )),  # Idem.
-    ( 'aa'             , (  None      , None        , 'aa'        , None     )),  # Idem.
-    ( 'AA bb CC'       , ( 'AA'       , 'bb'        , 'CC'        , None     )),  # Testing simple von.
-    ( 'AA bb CC dd EE' , ( 'AA'       , 'bb CC dd'  , 'EE'        , None     )),  # Testing simple von (with inner uppercase words)
-    ( 'AA 1B cc dd'    , ( 'AA 1B'    , 'cc'        , 'dd'        , None     )),  # Testing that digits are caseless (B fixes the case of 1B to uppercase).
-    ( 'AA 1b cc dd'    , ( 'AA'       , '1b cc'     , 'dd'        , None     )),  # Testing that digits are caseless (b fixes the case of 1b to lowercase)
-    ( 'AA {b}B cc dd'  , ( 'AA {b}B'  , 'cc'        , 'dd'        , None     )),  # Testing that pseudo letters are caseless.
-    ( 'AA {b}b cc dd'  , ( 'AA'       , '{b}b cc'   , 'dd'        , None     )),  # Idem.
-    ( 'AA {B}b cc dd'  , ( 'AA'       , '{B}b cc'   , 'dd'        , None     )),  # Idem.
-    ( 'AA {B}B cc dd'  , ( 'AA {B}B'  , 'cc'        , 'dd'        , None     )),  # Idem.
-    (r'AA \BB{b} cc dd', (r'AA \BB{b}', 'cc'        , 'dd'        , None     )),  # Testing that non letters are case less (in particular show how latex command are considered).
-    (r'AA \bb{b} cc dd', ( 'AA'       ,r'\bb{b} cc' , 'dd'        , None     )),  # Idem.
-    ( 'AA {bb} cc DD'  , ( 'AA {bb}'  , 'cc'        , 'DD'        , None     )),  # Testing that caseless words are grouped with First primilarily and then with Last.
-    ( 'AA bb {cc} DD'  , ( 'AA'       , 'bb'        , '{cc} DD'   , None     )),  # Idem.
-    ( 'AA {bb} CC'     , ( 'AA {bb}'  , None        , 'CC'        , None     )),  # Idem.
+    ( 'AA BB'          , ( 'AA'       , None         , 'BB'        , None     )),  # Testing simple case with no von.
+    ( 'AA'             , ( None       , None         , 'AA'        , None     )),  # Testing that Last cannot be empty.
+    ( 'AA bb'          , ( 'AA'       , None         , 'bb'        , None     )),  # Idem.
+    ( 'aa'             , ( None       , None         , 'aa'        , None     )),  # Idem.
+    ( 'AA bb CC'       , ( 'AA'       , 'bb'         , 'CC'        , None     )),  # Testing simple von.
+    ( 'AA bb CC dd EE' , ( 'AA'       , 'bb CC dd'   , 'EE'        , None     )),  # Testing simple von (with inner uppercase words)
+    ( 'AA 1B cc dd'    , ( 'AA 1B'    , 'cc'         , 'dd'        , None     )),  # Testing that digits are caseless (B fixes the case of 1B to uppercase).
+    ( 'AA 1b cc dd'    , ( 'AA'       , '1b cc'      , 'dd'        , None     )),  # Testing that digits are caseless (b fixes the case of 1b to lowercase)
+    ( 'AA {b}B cc dd'  , ( 'AA {b}B'  , 'cc'         , 'dd'        , None     )),  # Testing that pseudo letters are caseless.
+    ( 'AA {b}b cc dd'  , ( 'AA'       , '{b}b cc'    , 'dd'        , None     )),  # Idem.
+    ( 'AA {B}b cc dd'  , ( 'AA'       , '{B}b cc'    , 'dd'        , None     )),  # Idem.
+    ( 'AA {B}B cc dd'  , ( 'AA {B}B'  , 'cc'         , 'dd'        , None     )),  # Idem.
+    (r'AA \BB{b} cc dd', (r'AA \BB{b}', 'cc'         , 'dd'        , None     )),  # Testing that non letters are case less (in particular show how latex command are considered).
+    (r'AA \bb{b} cc dd', ( 'AA'       , r'\bb{b} cc' , 'dd'        , None     )),  # Idem.
+    ( 'AA {bb} cc DD'  , ( 'AA {bb}'  , 'cc'         , 'DD'        , None     )),  # Testing that caseless words are grouped with First primilarily and then with Last.
+    ( 'AA bb {cc} DD'  , ( 'AA'       , 'bb'         , '{cc} DD'   , None     )),  # Idem.
+    ( 'AA {bb} CC'     , ( 'AA {bb}'  , None         , 'CC'        , None     )),  # Idem.
 
-    ( 'bb CC, AA'      , ('AA'        , 'bb'        , 'CC'        , None     )),  # Simple case. Case do not matter for First.
-    ( 'bb CC, aa'      , ('aa'        , 'bb'        , 'CC'        , None     )),  # Idem.
-    ( 'bb CC dd EE, AA', ('AA'        , 'bb CC dd'  , 'EE'        , None     )),  # Testing simple von (with inner uppercase).
-    ( 'bb, AA'         , ('AA'        , None        , 'bb'        , None     )),  # Testing that the Last part cannot be empty.
-    ( 'BB,'            , ( None       , None        , 'BB'        , None     )),  # Testing that first can be empty after coma
+    ( 'bb CC, AA'      , ('AA'        , 'bb'         , 'CC'        , None     )),  # Simple case. Case do not matter for First.
+    ( 'bb CC, aa'      , ('aa'        , 'bb'         , 'CC'        , None     )),  # Idem.
+    ( 'bb CC dd EE, AA', ('AA'        , 'bb CC dd'   , 'EE'        , None     )),  # Testing simple von (with inner uppercase).
+    ( 'bb, AA'         , ('AA'        , None         , 'bb'        , None     )),  # Testing that the Last part cannot be empty.
+    ( 'BB,'            , ( None       , None         , 'BB'        , None     )),  # Testing that first can be empty after coma
 
-    ( 'bb CC,XX, AA'   , ('AA'        , 'bb'        , 'CC'        , 'XX'     )),  # Simple Jr. Case do not matter for it.
-    ( 'bb CC,xx, AA'   , ('AA'        , 'bb'        , 'CC'        , 'xx'     )),  # Idem.
-    ( 'BB,, AA'        , ('AA'        , None        , 'BB'        , None     )),  # Testing that jr can be empty in between comas.
+    ( 'bb CC,XX, AA'   , ('AA'        , 'bb'         , 'CC'        , 'XX'     )),  # Simple Jr. Case do not matter for it.
+    ( 'bb CC,xx, AA'   , ('AA'        , 'bb'         , 'CC'        , 'xx'     )),  # Idem.
+    ( 'BB,, AA'        , ('AA'        , None         , 'BB'        , None     )),  # Testing that jr can be empty in between comas.
 
-    (r"Paul \'Emile Victor"   , (r"Paul \'Emile"  , None        , "Victor", None)),
-    (r"Paul {\'E}mile Victor" , (r"Paul {\'E}mile", None        , "Victor", None)),
-    (r"Paul \'emile Victor"   , ( "Paul"          , r"\'emile"  , "Victor", None)),
-    (r"Paul {\'e}mile Victor" , ( "Paul"          , r"{\'e}mile", "Victor", None)),
+    (r"Paul \'Emile Victor"   , (r"Paul \'Emile"     , None        , 'Victor', None)),
+    (r"Paul {\'E}mile Victor" , (r"Paul {\'E}mile"   , None        , 'Victor', None)),
+    (r"Paul \'emile Victor"   , ( 'Paul'             , r"\'emile"  , 'Victor', None)),
+    (r"Paul {\'e}mile Victor" , ( 'Paul'             , r"{\'e}mile", 'Victor', None)),
 
-    (r"Victor, Paul \'Emile"  , (r"Paul \'Emile"  , None        , "Victor", None)),
-    (r"Victor, Paul {\'E}mile", (r"Paul {\'E}mile", None        , "Victor", None)),
-    (r"Victor, Paul \'emile"  , (r"Paul \'emile"  , None        , "Victor", None)),
-    (r"Victor, Paul {\'e}mile", (r"Paul {\'e}mile", None        , "Victor", None)),
+    (r"Victor, Paul \'Emile"  , (r"Paul \'Emile"     , None        , 'Victor', None)),
+    (r"Victor, Paul {\'E}mile", (r"Paul {\'E}mile"   , None        , 'Victor', None)),
+    (r"Victor, Paul \'emile"  , (r"Paul \'emile"     , None        , 'Victor', None)),
+    (r"Victor, Paul {\'e}mile", (r"Paul {\'e}mile"   , None        , 'Victor', None)),
 
     ('Dominique Galouzeau de Villepin',
       ('Dominique Galouzeau', 'de'            , 'Villepin'             , None)),
@@ -260,8 +262,8 @@ PYBTEX_NAMES = [
 
 EXTRA_NAMES = [
     ('others', (None, None, 'others', None)),
-    ('Charles Louis Xavier Joseph de la Vall{\’e}e Poussin',
-      ('Charles Louis Xavier Joseph', 'de la', 'Vall{\’e}e Poussin', None)),
+    (r'Charles Louis Xavier Joseph de la Vall{\’e}e Poussin',
+      ('Charles Louis Xavier Joseph', 'de la', r'Vall{\’e}e Poussin', None)),
     # the following name of the Pybtex tests doesn't agree with BibTeX's output
     # (verified using Xavier Décoret's names.bst)
     ('TUG {\\sltt DVI} Driver Standards Committee',

@@ -14,10 +14,10 @@ class RoleWrapper(str):
 
     @classmethod
     def _wrap(cls, text):
-        return ':{role}:`{text}`'.format(role=cls.role, text=text)
+        return f':{cls.role}:`{text}`'
 
     def __new__(cls, text):
-        return super(RoleWrapper, cls).__new__(cls, cls._wrap(text))
+        return super().__new__(cls, cls._wrap(text))
 
 
 class Italic(RoleWrapper):

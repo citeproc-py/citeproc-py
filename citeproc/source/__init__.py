@@ -1,4 +1,3 @@
-
 # http://sourceforge.net/mailarchive/message.php?msg_id=25355232
 
 # http://dret.net/bibconvert/tex2unicode
@@ -9,7 +8,16 @@ from .. import VARIABLES
 
 
 class CustomDict(dict):
-    def __init__(self, args, required=set(), optional=set(), required_or=[]):
+    def __init__(self, args, required=None, optional=None, required_or=None):
+        if required is None:
+            required = set()
+
+        if optional is None:
+            optional = set()
+
+        if required_or is None:
+            required_or = []
+
         passed_keywords = set(args.keys())
         missing = required - passed_keywords
         if missing:
@@ -24,8 +32,8 @@ class CustomDict(dict):
         unsupported = passed_keywords - required - optional - required_or_merged
         if unsupported:
             cls_name = self.__class__.__name__
-            warn('The following arguments for {} are '.format(cls_name) +
-                 'unsupported: ' + ', '.join(unsupported))
+            warn(f'The following arguments for {cls_name} are unsupported: '
+                 + ', '.join(unsupported), stacklevel=2)
         self.update(args)
 
     def __setattr__(self, name, value):
@@ -36,22 +44,22 @@ class CustomDict(dict):
 
     def __getitem__(self, key):
         try:
-            return super(CustomDict, self).__getitem__(key)
+            return super().__getitem__(key)
         except KeyError:
-            raise VariableError
+            raise VariableError from None
 
 
 class Reference(CustomDict):
     def __init__(self, key, type, **args):
         self.key = key
         self.type = type
-        #required_or = [set(csl.VARIABLES)]
+        # required_or = [set(csl.VARIABLES)]
         optional = ({'uri', 'container_uri', 'contributor', 'date'} |
                     set(VARIABLES))
-        super(Reference, self).__init__(args, optional=optional)
+        super().__init__(args, optional=optional)
 
     def __repr__(self):
-        return '{}({})'.format(self.__class__.__name__, self.key)
+        return f'{self.__class__.__name__}({self.key})'
 
 
 class VariableError(Exception):
@@ -66,7 +74,7 @@ class Name(CustomDict):
             required = set()
             optional = {'family', 'given', 'dropping-particle', 'non-dropping-particle',
                         'suffix'}
-        super(Name, self).__init__(args, required, optional)
+        super().__init__(args, required, optional)
 
     def parts(self):
         if 'literal' in self:
@@ -78,9 +86,15 @@ class Name(CustomDict):
 
 
 class DateBase(CustomDict):
-    def __init__(self, args, required=set(), optional=set()):
+    def __init__(self, args, required=None, optional=None):
+        if required is None:
+            required = set()
+
+        if optional is None:
+            optional = set()
+
         optional = {'circa'} | optional
-        super(DateBase, self).__init__(args, required, optional)
+        super().__init__(args, required, optional)
         # defaults
         if 'circa' not in self:
             self['circa'] = False
@@ -98,13 +112,13 @@ class Date(DateBase):
                 args[key] = int(value)
             except ValueError:
                 pass
-        super(Date, self).__init__(args, required, optional)
+        super().__init__(args, required, optional)
 
     def sort_key(self):
         year = self.year
         month = self.get('month', 0)
         day = self.get('day', 0)
-        return '{:05}{:02}{:02}'.format(year + 10000, month, day)
+        return f'{year + 10000:05}{month:02}{day:02}'
 
     def is_nil(self):
         return (self.year == 0 and self.get('month', 0) == 0 and
@@ -114,7 +128,7 @@ class Date(DateBase):
 class LiteralDate(DateBase):
     def __init__(self, text, **args):
         self.text = text
-        super(LiteralDate, self).__init__(args)
+        super().__init__(args)
 
     def sort_key(self):
         return self.text
@@ -124,7 +138,7 @@ class DateRange(DateBase):
     def __init__(self, **args):
         required = {'begin'}
         optional = {'end'}
-        super(DateRange, self).__init__(args, required, optional)
+        super().__init__(args, required, optional)
 
     def sort_key(self):
         begin = self.begin.sort_key()
@@ -141,21 +155,21 @@ class Citation(CustomDict):
         for cite in cites:
             cite.citation = self
         self.cites = cites
-        super(Citation, self).__init__(kwargs)
+        super().__init__(kwargs)
 
     def __repr__(self):
         cites = ', '.join([cite.key for cite in self.cites])
-        return '{}({})'.format(self.__class__.__name__, cites)
+        return f'{self.__class__.__name__}({cites})'
 
 
 class CitationItem(CustomDict):
     def __init__(self, key, bibliography=None, **args):
         self.key = key.lower()
         optional = {'locator', 'prefix', 'suffix'}
-        super(CitationItem, self).__init__(args, optional=optional)
+        super().__init__(args, optional=optional)
 
     def __repr__(self):
-        return '{}({})'.format(self.__class__.__name__, self.key)
+        return f'{self.__class__.__name__}({self.key})'
 
     @property
     def bibliography(self):
@@ -182,7 +196,7 @@ class CitationItem(CustomDict):
         return self.key not in self.bibliography.keys
 
 
-class Locator(object):
+class Locator:
     def __init__(self, label, identifier):
         self.label = label
         self.identifier = identifier
@@ -193,4 +207,4 @@ class BibliographySource(dict):
         self[entry.key] = entry
 
 
-from . import bibtex, json
+from . import bibtex, json  # ruff: ignore[unused-import]

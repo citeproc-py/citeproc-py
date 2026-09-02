@@ -1,21 +1,17 @@
 
 import re
 import unicodedata
-import os
-
 from functools import cmp_to_key
-from glob import glob
 from operator import itemgetter
 
 from lxml import etree
 
-from . import NAMES, DATES, NUMBERS, PRIMARY_DIALECTS, LANGUAGE_NAMES
-from .source import VariableError, DateRange, LiteralDate
+from . import DATES, LANGUAGE_NAMES, NAMES, NUMBERS, PRIMARY_DIALECTS
+from .source import DateRange, LiteralDate, VariableError
 from .string import String, join, normalize_seam
 
 
 # Base class
-
 class SomewhatObjectifiedElement(etree.ElementBase):
     nsmap = {'cs': 'http://purl.org/net/xbiblio/csl',
              'xml': 'http://www.w3.org/XML/1998/namespace'}
@@ -26,7 +22,8 @@ class SomewhatObjectifiedElement(etree.ElementBase):
 
 
 class CitationStylesElement(SomewhatObjectifiedElement):
-    _default_options = {# global options
+    _default_options = {
+                        # global options
                         'initialize-with-hyphen': 'true',
                         'page-range-format': None,
                         'demote-non-dropping-particle': 'display-and-sort',
@@ -63,8 +60,8 @@ class CitationStylesElement(SomewhatObjectifiedElement):
             xpath += '/' + node
             element = self.xpath(xpath)[0]
             namespace, tag = element.tag.split('}', 1)
-            attribs = ''.join(' {}="{}"'.format(key, value)
-                               for key, value in element.attrib.items())
+            attribs = ''.join(f' {key}="{value}"'
+                              for key, value in element.attrib.items())
             tree.append('{:>4}: {}<{}{}>'.format(element.sourceline,
                                                  i * '  ', tag, attribs))
         print('\n'.join(tree))
@@ -73,7 +70,7 @@ class CitationStylesElement(SomewhatObjectifiedElement):
         return self.get(name, self._default_options[name])
 
     def get_macro(self, name):
-        expression = "cs:macro[@name='{}'][1]".format(name)
+        expression = f"cs:macro[@name='{name}'][1]"
         return self.get_root().xpath_search(expression)[0]
 
     def get_layout(self):
@@ -96,7 +93,7 @@ class CitationStylesElement(SomewhatObjectifiedElement):
 
     # TODO: Locale methods
     def get_term(self, name, form=None, fallback_locale=True, zero_padded=False):
-        lg_key = "{http://www.w3.org/XML/1998/namespace}lang"
+        lg_key = '{http://www.w3.org/XML/1998/namespace}lang'
         if isinstance(self.get_root(), Locale):
             return self.get_root().get_term(name, form)
         else:
@@ -113,7 +110,7 @@ class CitationStylesElement(SomewhatObjectifiedElement):
             for locale in locales:
                 try:
                     return locale.get_term(name, form, zero_padded=zero_padded)
-                except IndexError: # TODO: create custom exception
+                except IndexError:  # TODO: create custom exception
                     continue
 
     def get_plural_term(self, name, *args, **kwargs):
@@ -162,7 +159,7 @@ class Style(CitationStylesElement):
         system_locales_added = set()
 
         def add_instyle_locale(locale):
-            expr = ('./cs:locale[@xml:lang="{}"]'.format(locale)
+            expr = (f'./cs:locale[@xml:lang="{locale}"]'
                     if locale else './cs:locale[not(@xml:lang)]')
             results = self.xpath_search(expr)
             if results:
@@ -199,22 +196,22 @@ class Locale(CitationStylesElement):
                         'punctuation-in-quote': 'false'}
 
     def get_term(self, name, form=None, zero_padded=False):
-        attributes = "@name='{}'".format(name)
+        attributes = f"@name='{name}'"
         if form is not None:
-            attributes += " and @form='{}'".format(form)
+            attributes += f" and @form='{form}'"
         else:
-            attributes += " and not(@form)"
+            attributes += ' and not(@form)'
         if zero_padded:
             attributes += "and not(@match='whole-number')"
             attributes += "and not(@match='last-two-digits')"
-        expr = './cs:term[{}]'.format(attributes)
+        expr = f'./cs:term[{attributes}]'
         try:
             return self.terms.xpath_search(expr)[0]
         except AttributeError:
-            raise IndexError
+            raise IndexError from None
 
     def get_date(self, form):
-        expr = "./cs:date[@form='{}']".format(form)
+        expr = f"./cs:date[@form='{form}']"
         return self.xpath_search(expr)[0]
 
     def get_option(self, name):
@@ -227,7 +224,7 @@ class Locale(CitationStylesElement):
         return self.style.formatter
 
 
-class FormattingInstructions(object):
+class FormattingInstructions:
     def get_option(self, name):
         if name in self._default_options:
             return self.get(name, self._default_options[name])
@@ -239,7 +236,8 @@ class FormattingInstructions(object):
 
 
 class Citation(FormattingInstructions, CitationStylesElement):
-    _default_options = {# disambiguation
+    _default_options = {
+                        # disambiguation
                         'disambiguate-add-names': False,
                         'disambiguate-add-givenname': False,
                         'givenname-disambiguation-rule': 'all-names',
@@ -259,7 +257,8 @@ class Citation(FormattingInstructions, CitationStylesElement):
 
 
 class Bibliography(FormattingInstructions, CitationStylesElement):
-    _default_options = {# whitespace
+    _default_options = {
+                        # whitespace
                         'hanging-indent': False,
                         'second-field-align': None,
                         'line-spacing': 1,
@@ -277,7 +276,7 @@ class Bibliography(FormattingInstructions, CitationStylesElement):
 
 # Style behavior
 
-class Formatted(object):
+class Formatted:
     def format(self, string):
         if isinstance(string, (int, float)):
             string = str(string)
@@ -340,7 +339,7 @@ class Formatted(object):
         return formatted
 
 
-class Affixed(object):
+class Affixed:
     def wrap(self, string):
         if string is not None:
             prefix = self.get('prefix', '')
@@ -351,32 +350,32 @@ class Affixed(object):
         return None
 
 
-class Delimited(object):
+class Delimited:
     def join(self, strings, default_delimiter=''):
         delimiter = self.get('delimiter', default_delimiter)
         try:
             text = join((s for s in strings if s is not None), delimiter)
-        except:
+        except Exception:
             text = String('')
         return text
 
 
-class Displayed(object):
+class Displayed:
     pass
 
 
-class Quoted(object):
+class Quoted:
     def quote(self, string):
-        piq = self.get_locale_option('punctuation-in-quote').lower() == 'true'
+        # piq = self.get_locale_option('punctuation-in-quote').lower() == 'true'
         if self.get('quotes', 'false').lower() == 'true':
             open_quote = self.get_single_term(name='open-quote')
             close_quote = self.get_single_term(name='close-quote')
             string = open_quote + string + close_quote
-##            quoted_string = QuotedString(string, open_quote, close_quote, piq)
+            # quoted_string = QuotedString(string, open_quote, close_quote, piq)
         return string
 
 
-class StrippedPeriods(object):
+class StrippedPeriods:
     def strip_periods(self, string):
         strip_periods = self.get('strip-periods', 'false').lower() == 'true'
         if strip_periods:
@@ -384,7 +383,7 @@ class StrippedPeriods(object):
         return string
 
 
-class TextCased(object):
+class TextCased:
     _stop_words = ['a', 'an', 'and', 'as', 'at', 'but', 'by', 'down', 'for',
                    'from', 'in', 'into', 'nor', 'of', 'on', 'onto', 'or',
                    'over', 'so', 'the', 'till', 'to', 'up', 'via', 'with',
@@ -409,12 +408,12 @@ class TextCased(object):
                 text = ' '.join(output)
             elif text_case == 'title':
                 output = []
-                prev = ':' #This ensures first word is capitilized
+                prev = ':'   # This ensures first word is capitilized
                 for word in text.words():
                     if word.islower() and (str(word) not in self._stop_words or
                         prev in (':', '.')):
                         word = word.capitalize_first()
-                    elif word.islower(): #Lowercase stop words
+                    elif word.islower():  # Lowercase stop words
                         word = word.soft_lower()
                     prev = word[-1]
                     output.append(word)
@@ -462,6 +461,7 @@ class Sort(CitationStylesElement):
             lst = zip(items, *keys)
             comparers = [(itemgetter(i + 1), descending[i])
                          for i in range(len(keys))]
+
             def mycmp(left, right):
                 for getter, desc in comparers:
                     left_key, right_key = getter(left), getter(right)
@@ -577,7 +577,7 @@ class Key(CitationStylesElement):
 
 # Rendering elements
 
-class Parent(object):
+class Parent:
     def calls_variable(self):
         return any([child.calls_variable() for child in self.getchildren()])
 
@@ -652,7 +652,7 @@ class Layout(CitationStylesElement, Parent, Formatted, Affixed, Delimited):
                 pass
         for item in bad_cites:
             callback_value = callback(item)
-            out.append(callback_value or '{}?'.format(item.key))
+            out.append(callback_value or f'{item.key}?')
         return self.format(self.wrap(self.join(out)))
 
     def sort_bibliography(self, citation_items):
@@ -671,7 +671,7 @@ class Layout(CitationStylesElement, Parent, Formatted, Affixed, Delimited):
         return output_items
 
 
-class FormatNumber(object):
+class FormatNumber:
     def _process(self, value, variable):
         page_range_delimiter = self.get_single_term(name='page-range-delimiter') \
             if variable.startswith('page') else None
@@ -679,6 +679,7 @@ class FormatNumber(object):
                            or self.unicode_character('EN DASH'))
 
         en_dash = unicodedata.lookup('EN DASH')
+
         def format_number_or_range(item):
             try:
                 first, last = (number.strip() for number
@@ -700,7 +701,7 @@ class FormatNumber(object):
     def _format_last_page(self, first, last):
         def find_common(first, last):
             count = 0
-            for count, (f, l) in enumerate(zip(first, last)):
+            for count, (f, l) in enumerate(zip(first, last)):  # ruff: ignore[ambiguous-variable-name]
                 if f != l:
                     return count
             return count + 1
@@ -823,7 +824,6 @@ class Date(CitationStylesElement, Parent, Formatted, Affixed, Delimited):
             return False
 
     def render_single_date(self, date, show_parts=None, context=None):
-        form = self.get('form')
         if context != self:
             parts = self.parts(date, show_parts, context)
         else:
@@ -935,13 +935,12 @@ class Date_Part(CitationStylesElement, Formatted, Affixed, TextCased,
                 StrippedPeriods):
     def process(self, date, context=None):
         name = self.get('name')
-        range_delimiter = self.get('range-delimiter', '-')
         attrib = self.attrib
 
         if context is None:
             context = self
         try:
-            expr = './cs:date-part[@name="{}"]'.format(name)
+            expr = f'./cs:date-part[@name="{name}"]'
             attrib.update(dict(context.xpath_search(expr)[0].attrib))
         except (AttributeError, IndexError):
             pass
@@ -957,12 +956,11 @@ class Date_Part(CitationStylesElement, Formatted, Affixed, TextCased,
             if form == 'numeric':
                 text = date.day
             elif form == 'numeric-leading-zeros':
-                text = '{:02}'.format(date.day)
+                text = f'{date.day:02}'
             elif form == 'ordinal':
                 text = to_ordinal(date.day, context)
         elif name == 'month':
             form = self.get('form', 'long')
-            strip_periods = self.get('form', False)
             try:
                 index = date.month
                 term = 'month'
@@ -971,14 +969,14 @@ class Date_Part(CitationStylesElement, Formatted, Affixed, TextCased,
                 term = 'season'
 
             if form == 'long' or form == 'short':
-                text = context.get_single_term(name='{}-{:02}'.format(term, index),
+                text = context.get_single_term(name=f'{term}-{index:02}',
                                                form='short' if form == 'short' else None)
             else:
                 assert term == 'month'
                 if form == 'numeric':
-                    text = '{}'.format(index)
+                    text = f'{index}'
                 elif form == 'numeric-leading-zeros':
-                    text = '{:02}'.format(index)
+                    text = f'{index:02}'
         elif name == 'year':
             form = self.get('form', 'long')
             if form == 'long':
@@ -1029,7 +1027,7 @@ class Number(CitationStylesElement, FormatNumber, Formatted, Affixed, Displayed,
         elif form == 'ordinal' or form == 'long-ordinal' and number > 10:
             text = to_ordinal(number, self)
         elif form == 'long-ordinal':
-            text = self.get_single_term(name='long-ordinal-{:02}'.format(number))
+            text = self.get_single_term(name=f'long-ordinal-{number:02}')
         elif form == 'roman':
             text = romanize(number).lower()
         return text
@@ -1118,7 +1116,7 @@ class Names(CitationStylesElement, Parent, Formatted, Affixed, Delimited):
         try:
             return text
         except NameError:
-            raise VariableError
+            raise VariableError from None
 
     def markup(self, text):
         if text:
@@ -1168,8 +1166,8 @@ class Name(CitationStylesElement, Formatted, Affixed, Delimited):
 
         et_al_min = get_option('et-al-min')
         et_al_use_first = get_option('et-al-use-first')
-        et_al_subseq_min = get_option('et-al-subsequent-min')
-        et_al_subseq_use_first = get_option('et-al-subsequent-use-first')
+        # et_al_subseq_min = get_option('et-al-subsequent-min')
+        # et_al_subseq_use_first = get_option('et-al-subsequent-use-first')
         et_al_use_last = get_option('et-al-use-last')
 
         initialize_with = get_option('initialize-with')
@@ -1250,13 +1248,12 @@ class Name(CitationStylesElement, Formatted, Affixed, Delimited):
                     text = self.join(output, delimiter) + ' ' + et_al
             elif and_ is not None and len(output) > 1:
                 text = self.join(output[:-1], ', ')
-                if (delimiter_precedes_last == 'always' or
-                    (delimiter_precedes_last == 'contextual' and
-                     len(output) > 2)):
-                        text = self.join([text, ''], ', ')
+                if (delimiter_precedes_last == 'always'
+                    or (delimiter_precedes_last == 'contextual' and len(output) > 2)):
+                    text = self.join([text, ''], ', ')
                 else:
                     text += ' '
-                text += '{} '.format(and_term) + output[-1]
+                text += f'{and_term} ' + output[-1]
             else:
                 text = self.join(output, delimiter)
 
@@ -1603,10 +1600,11 @@ def to_ordinal(number, context):
         result = _find_ordinal(fallback_locale=True)
     return str(number) + result
 
+
 def romanize(n):
     # by Kay Schluehr - from http://billmill.org/python_roman.html
     numerals = (('M', 1000), ('CM', 900), ('D', 500), ('CD', 400),
-                ('C', 100),('XC', 90),('L', 50),('XL', 40), ('X', 10),
+                ('C', 100), ('XC', 90), ('L', 50), ('XL', 40), ('X', 10),
                 ('IX', 9), ('V', 5), ('IV', 4), ('I', 1))
     roman = []
     for ltr, num in numerals:

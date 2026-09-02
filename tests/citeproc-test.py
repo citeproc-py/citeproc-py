@@ -5,16 +5,14 @@ import io
 import os
 import sys
 import traceback
-
 from codecs import utf_8_encode
 from functools import reduce
 from optparse import OptionParser
-from subprocess import Popen, PIPE
+from subprocess import PIPE, Popen
 
-from citeproc import CitationStylesStyle, CitationStylesBibliography
+from citeproc import CitationStylesBibliography, CitationStylesStyle
 from citeproc.source import Citation, CitationItem, Locator
 from citeproc.source.json import CiteProcJSON
-
 
 CITEPROC_TEST_REPOSITORY = 'https://github.com/citation-style-language/test-suite.git'
 CITEPROC_TEST_COMMIT = '6eefc5b07c6969ab8999e48542acbcc131cba864'
@@ -23,7 +21,7 @@ CITEPROC_TEST_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__),
                                      'test-suite'))
 TEST_PARSER_PATH = os.path.join(CITEPROC_TEST_PATH, 'processor.py')
 TESTS_PATH = os.path.join(CITEPROC_TEST_PATH, 'processor-tests', 'humans')
-LOCAL_TESTS_PATH = os.path.join(os.path.dirname(__file__), "local")
+LOCAL_TESTS_PATH = os.path.join(os.path.dirname(__file__), 'local')
 
 FAILING_TESTS_FILE = 'failing_tests.txt'
 
@@ -41,7 +39,7 @@ IGNORED_RESULS = {
 }
 
 
-class ProcessorTest(object):
+class ProcessorTest:
     """Parses atest fixture and provides a method for processing the tests
     defined in it."""
     bib_prefix = '<div class="csl-bib-body">'
@@ -103,8 +101,10 @@ class ProcessorTest(object):
         if self.style.has_bibliography():
             self.bibliography.sort()
 
+        def do_nothing(x):
+            return None
+
         results = []
-        do_nothing = lambda x: None     # callback passed to cite()
         if self.data['mode'] == 'citation':
             if self.data['citations']:
                 for i, citation in enumerate(citations):
@@ -112,7 +112,7 @@ class ProcessorTest(object):
                         dots_or_other = '>>'
                     else:
                         dots_or_other = '..'
-                    results.append('{}[{}] '.format(dots_or_other, i) +
+                    results.append(f'{dots_or_other}[{i}] ' +
                                    self.bibliography.cite(citation, do_nothing))
             else:
                 for citation in citations:
@@ -153,12 +153,12 @@ class ProcessorTest(object):
         return CitationItem(reference_key, **options)
 
 
-class FailedTests(object):
+class FailedTests:
     """Read the known failed tests from a file and update the file with the
     results from a new test run."""
     def __init__(self, filename):
         self.filename = filename
-        with open(filename, 'r') as file:
+        with open(filename) as file:
             self.lines = file.readlines()
         self.now_failing = {}
         self.updated_lines = []
@@ -183,8 +183,7 @@ class FailedTests(object):
         for test_name in sorted(self.now_failing.keys()):
             if test_name not in was_failing:
                 reason = self.now_failing[test_name]
-                line = ('{:<66} # {}'.format(test_name, reason) if reason
-                        else test_name)
+                line = f'{test_name:<66} # {reason}' if reason else test_name
                 self.updated_lines.append(line + '\n')
                 new_failing_tests.append(test_name)
         return new_failing_tests, new_fixed_tests
@@ -257,16 +256,15 @@ if __name__ == '__main__':
     parser.add_option('-s', '--summary', dest='summary', action='store_true',
                       default=False, help='print a summary of the test results')
     parser.add_option('-n', '--no-update', dest='update', action='store_false',
-                      default=True, help='do not update {}'
-                                         .format(FAILING_TESTS_FILE))
+                      default=True, help=f'do not update {FAILING_TESTS_FILE}')
     parser.add_option('-f', '--file', dest='file', default=None,
                       help='write output to FILE', metavar='FILE')
     (options, args) = parser.parse_args()
 
     max_tests = int(options.max)
     try:
-        destination = open(options.file, 'wt', encoding='utf-8')
-        class UnicodeWriter(object):
+        destination = open(options.file, 'w', encoding='utf-8')
+        class UnicodeWriter:
             def write(self, s):
                 destination.write(str(s))
         sys.stderr = UnicodeWriter()
@@ -280,8 +278,7 @@ if __name__ == '__main__':
             print(*args, file=destination)
 
     def print_result(name, passed, total):
-        out(' {:<13} {:>3} / {:>3} ({:>4.0%})'.format(name, passed, total,
-                                                      passed / total))
+        out(f' {name:<13} {passed:>3} / {total:>3} ({passed / total:>4.0%})')
 
     try:
         glob_pattern = args[0]
@@ -304,8 +301,8 @@ if __name__ == '__main__':
     failed_tests = FailedTests(os.path.join(os.path.dirname(__file__),
                                             FAILING_TESTS_FILE))
     count = 0
-    test_files = list(glob.glob(os.path.join(TESTS_PATH, '{}.txt'.format(glob_pattern))))
-    test_files += list(glob.glob(os.path.join(LOCAL_TESTS_PATH, '{}.txt'.format(glob_pattern))))
+    test_files = list(glob.glob(os.path.join(TESTS_PATH, f'{glob_pattern}.txt')))
+    test_files += list(glob.glob(os.path.join(LOCAL_TESTS_PATH, f'{glob_pattern}.txt')))
     for filename in sorted(test_files):
         test_name, _ = os.path.basename(filename).split('.txt')
         category, _ = os.path.basename(filename).split('_')
@@ -323,11 +320,11 @@ if __name__ == '__main__':
                                   t.data['bibsection']):
                 continue
             if options.verbose:
-                out('>>> Testing {}'.format(os.path.basename(filename)))
+                out(f'>>> Testing {os.path.basename(filename)}')
                 out('EXP: ' + '\n     '.join(t.expected))
 
             results = t.execute()
-            results = reduce(lambda x, y: x+y,
+            results = reduce(lambda x, y: x + y,
                              [item.split('\n') for item in results])
             results = [item.replace('&amp;', '&#38;')
                        for item in results]
@@ -343,7 +340,7 @@ if __name__ == '__main__':
                 if options.verbose:
                     out('<<< FAILED\n')
             del t
-        except Exception as e:
+        except Exception:
             if not options.catch_exceptions:
                 raise
             if options.verbose:
@@ -378,7 +375,7 @@ if __name__ == '__main__':
                     out(' ' + GREEN + test_name + END)
                 out()
                 out('You need to fix the newly failing tests and may commit the \n'
-                    'removal of the fixed tests from {}'.format(FAILING_TESTS_FILE))
+                    f'removal of the fixed tests from {FAILING_TESTS_FILE}')
 
             if test_repo_has_updates:
                 out()

@@ -82,3 +82,39 @@ versionfile_source = "citeproc/_version.py"
 versionfile_build = "citeproc/_version.py"
 tag_prefix = "v"
 parentdir_prefix = "citeproc-"
+
+[tool.ruff]
+preview = true
+line-length = 120
+
+[tool.ruff.lint]
+select = [
+    "B",   # flake8-bugbear
+    "E",   # pycodestyle
+    "F",   # pyflakes
+    "G",   # flake8-logging-format
+    "I",   # flake8-isort
+    "PGH", # pygrep-hooks
+    # "Q",   # flake8-quotes
+    "UP",  # pyupgrade
+    "W",   # pycodestyle
+]
+ignore = [
+    # https://docs.astral.sh/ruff/rules/#rules
+    "printf-string-formatting",
+    "module-import-not-at-top-of-file",
+]
+exclude = [
+    "citeproc/_version.py",
+    "citeproc/data/locales/*",
+    "citeproc/data/schema/*",
+    "versioneer.py",
+]
+
+[tool.ruff.lint.flake8-quotes]
+docstring-quotes = "double"
+inline-quotes = "single"
+multiline-quotes = "double"
+
+[tool.ruff.lint.isort]
+combine-as-imports = true

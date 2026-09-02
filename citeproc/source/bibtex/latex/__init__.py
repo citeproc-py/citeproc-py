@@ -1,14 +1,15 @@
 
 import unicodedata
-
 from collections import namedtuple
 from warnings import warn
-
 
 __all__ = ['parse_latex', 'substitute_ligatures']
 
 
-def parse_latex(string, macros={}):
+def parse_latex(string, macros=None):
+    if macros is None:
+        macros = {}
+
     tokens = Tokenizer(string)
     output = ''
     for result in dispatch(tokens, macros):
@@ -27,7 +28,7 @@ START_MACRO = 'START-MACRO'
 CHARACTER = 'CHARACTER'
 
 
-class Tokenizer(object):
+class Tokenizer:
     def __init__(self, string):
         self.string = string
         self._tokens = self.tokenize(string)
@@ -83,7 +84,7 @@ def dispatch(tokens, macros, level=0):
             next_token = tokens.peek()
         except StopIteration:
             if level > 0:
-                warn("Unbalanced parenthesis in '{}'".format(tokens.string))
+                warn(f"Unbalanced parenthesis in '{tokens.string}'", stacklevel=2)
             break
         if next_token.type == OPEN_SCOPE:
             yield handle_scope(tokens, macros, level)
@@ -154,19 +155,18 @@ def substitute_ligatures(string):
     return string
 
 
-SUBSTITUTIONS = {"~": 'NO-BREAK SPACE',
+SUBSTITUTIONS = {'~': 'NO-BREAK SPACE',
 
                  # ligatures defined in Computer Modern (symbol shortcuts)
-                 "--": 'EN DASH',
-                 "---": 'EM DASH',
+                 '--': 'EN DASH',
+                 '---': 'EM DASH',
                  "''": 'RIGHT DOUBLE QUOTATION MARK',
-                 "``": 'LEFT DOUBLE QUOTATION MARK',
-                 "!`": 'INVERTED EXCLAMATION MARK',
-                 "?`": 'INVERTED QUESTION MARK',
-                 ",,": 'DOUBLE LOW-9 QUOTATION MARK',
-                 "<<": 'LEFT-POINTING DOUBLE ANGLE QUOTATION MARK',
-                 ">>": 'RIGHT-POINTING DOUBLE ANGLE QUOTATION MARK',
+                 '``': 'LEFT DOUBLE QUOTATION MARK',
+                 '!`': 'INVERTED EXCLAMATION MARK',
+                 '?`': 'INVERTED QUESTION MARK',
+                 ',,': 'DOUBLE LOW-9 QUOTATION MARK',
+                 '<<': 'LEFT-POINTING DOUBLE ANGLE QUOTATION MARK',
+                 '>>': 'RIGHT-POINTING DOUBLE ANGLE QUOTATION MARK',
 }
-
 
 from .macro import MACROS

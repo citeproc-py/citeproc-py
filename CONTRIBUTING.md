@@ -80,7 +80,14 @@ Ready to contribute? Here's how to set up `citeproc-py` for local development.
    fix any failures, and commit the ``failing_tests.txt`` file with any
    updates.
 
-5. Commit your changes and push your branch to GitHub:
+5. If the tests pass, you should also run `ruff` (to ensure that there are no
+   style errors) using
+
+   ```shell
+   $ ruff check
+   ```
+
+6. Commit your changes and push your branch to GitHub:
 
     ```shell
     $ git add .
@@ -88,7 +95,7 @@ Ready to contribute? Here's how to set up `citeproc-py` for local development.
     $ git push origin name-of-your-bugfix-or-feature
     ```
 
-5. Submit a pull request through the GitHub website.
+7. Submit a pull request through the GitHub website.
 
 ## Pull Request Guidelines
 
