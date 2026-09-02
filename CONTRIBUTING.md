@@ -73,8 +73,7 @@ Ready to contribute? Here's how to set up `citeproc-py` for local development.
 4. When you're done making changes, check that your changes pass tests:
 
     ```shell
-    $ cd tests
-    $ python citeproc-test.py
+    $ tox run -e py314
     ```
 
    This command will list and fixed or newly failing tests. You should

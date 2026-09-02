@@ -1,3 +1,21 @@
+# v0.11.1 (Tue Sep 01 2026)
+
+#### 🐛 Bug Fix
+
+- Contributing: update contributing guidelines [#214](https://github.com/citeproc-py/citeproc-py/pull/214) ([@tmorrell](https://github.com/tmorrell))
+- coverage: ignore _version.py [#214](https://github.com/citeproc-py/citeproc-py/pull/214) ([@tmorrell](https://github.com/tmorrell))
+- tests: recommend tox and modernize coveralls setup [#214](https://github.com/citeproc-py/citeproc-py/pull/214) ([@tmorrell](https://github.com/tmorrell))
+
+#### 🏠 Internal
+
+- tests: remove global, ancient python code, and deprecated load_module [#213](https://github.com/citeproc-py/citeproc-py/pull/213) ([@tmorrell](https://github.com/tmorrell))
+
+#### Authors: 1
+
+- Tom Morrell ([@tmorrell](https://github.com/tmorrell))
+
+---
+
 # v0.11.0 (Thu Aug 20 2026)
 
 #### 🚀 Enhancement

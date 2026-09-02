@@ -76,19 +76,20 @@ git submodule update --init
 
 Then install with
 ```bash
-pip install --editable .
+pip install --editable .[tests]
 ```
 
-Then move to the `tests` directory and run
+You can run all the tests using tox:
 ```bash
-python citeproc-test.py
+tox run -e py314
 ```
 
-Run
+Or you can manually run citeproc-test tests using
 ```bash
-citeproc-test.py --help
+python tests/citeproc-test.py
 ```
-to see its usage information. The first time
+
+The first time
 you run the script it will clone the
 [citeproc-test suite](https://github.com/citation-style-language/test-suite) repository into the
 `tests` directory and checkout the last tested version. By default failed tests are
