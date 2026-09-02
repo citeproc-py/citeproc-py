@@ -9,7 +9,7 @@ from dataclasses import dataclass
 class AmbigConfig:
     names: list[int]          # how many names to show per nameset
     givens: list[list[int]]   # given-name expansion level per name per nameset
-                              # 0 = no given, 1 = initials, 2 = full given name
+    # 0 = no given, 1 = initials, 2 = full given name
     maxvals: list[int]        # max available names per nameset
     year_suffix: int | None = None  # None = not assigned; 0 → "a", 1 → "b", ...
     disambiguate: int = 0           # <if disambiguate> activation level: 0 = off, N = fire first N blocks
@@ -35,7 +35,7 @@ def clone_ambig_config(config: AmbigConfig, oldconfig: AmbigConfig | None = None
     return cloned
 
 
-_SUFFIX_CHARS = list("abcdefghijklmnopqrstuvwxyz")
+_SUFFIX_CHARS = list('abcdefghijklmnopqrstuvwxyz')
 
 
 def _merge_givens(a: list[int], b: list[int]) -> list[int]:
@@ -69,7 +69,7 @@ def index_to_suffix(n: int) -> str:
     0 → "a", 1 → "b", ..., 25 → "z", 26 → "aa", 27 → "ab", ...
     """
     n += 1
-    key = ""
+    key = ''
     while n:
         x = n % 26 or 26
         key = _SUFFIX_CHARS[x - 1] + key
@@ -124,7 +124,7 @@ def get_ambiguous_cite(item, layout, disambig=None) -> str:
     with _just_looking(root):
         result = layout.render_children(item)
     root.disambig_request = prev_request
-    return str(result) if result is not None else ""
+    return str(result) if result is not None else ''
 
 
 class Disambiguation:
