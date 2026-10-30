@@ -1,3 +1,15 @@
+# v0.12.1 (Fri Oct 30 2026)
+
+#### 🐛 Bug Fix
+
+- Render cs:label only when the labelled variable is set [#207](https://github.com/citeproc-py/citeproc-py/pull/207) ([@eseifert](https://github.com/eseifert))
+
+#### Authors: 1
+
+- Erich Seifert ([@eseifert](https://github.com/eseifert))
+
+---
+
 # v0.12.0 (Fri Oct 30 2026)
 
 #### 🚀 Enhancement
