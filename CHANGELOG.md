@@ -1,3 +1,24 @@
+# v0.12.0 (Fri Oct 30 2026)
+
+#### 🚀 Enhancement
+
+- docs: mention ruff in README and CONTRIBUTING [#212](https://github.com/citeproc-py/citeproc-py/pull/212) ([@alexfikl](https://github.com/alexfikl))
+- test: add ruff to ci [#212](https://github.com/citeproc-py/citeproc-py/pull/212) ([@alexfikl](https://github.com/alexfikl))
+- fix: all ruff B errors [#212](https://github.com/citeproc-py/citeproc-py/pull/212) ([@alexfikl](https://github.com/alexfikl))
+- fix: all ruff Q errors [#212](https://github.com/citeproc-py/citeproc-py/pull/212) ([@alexfikl](https://github.com/alexfikl))
+- fix: all ruff I errors [#212](https://github.com/citeproc-py/citeproc-py/pull/212) ([@alexfikl](https://github.com/alexfikl))
+- fix: all ruff W errors [#212](https://github.com/citeproc-py/citeproc-py/pull/212) ([@alexfikl](https://github.com/alexfikl))
+- fix: all ruff F errors [#212](https://github.com/citeproc-py/citeproc-py/pull/212) ([@alexfikl](https://github.com/alexfikl))
+- fix: all ruff E errors [#212](https://github.com/citeproc-py/citeproc-py/pull/212) ([@alexfikl](https://github.com/alexfikl))
+- fix: all ruff UP errors [#212](https://github.com/citeproc-py/citeproc-py/pull/212) ([@alexfikl](https://github.com/alexfikl))
+- chore: add ruff config [#212](https://github.com/citeproc-py/citeproc-py/pull/212) ([@alexfikl](https://github.com/alexfikl))
+
+#### Authors: 1
+
+- Alex Fikl ([@alexfikl](https://github.com/alexfikl))
+
+---
+
 # v0.11.1 (Tue Sep 01 2026)
 
 #### 🐛 Bug Fix
