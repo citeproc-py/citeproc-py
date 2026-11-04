@@ -1211,9 +1211,15 @@ class Name(CitationStylesElement, Formatted, Affixed, Delimited):
                 et_al_use_first = et_al_subseq_use_first
             elif context is not None:
                 try:
-                    cites = context.get_layout().getparent().cites or []
-                except Exception:
+                    layout = context.get_layout()
+                except IndexError:
                     cites = []
+                else:
+                    citation = layout.getparent()
+                    if citation is None:
+                        cites = []
+                    else:
+                        cites = citation.cites or []
                 if item.key in (c.key for c in cites):
                     et_al_min = et_al_subseq_min
                     et_al_use_first = et_al_subseq_use_first

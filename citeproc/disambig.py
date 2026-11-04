@@ -121,13 +121,22 @@ def get_ambiguous_cite(item, layout, disambig=None) -> str:
                     disambiguate=disambig.disambiguate,
                 )
     root.disambig_request = effective_disambig
-    with _just_looking(root):
-        result = layout.render_children(item)
-    root.disambig_request = prev_request
+    try:
+        with _just_looking(root):
+            result = layout.render_children(item)
+    finally:
+        root.disambig_request = prev_request
     return str(result) if result is not None else ''
 
 
 class Disambiguation:
+    """Resolve ambiguous citations by annotating style and source data in place.
+
+    The loaded style tree receives private ``_disambig_index`` attributes, and
+    source references receive ``_disambig`` and ``year_suffix`` values used by
+    the renderer.
+    """
+
     def __init__(self, bib):
         self.bib = bib
         self.registry = {}      # str(item_id) → {'ambig': akey, 'disambig': AmbigConfig}
@@ -201,7 +210,7 @@ class Disambiguation:
         tried before the next author is revealed. givens_max=0 disables that
         dimension so only name count expansion runs.
 
-        Returns True if all items in the group are now unique, False otherwise.
+        Returns the item IDs that remain ambiguous after expansion.
         """
         layout = self.bib.style.root.citation.layout
         citation = self.bib.style.root.citation
