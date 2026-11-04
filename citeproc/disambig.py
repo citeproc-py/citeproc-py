@@ -331,22 +331,44 @@ class Disambiguation:
         return [iid for iid in item_ids if final_counts[final_renders[iid]] > 1]
 
     def _index_disambiguate_conditions(self) -> int:
-        """Stamp each <if disambiguate="true"> element with a sequential index.
+        """Index citation disambiguation conditions, including those in macros.
 
         Returns the total count. Index 1 fires when disambiguate >= 1, index 2
         fires when disambiguate >= 2, etc. — allowing incremental extra-text
         expansion one block at a time.
         """
-        # Index only within the citation layout — bibliography <if disambiguate>
-        # elements use the default index (1) and fire whenever level >= 1.
         citation_layout = self.bib.style.root.citation.layout
-        ns = citation_layout.nsmap
+        style_root = self.bib.style.root
+        ns = style_root.nsmap
         csl_ns = ns.get('cs', 'http://purl.org/net/xbiblio/csl')
+        if_tag = f'{{{csl_ns}}}if'
+        else_if_tag = f'{{{csl_ns}}}else-if'
+        text_tag = f'{{{csl_ns}}}text'
+        macros = {
+            macro.get('name'): macro
+            for macro in style_root.findall('.//cs:macro', ns)
+            if macro.get('name') is not None
+        }
+        visited_macros: set[str] = set()
         count = 0
-        for el in citation_layout.iter(f'{{{csl_ns}}}if', f'{{{csl_ns}}}else-if'):
-            if el.get('disambiguate') == 'true':
-                count += 1
-                el.set('_disambig_index', str(count))
+
+        def visit(element):
+            nonlocal count
+            for child in element:
+                if (child.tag in (if_tag, else_if_tag)
+                        and child.get('disambiguate') == 'true'):
+                    count += 1
+                    child.set('_disambig_index', str(count))
+
+                if child.tag == text_tag:
+                    macro_name = child.get('macro')
+                    if macro_name in macros and macro_name not in visited_macros:
+                        visited_macros.add(macro_name)
+                        visit(macros[macro_name])
+
+                visit(child)
+
+        visit(citation_layout)
         return count
 
     def _dis_extra_text(self, item_ids: list[str], max_level: int):
@@ -390,10 +412,11 @@ class Disambiguation:
         primary_only = gd_rule.startswith('primary-name')
         with_initials_only = 'with-initials' in gd_rule
 
-        # Get initialize-with from the first <name> element in the citation layout
-        layout = citation.layout
+        # Search the full style tree for initialize-with because citation
+        # <name> elements may be defined in macros, not directly in the layout.
+        style_root = self.bib.style.root
         initialize_with: str | None = None
-        for name_el in layout.findall('.//cs:name', layout.nsmap):
+        for name_el in style_root.findall('.//cs:name', style_root.nsmap):
             iw = name_el.get('initialize-with')
             if iw is not None:
                 initialize_with = iw
