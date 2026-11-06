@@ -191,6 +191,10 @@ class Disambiguation:
             still_clashing = list(item_ids)
             if add_names or (add_givenname and gd_rule == 'by-cite'):
                 still_clashing = self._dis_names(item_ids)
+            if extra_text_levels and still_clashing:
+                still_clashing = self._dis_extra_text(
+                    still_clashing, extra_text_levels,
+                )
             if add_year_suffix and still_clashing:
                 render_groups: dict[str, list[str]] = {}
                 for iid in still_clashing:
@@ -199,9 +203,6 @@ class Disambiguation:
                     render_groups.setdefault(r, []).append(iid)
                 for group in render_groups.values():
                     self._dis_years(group)
-                still_clashing = []  # year-suffix assigns unique suffixes to all remaining
-            if extra_text_levels and still_clashing:
-                self._dis_extra_text(still_clashing, extra_text_levels)
 
     def _dis_names(self, item_ids: list[str]) -> list[str]:
         """Expand name counts and given names using the citeproc-js incrementDisambig order.
@@ -375,7 +376,7 @@ class Disambiguation:
         visit(citation_layout)
         return count
 
-    def _dis_extra_text(self, item_ids: list[str], max_level: int):
+    def _dis_extra_text(self, item_ids: list[str], max_level: int) -> list[str]:
         layout = self.bib.style.root.citation.layout
         still_clashing = list(item_ids)
         for level in range(1, max_level + 1):
@@ -391,6 +392,7 @@ class Disambiguation:
                               if len(grp) > 1 for iid in grp]
             if not still_clashing:
                 break
+        return still_clashing
 
     def _dis_years(self, item_ids: list[str]):
         # item_ids is already in bibliography sort order (bib.items order)
