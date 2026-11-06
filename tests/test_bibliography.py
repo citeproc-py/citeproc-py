@@ -56,6 +56,25 @@ class TestBibliographyGeneration(TestCase):
                     f'Failed for {lg} at index {index}. Expected: {expected_value}, Got: {generated_ordinals[index]}'
                 )
 
+    def test_generation_without_keys(self):
+        """Test generating citations with all permutations of fields missing"""
+        def _test_generation(data):
+            bib = source.json.CiteProcJSON([data])
+            assert bib is not None
+
+        def _recursively_remove_data(data):
+            if not data:
+                return
+
+            _test_generation(data)
+
+            for key in data.keys():
+                newdata = data.copy()
+                newdata.pop(key)
+                _recursively_remove_data(newdata)
+
+        _recursively_remove_data(template)
+
     def test_ordinals_with_embedded_locale(self):
         """chicago-author-date has an embedded <locale xml:lang="en"> that defines
         editor/translator terms but no ordinal terms.  Ordinals must still be
