@@ -7,6 +7,9 @@ class CiteProcJSON(BibliographySource):
     def __init__(self, json_data):
         for ref in json_data:
             ref_data = {}
+            ref_key = None
+            ref_type = None
+
             for key, value in ref.items():
                 python_key = key.replace('-', '_')
                 if python_key == 'id':
