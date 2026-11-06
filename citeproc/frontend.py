@@ -9,6 +9,9 @@ from .formatter import html
 from .model import CitationStylesElement
 
 
+_INPUT_YEAR_SUFFIX_ORIGINALLY_ABSENT = object()
+
+
 class CitationStylesXML:
     def __init__(self, f, validate=True):
         lookup = etree.ElementNamespaceClassLookup()
@@ -119,6 +122,41 @@ class CitationStylesBibliography:
         self.items = []
         self._cites = []
         self._needs_disambig = False
+        self._generated_year_suffixes: dict[str, tuple[object, str]] = {}
+
+    def _reset_disambiguation_state(self):
+        """Remove prior disambiguation annotations before a fresh pass."""
+        for item in self.items:
+            item.reference.pop('_disambig', None)
+
+        for item_id, (original, generated) in (
+                self._generated_year_suffixes.items()):
+            reference = self.source.get(item_id)
+            if (reference is None
+                    or reference.get(
+                        'year_suffix', _INPUT_YEAR_SUFFIX_ORIGINALLY_ABSENT,
+                    )
+                    != generated):
+                continue
+            if original is _INPUT_YEAR_SUFFIX_ORIGINALLY_ABSENT:
+                reference.pop('year_suffix', None)
+            else:
+                reference['year_suffix'] = original
+
+        self._generated_year_suffixes.clear()
+
+    def _set_disambiguation_year_suffix(self, item_id: str, suffix: str):
+        """Set a generated suffix while preserving the original input value."""
+        reference = self.source[item_id]
+        if item_id in self._generated_year_suffixes:
+            original = self._generated_year_suffixes[item_id][0]
+        else:
+            original = reference.get(
+                'year_suffix', _INPUT_YEAR_SUFFIX_ORIGINALLY_ABSENT,
+            )
+
+        reference['year_suffix'] = suffix
+        self._generated_year_suffixes[item_id] = (original, suffix)
 
     def register(self, citation, callback=None):
         citation.bibliography = self

@@ -142,6 +142,7 @@ class Disambiguation:
         self.registry = {}      # str(item_id) → {'ambig': akey, 'disambig': AmbigConfig}
         self.ambigcites = {}    # akey → [str(item_id), ...]
         self._name_vars = self._collect_name_vars()
+        self.bib._reset_disambiguation_state()
         self._build_registry()
 
     def _collect_name_vars(self) -> frozenset[str]:
@@ -392,8 +393,10 @@ class Disambiguation:
         # item_ids is already in bibliography sort order (bib.items order)
         for pos, item_id in enumerate(item_ids):
             self.registry[item_id]['disambig'].year_suffix = pos
-            # Write the letter into the Reference so the renderer picks it up
-            self.bib.source[item_id]['year_suffix'] = index_to_suffix(pos)
+            # Write the letter into the Reference so the renderer picks it up.
+            self.bib._set_disambiguation_year_suffix(
+                item_id, index_to_suffix(pos),
+            )
 
     def _dis_givens_global(self):
         """Expand given names globally for all-names and primary-name rules.
