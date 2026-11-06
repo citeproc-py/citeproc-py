@@ -1,0 +1,70 @@
+>>===== MODE =====>>
+citation
+<<===== MODE =====<<
+
+
+>>===== DESCRIPTION =====>>
+With both disambiguation options enabled, expand already-rendered given names
+before revealing hidden names. The second visible author's full given name
+resolves the cites, so the differing third authors remain hidden by et al.
+<<===== DESCRIPTION =====<<
+
+
+>>===== RESULT =====>>
+A. Smith, John Jones, et al. (1980); A. Smith, Jane Jones, et al. (1980)
+<<===== RESULT =====<<
+
+
+>>===== CSL =====>>
+<style xmlns="http://purl.org/net/xbiblio/csl" version="1.0">
+  <info>
+    <id />
+    <title />
+    <updated>2026-11-06T00:00:00+00:00</updated>
+  </info>
+  <citation et-al-min="3"
+            et-al-use-first="2"
+            disambiguate-add-names="true"
+            disambiguate-add-givenname="true">
+    <layout delimiter="; ">
+      <names delimiter=", " variable="author">
+        <name initialize-with="." />
+      </names>
+      <date variable="issued" prefix=" (" suffix=")">
+        <date-part name="year" />
+      </date>
+    </layout>
+  </citation>
+</style>
+<<===== CSL =====<<
+
+
+>>===== INPUT =====>>
+[
+    {
+        "id": "ITEM-1",
+        "type": "book",
+        "author": [
+            {"given": "Alan", "family": "Smith"},
+            {"given": "John", "family": "Jones"},
+            {"given": "Alice", "family": "Brown"}
+        ],
+        "issued": {"date-parts": [[1980]]}
+    },
+    {
+        "id": "ITEM-2",
+        "type": "book",
+        "author": [
+            {"given": "Alan", "family": "Smith"},
+            {"given": "Jane", "family": "Jones"},
+            {"given": "Brenda", "family": "White"}
+        ],
+        "issued": {"date-parts": [[1980]]}
+    }
+]
+<<===== INPUT =====<<
+
+
+>>===== VERSION =====>>
+1.0
+<<===== VERSION =====<<

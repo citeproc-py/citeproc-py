@@ -1,0 +1,60 @@
+>>===== MODE =====>>
+citation
+<<===== MODE =====<<
+
+
+>>===== DESCRIPTION =====>>
+With by-cite given-name disambiguation and no add-names, expand the second
+rendered author when expanding the first author does not resolve the cite clash.
+<<===== DESCRIPTION =====<<
+
+
+>>===== RESULT =====>>
+A. Smith, John Jones; A. Smith, Jane Jones
+<<===== RESULT =====<<
+
+
+>>===== CSL =====>>
+<style xmlns="http://purl.org/net/xbiblio/csl" version="1.0">
+  <info>
+    <id />
+    <title />
+    <updated>2026-11-06T00:00:00+00:00</updated>
+  </info>
+  <citation disambiguate-add-givenname="true"
+            givenname-disambiguation-rule="by-cite">
+    <layout delimiter="; ">
+      <names variable="author">
+        <name initialize-with="." />
+      </names>
+    </layout>
+  </citation>
+</style>
+<<===== CSL =====<<
+
+
+>>===== INPUT =====>>
+[
+    {
+        "id": "ITEM-1",
+        "type": "book",
+        "author": [
+            {"given": "Alan", "family": "Smith"},
+            {"given": "John", "family": "Jones"}
+        ]
+    },
+    {
+        "id": "ITEM-2",
+        "type": "book",
+        "author": [
+            {"given": "Alan", "family": "Smith"},
+            {"given": "Jane", "family": "Jones"}
+        ]
+    }
+]
+<<===== INPUT =====<<
+
+
+>>===== VERSION =====>>
+1.0
+<<===== VERSION =====<<

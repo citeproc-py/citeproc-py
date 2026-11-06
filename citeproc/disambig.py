@@ -302,6 +302,9 @@ class Disambiguation:
                 # Step 2: reveal next author, advance cursor to newly exposed position
                 base.names[0] += 1
                 gname += 1
+            elif givens_max and gname < names_max - 1:
+                # Given-name-only disambiguation still tries the next rendered author.
+                gname += 1
             else:
                 break  # all options exhausted
 
