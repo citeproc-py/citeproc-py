@@ -319,6 +319,7 @@ def split_name(name):
         word += char
     if word:
         current_part.append(word)
+    if current_part:
         parts.append(current_part)
     return parts
 

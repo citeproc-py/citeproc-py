@@ -67,6 +67,10 @@ SPLIT_NAME = [
     ('aa{, }bb cc', [['aa{, }bb', 'cc']]),
     ('aa {bb} cc', [['aa', '{bb}', 'cc']]),
     ('aa bb, cc', [['aa', 'bb'], ['cc']]),
+    ('aa bb ', [['aa', 'bb']]),
+    (' aa bb\t', [['aa', 'bb']]),
+    ('aa bb, cc ', [['aa', 'bb'], ['cc']]),
+    ('aa, bb, cc  ', [['aa'], ['bb'], ['cc']]),
 ]
 
 
@@ -268,4 +272,7 @@ EXTRA_NAMES = [
     # (verified using Xavier Décoret's names.bst)
     ('TUG {\\sltt DVI} Driver Standards Committee',
       ('TUG', '{\\sltt DVI}', 'Driver Standards Committee', None)),
+    # trailing whitespace, e.g. left over from 'A B  and C D' (#217)
+    ('Amaia Arranz-Otaegui ', ('Amaia', None, 'Arranz-Otaegui', None)),
+    ('Gogh, Vincent van ', ('Vincent van', None, 'Gogh', None)),
 ]
