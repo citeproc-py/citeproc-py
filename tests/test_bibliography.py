@@ -1,3 +1,4 @@
+from itertools import chain, combinations
 from unittest import TestCase
 
 from citeproc import (
@@ -57,23 +58,20 @@ class TestBibliographyGeneration(TestCase):
                 )
 
     def test_generation_without_keys(self):
-        """Test generating citations with all permutations of fields missing"""
+        """Test generating citations with all subsets of fields missing"""
+
+        def _powerset(iterable):
+            s = list(iterable)
+            return chain.from_iterable(combinations(s, r) for r in range(len(s) + 1))
+
         def _test_generation(data):
             bib = source.json.CiteProcJSON([data])
             assert bib is not None
 
-        def _recursively_remove_data(data):
-            if not data:
-                return
-
-            _test_generation(data)
-
-            for key in data.keys():
-                newdata = data.copy()
-                newdata.pop(key)
-                _recursively_remove_data(newdata)
-
-        _recursively_remove_data(template)
+        for subset in _powerset(template.items()):
+            subset = dict(subset)
+            if subset:
+                _test_generation(subset)
 
     def test_ordinals_with_embedded_locale(self):
         """chicago-author-date has an embedded <locale xml:lang="en"> that defines
