@@ -18,7 +18,7 @@ should not expect to see any major API changes soon.
 
 ## Requirements
 
-citeproc-py supports Python 3.9 and up. It depends on [lxml](https://lxml.de/) for parsing and
+citeproc-py supports Python 3.11 and up. It depends on [lxml](https://lxml.de/) for parsing and
 navigating the CSL style and locale files.
 
 # Installation
