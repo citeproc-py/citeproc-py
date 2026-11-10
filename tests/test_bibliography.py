@@ -61,6 +61,12 @@ class TestBibliographyGeneration(TestCase):
         editor/translator terms but no ordinal terms.  Ordinals must still be
         resolved from the file-based en-US locale data.
         Regression test for https://github.com/citeproc-py/citeproc-py/issues/183."""
+
+        try:
+            import citeproc_styles  # ruff: ignore[unused-import]
+        except ImportError:
+            self.skipTest('citeproc-py-styles (provides citeproc_styles package) not installed')
+
         bib_style = CitationStylesStyle('chicago-author-date', 'en-US')
 
         entries = [
