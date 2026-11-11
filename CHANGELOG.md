@@ -1,3 +1,15 @@
+# v0.12.2 (Wed Nov 11 2026)
+
+#### 🐛 Bug Fix
+
+- Add support for 3.15 and remove 3.10 [#221](https://github.com/citeproc-py/citeproc-py/pull/221) ([@tmorrell](https://github.com/tmorrell))
+
+#### Authors: 1
+
+- Tom Morrell ([@tmorrell](https://github.com/tmorrell))
+
+---
+
 # v0.12.1 (Fri Oct 30 2026)
 
 #### 🐛 Bug Fix
