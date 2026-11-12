@@ -1,3 +1,20 @@
+# v0.12.3 (Thu Nov 12 2026)
+
+#### 🐛 Bug Fix
+
+- Made missing field test faster [#219](https://github.com/citeproc-py/citeproc-py/pull/219) ([@3top1a](https://github.com/3top1a))
+- Fixed variables not being initialized [#219](https://github.com/citeproc-py/citeproc-py/pull/219) ([@3top1a](https://github.com/3top1a))
+- Make citeproc-py-styles optional in tests [#222](https://github.com/citeproc-py/citeproc-py/pull/222) ([@hseg](https://github.com/hseg))
+- Fix BibTeX name parsing with trailing whitespace [#220](https://github.com/citeproc-py/citeproc-py/pull/220) ([@RClaudiuM](https://github.com/RClaudiuM))
+
+#### Authors: 3
+
+- [@hseg](https://github.com/hseg)
+- 3top1a ([@3top1a](https://github.com/3top1a))
+- Roman Claudiu (ClaW) ([@RClaudiuM](https://github.com/RClaudiuM))
+
+---
+
 # v0.12.2 (Wed Nov 11 2026)
 
 #### 🐛 Bug Fix
