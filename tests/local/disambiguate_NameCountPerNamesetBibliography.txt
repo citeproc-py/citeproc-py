@@ -1,0 +1,82 @@
+>>===== MODE =====>>
+bibliography
+<<===== MODE =====<<
+
+
+>>===== DESCRIPTION =====>>
+When adding names resolves citation ambiguity, show those author names in the
+bibliography without expanding an identical editor list in a separate nameset.
+<<===== DESCRIPTION =====<<
+
+
+>>===== RESULT =====>>
+<div class="csl-bib-body">
+  <div class="csl-entry">Smith, Jones, et al. (Adams et al.)</div>
+  <div class="csl-entry">Smith, Brown, et al. (Adams et al.)</div>
+</div>
+<<===== RESULT =====<<
+
+
+>>===== CSL =====>>
+<style xmlns="http://purl.org/net/xbiblio/csl" class="note" version="1.0">
+  <info>
+    <id />
+    <title />
+    <updated>2026-11-12T00:00:00+00:00</updated>
+  </info>
+  <citation disambiguate-add-names="true">
+    <layout>
+      <names variable="author">
+        <name form="short" et-al-min="2" et-al-use-first="1"/>
+      </names>
+    </layout>
+  </citation>
+  <bibliography>
+    <layout>
+      <names variable="author">
+        <name form="short" et-al-min="2" et-al-use-first="1"/>
+      </names>
+      <names variable="editor" prefix=" (" suffix=")">
+        <name form="short" et-al-min="2" et-al-use-first="1"/>
+      </names>
+    </layout>
+  </bibliography>
+</style>
+<<===== CSL =====<<
+
+
+>>===== INPUT =====>>
+[
+  {
+    "id": "ITEM-1",
+    "author": [
+      {"family": "Smith"},
+      {"family": "Jones"},
+      {"family": "Gray"}
+    ],
+    "editor": [
+      {"family": "Adams"},
+      {"family": "Baker"},
+      {"family": "Clark"}
+    ]
+  },
+  {
+    "id": "ITEM-2",
+    "author": [
+      {"family": "Smith"},
+      {"family": "Brown"},
+      {"family": "White"}
+    ],
+    "editor": [
+      {"family": "Adams"},
+      {"family": "Baker"},
+      {"family": "Clark"}
+    ]
+  }
+]
+<<===== INPUT =====<<
+
+
+>>===== VERSION =====>>
+1.0
+<<===== VERSION =====<<

@@ -1,0 +1,68 @@
+>>===== MODE =====>>
+bibliography
+<<===== MODE =====<<
+
+
+>>===== DESCRIPTION =====>>
+Under all-names disambiguation, an editor given-name clash should expand editor
+names in bibliography entries without expanding unambiguous authors in a separate
+names element.
+<<===== DESCRIPTION =====<<
+
+
+>>===== RESULT =====>>
+<div class="csl-bib-body">
+  <div class="csl-entry">J. Doe (Alan Smith)</div>
+  <div class="csl-entry">J. Roe (Alice Smith)</div>
+</div>
+<<===== RESULT =====<<
+
+
+>>===== CSL =====>>
+<style xmlns="http://purl.org/net/xbiblio/csl" class="note" version="1.0">
+  <info>
+    <id />
+    <title />
+    <updated>2026-11-12T00:00:00+00:00</updated>
+  </info>
+  <citation disambiguate-add-givenname="true"
+            givenname-disambiguation-rule="all-names">
+    <layout>
+      <names variable="author">
+        <name initialize-with="."/>
+      </names>
+    </layout>
+  </citation>
+  <bibliography>
+    <layout>
+      <names variable="author">
+        <name initialize-with="."/>
+      </names>
+      <names variable="editor" prefix=" (" suffix=")">
+        <name initialize-with="."/>
+      </names>
+    </layout>
+  </bibliography>
+</style>
+<<===== CSL =====<<
+
+
+>>===== INPUT =====>>
+[
+  {
+    "id": "ITEM-1",
+    "author": [{"given": "John", "family": "Doe"}],
+    "editor": [{"given": "Alan", "family": "Smith"}]
+  },
+  {
+    "id": "ITEM-2",
+    "author": [{"given": "Jane", "family": "Roe"}],
+    "editor": [{"given": "Alice", "family": "Smith"}]
+  }
+]
+<<===== INPUT =====<<
+
+
+>>===== VERSION =====>>
+1.0
+<<===== VERSION =====<<

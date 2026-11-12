@@ -1111,13 +1111,17 @@ class Names(CitationStylesElement, Parent, Formatted, Affixed, Delimited):
             ed_trans = False
 
         output = []
+        nameset_index = int(names_context.get('_disambig_index', '0'))
         for role in roles:
             if role in item.reference:
                 name_elem = names_context.name
                 if name_elem is None:
                     name_elem = Name()
                     names_context.insert(0, name_elem)
-                text = name_elem.render(item, role, context=context, **kwargs)
+                text = name_elem.render(
+                    item, role, context=context,
+                    nameset_index=nameset_index, **kwargs,
+                )
                 plural = len(item.reference[role]) > 1
                 try:
                     if ed_trans:
@@ -1191,7 +1195,8 @@ class Name(CitationStylesElement, Formatted, Affixed, Delimited):
             result = self.get_single_term(name='et-al')
         return result
 
-    def process(self, item, variable, context=None, sort_options=None, **kwargs):
+    def process(self, item, variable, context=None, sort_options=None,
+                nameset_index=0, **kwargs):
         def get_option(name):
             return self.get_option(name, context, sort_options)
 
@@ -1224,8 +1229,10 @@ class Name(CitationStylesElement, Formatted, Affixed, Delimited):
                     et_al_min = et_al_subseq_min
                     et_al_use_first = et_al_subseq_use_first
         _disambig = self.get_root().disambig_request or item.reference.get('_disambig')
-        if _disambig and _disambig.names:
-            et_al_use_first = max(et_al_use_first, _disambig.names[0])
+        if (_disambig and nameset_index < len(_disambig.names)):
+            et_al_use_first = max(
+                et_al_use_first, _disambig.names[nameset_index],
+            )
         et_al_use_last = get_option('et-al-use-last')
 
         initialize_with = get_option('initialize-with')
@@ -1267,8 +1274,10 @@ class Name(CitationStylesElement, Formatted, Affixed, Delimited):
                 given, family, dp, ndp, suffix = name.parts()
 
                 given_level = 0
-                if _disambig and _disambig.givens and i < len(_disambig.givens[0]):
-                    given_level = _disambig.givens[0][i]
+                if (_disambig
+                        and nameset_index < len(_disambig.givens)
+                        and i < len(_disambig.givens[nameset_index])):
+                    given_level = _disambig.givens[nameset_index][i]
 
                 if given is not None and initialize_with is not None and given_level != 2:
                     given = self.initialize(given, initialize_with, context)

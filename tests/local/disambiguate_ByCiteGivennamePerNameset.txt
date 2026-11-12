@@ -1,0 +1,57 @@
+>>===== MODE =====>>
+citation
+<<===== MODE =====<<
+
+
+>>===== DESCRIPTION =====>>
+By-cite expansion that resolves an author-name clash should not expand the
+given names of editors in a separate names element.
+<<===== DESCRIPTION =====<<
+
+
+>>===== RESULT =====>>
+John Smith (A. Smith); James Smith (A. Smith)
+<<===== RESULT =====<<
+
+
+>>===== CSL =====>>
+<style xmlns="http://purl.org/net/xbiblio/csl" class="note" version="1.0">
+  <info>
+    <id />
+    <title />
+    <updated>2026-11-12T00:00:00+00:00</updated>
+  </info>
+  <citation disambiguate-add-givenname="true"
+            givenname-disambiguation-rule="by-cite">
+    <layout delimiter="; ">
+      <names variable="author">
+        <name initialize-with="."/>
+      </names>
+      <names variable="editor" prefix=" (" suffix=")">
+        <name initialize-with="."/>
+      </names>
+    </layout>
+  </citation>
+</style>
+<<===== CSL =====<<
+
+
+>>===== INPUT =====>>
+[
+  {
+    "id": "ITEM-1",
+    "author": [{"given": "John", "family": "Smith"}],
+    "editor": [{"given": "Alan", "family": "Smith"}]
+  },
+  {
+    "id": "ITEM-2",
+    "author": [{"given": "James", "family": "Smith"}],
+    "editor": [{"given": "Alice", "family": "Smith"}]
+  }
+]
+<<===== INPUT =====<<
+
+
+>>===== VERSION =====>>
+1.0
+<<===== VERSION =====<<

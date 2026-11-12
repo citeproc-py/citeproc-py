@@ -1,0 +1,56 @@
+>>===== MODE =====>>
+citation
+<<===== MODE =====<<
+
+
+>>===== DESCRIPTION =====>>
+Disambiguate-add-names should expand only the names element whose names resolve
+the citation clash; identical editor lists should remain truncated.
+<<===== DESCRIPTION =====<<
+
+
+>>===== RESULT =====>>
+Smith, Jones (Adams et al.); Smith, Brown (Adams et al.)
+<<===== RESULT =====<<
+
+
+>>===== CSL =====>>
+<style xmlns="http://purl.org/net/xbiblio/csl" class="note" version="1.0">
+  <info>
+    <id />
+    <title />
+    <updated>2026-11-12T00:00:00+00:00</updated>
+  </info>
+  <citation disambiguate-add-names="true">
+    <layout delimiter="; ">
+      <names variable="author">
+        <name form="short" et-al-min="2" et-al-use-first="1"/>
+      </names>
+      <names variable="editor" prefix=" (" suffix=")">
+        <name form="short" et-al-min="2" et-al-use-first="1"/>
+      </names>
+    </layout>
+  </citation>
+</style>
+<<===== CSL =====<<
+
+
+>>===== INPUT =====>>
+[
+  {
+    "id": "ITEM-1",
+    "author": [{"family": "Smith"}, {"family": "Jones"}],
+    "editor": [{"family": "Adams"}, {"family": "Baker"}, {"family": "Clark"}]
+  },
+  {
+    "id": "ITEM-2",
+    "author": [{"family": "Smith"}, {"family": "Brown"}],
+    "editor": [{"family": "Adams"}, {"family": "Baker"}, {"family": "Clark"}]
+  }
+]
+<<===== INPUT =====<<
+
+
+>>===== VERSION =====>>
+1.0
+<<===== VERSION =====<<

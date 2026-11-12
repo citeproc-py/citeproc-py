@@ -45,6 +45,22 @@ def _merge_givens(a: list[int], b: list[int]) -> list[int]:
             for i in range(length)]
 
 
+def _merge_ambig_configs(config: AmbigConfig,
+                         oldconfig: AmbigConfig | None = None) -> AmbigConfig:
+    """Clone name state from config and preserve/merge prior item state."""
+    merged = clone_ambig_config(config, oldconfig)
+    if oldconfig is not None:
+        slot_count = max(len(merged.givens), len(oldconfig.givens))
+        merged.givens = [
+            _merge_givens(
+                merged.givens[index] if index < len(merged.givens) else [],
+                oldconfig.givens[index] if index < len(oldconfig.givens) else [],
+            )
+            for index in range(slot_count)
+        ]
+    return merged
+
+
 def _compute_ikey(given: str | None, initialize_with: str | None) -> str:
     """Compute the initials key used for name frequency tracking.
 
@@ -108,18 +124,9 @@ def get_ambiguous_cite(item, layout, disambig=None) -> str:
     if disambig is not None:
         stored = item.reference.get('_disambig')
         if stored and stored.givens:
-            merged = _merge_givens(
-                disambig.givens[0] if disambig.givens else [],
-                stored.givens[0],
-            )
-            if merged != (disambig.givens[0] if disambig.givens else []):
-                effective_disambig = AmbigConfig(
-                    names=list(disambig.names),
-                    givens=[merged],
-                    maxvals=list(disambig.maxvals),
-                    year_suffix=disambig.year_suffix,
-                    disambiguate=disambig.disambiguate,
-                )
+            merged = _merge_ambig_configs(disambig, stored)
+            if merged.givens != disambig.givens:
+                effective_disambig = merged
     root.disambig_request = effective_disambig
     try:
         with _just_looking(root):
@@ -141,32 +148,49 @@ class Disambiguation:
         self.bib = bib
         self.registry = {}      # str(item_id) → {'ambig': akey, 'disambig': AmbigConfig}
         self.ambigcites = {}    # akey → [str(item_id), ...]
-        self._name_vars = self._collect_name_vars()
+        self._nameset_variables = self._collect_namesets()
         self.bib._reset_disambiguation_state()
         self._build_registry()
 
-    def _collect_name_vars(self) -> frozenset[str]:
-        """Collect name variables from all <names> elements in the loaded style.
+    def _collect_namesets(self) -> list[tuple[str, ...]]:
+        """Assign stable disambiguation slots to names variable groups.
 
-        Searching the full style tree (not just the citation layout) captures
-        variables defined in macros. This is style-driven rather than based on
-        a static CSL spec list, so it stays accurate as styles evolve.
+        The same variable group is shared between citation and bibliography
+        renderings so citation disambiguation is reflected in the corresponding
+        bibliography names. Variables grouped in one <names> element share a
+        slot; separate groups such as author and editor receive separate slots.
         """
         style_root = self.bib.style.root
-        name_vars: set[str] = set()
+        namesets: list[tuple[str, ...]] = []
+        indices: dict[tuple[str, ...], int] = {}
         for names_el in style_root.findall('.//cs:names', style_root.nsmap):
-            for v in (names_el.get('variable') or '').split():
-                name_vars.add(v)
-        return frozenset(name_vars)
+            variables = tuple((names_el.get('variable') or '').split())
+            if variables not in indices:
+                indices[variables] = len(namesets)
+                namesets.append(variables)
+            names_el.set('_disambig_index', str(indices[variables]))
+        return namesets
+
+    def _nameset_max(self, item, nameset_index: int) -> int:
+        """Return the largest name list for this item and nameset."""
+        variables = self._nameset_variables[nameset_index]
+        return max((len(item.reference.get(variable, []))
+                    for variable in variables), default=0)
 
     def _build_registry(self):
         layout = self.bib.style.root.citation.layout
         for item in self.bib.items:
             item_id = str(item.key)
             akey = get_ambiguous_cite(item, layout)
+            maxvals = [max(self._nameset_max(item, index), 1)
+                       for index in range(len(self._nameset_variables))]
             self.registry[item_id] = {
                 'ambig': akey,
-                'disambig': AmbigConfig(names=[], givens=[], maxvals=[]),
+                'disambig': AmbigConfig(
+                    names=[1] * len(maxvals),
+                    givens=[[0] * maxval for maxval in maxvals],
+                    maxvals=maxvals,
+                ),
                 'item': item,
             }
             if akey not in self.ambigcites:
@@ -221,29 +245,32 @@ class Disambiguation:
         gd_rule = citation.get_option('givenname-disambiguation-rule')
         givens_max = 2 if (add_givenname and gd_rule == 'by-cite') else 0
 
-        # Max name count from actual item data (citeproc-js: maxNamesByItemId).
-        # Clamped to 1: anonymous items (no names for any variable) must still
-        # get a valid givens slot so the loop can run to exhaustion safely.
-        names_max = max(
-            max((len(self.registry[iid]['item'].reference.get(v, []))
-                 for v in self._name_vars),
-                default=0)
-            for iid in item_ids
-        )
-        names_max = max(names_max, 1)
+        # Track the maximum list length independently for each nameset. Clamping
+        # empty sets to one keeps anonymous items safe in the increment loop.
+        names_max = [
+            max(max(self._nameset_max(self.registry[iid]['item'], index), 1)
+                for iid in item_ids)
+            for index in range(len(self._nameset_variables))
+        ]
+        if not names_max:
+            return list(item_ids)
 
-        # Pre-initialize base and betterbase with givens slots for all author
-        # positions (citeproc-js: padBase — all levels start at 0)
-        base = AmbigConfig(names=[1], givens=[[0] * names_max], maxvals=[names_max])
-        betterbase = AmbigConfig(names=[1], givens=[[0] * names_max], maxvals=[names_max])
+        # Each nameset has an independent count and given-name vector.
+        base = AmbigConfig(
+            names=[1] * len(names_max),
+            givens=[[0] * maxval for maxval in names_max],
+            maxvals=list(names_max),
+        )
+        betterbase = clone_ambig_config(base)
         improved = False
-        gname = 0  # cursor: which author position we're currently expanding givens for
+        nameset_index = 0
+        gname = 0  # current person position in the nameset being expanded
         prev_distinct = 1  # distinct render count at the last improvement step
 
         active_ids = list(item_ids)
         registered: dict[str, AmbigConfig] = {}
 
-        while True:
+        while nameset_index < len(names_max):
             renders = {
                 iid: get_ambiguous_cite(self.registry[iid]['item'], layout, disambig=base)
                 for iid in active_ids
@@ -254,8 +281,10 @@ class Disambiguation:
                 # improvement — partial capture (citeproc-js: captureStepToBase)
                 # Only write the changed position so earlier over-incremented
                 # levels don't pollute betterbase.
-                betterbase.names[0] = base.names[0]
-                betterbase.givens[0][gname] = base.givens[0][gname]
+                betterbase.names[nameset_index] = base.names[nameset_index]
+                betterbase.givens[nameset_index][gname] = (
+                    base.givens[nameset_index][gname]
+                )
                 improved = True
                 prev_distinct = current_distinct
 
@@ -265,26 +294,30 @@ class Disambiguation:
                 for iid in list(active_ids):
                     if render_counts[renders[iid]] == 1:
                         old = self.registry[iid]['disambig']
-                        registered[iid] = AmbigConfig(
-                            names=list(betterbase.names),
-                            givens=[_merge_givens(betterbase.givens[0], old.givens[0] if old.givens else [])],
-                            maxvals=[names_max],
-                            year_suffix=old.year_suffix,
-                            disambiguate=old.disambiguate,
+                        registered[iid] = _merge_ambig_configs(
+                            betterbase, old,
                         )
+                        registered[iid].maxvals = [
+                            max(self._nameset_max(
+                                self.registry[iid]['item'], index,
+                            ), 1)
+                            for index in range(len(names_max))
+                        ]
                         active_ids.remove(iid)
 
                 # If one item remains it has no one left to clash with.
                 if len(active_ids) == 1:
                     iid = active_ids[0]
                     old = self.registry[iid]['disambig']
-                    registered[iid] = AmbigConfig(
-                        names=list(betterbase.names),
-                        givens=[_merge_givens(betterbase.givens[0], old.givens[0] if old.givens else [])],
-                        maxvals=[names_max],
-                        year_suffix=old.year_suffix,
-                        disambiguate=old.disambiguate,
+                    registered[iid] = _merge_ambig_configs(
+                        betterbase, old,
                     )
+                    registered[iid].maxvals = [
+                        max(self._nameset_max(
+                            self.registry[iid]['item'], index,
+                        ), 1)
+                        for index in range(len(names_max))
+                    ]
                     active_ids = []
 
                 # After resolving some items, reset prev_distinct relative to
@@ -296,18 +329,21 @@ class Disambiguation:
                 break
 
             # incrementDisambig: priority order from citeproc-js
-            if givens_max and base.givens[0][gname] < givens_max:
-                # Step 1: expand given name for current author
-                base.givens[0][gname] += 1
-            elif add_names and base.names[0] < names_max:
-                # Step 2: reveal next author, advance cursor to newly exposed position
-                base.names[0] += 1
+            if (givens_max
+                    and base.givens[nameset_index][gname] < givens_max):
+                # Expand the given name at the current position in this set.
+                base.givens[nameset_index][gname] += 1
+            elif (add_names
+                  and base.names[nameset_index] < names_max[nameset_index]):
+                # Reveal the next name in this set before moving to the next set.
+                base.names[nameset_index] += 1
                 gname += 1
-            elif givens_max and gname < names_max - 1:
-                # Given-name-only disambiguation still tries the next rendered author.
+            elif givens_max and gname < names_max[nameset_index] - 1:
+                # Given-name-only disambiguation tries each rendered name.
                 gname += 1
             else:
-                break  # all options exhausted
+                nameset_index += 1
+                gname = 0
 
         if not improved:
             return list(item_ids)
@@ -317,13 +353,15 @@ class Disambiguation:
                 new_config = registered[item_id]
             else:
                 old = self.registry[item_id]['disambig']
-                new_config = AmbigConfig(
-                    names=list(betterbase.names),
-                    givens=[_merge_givens(betterbase.givens[0], old.givens[0] if old.givens else [])],
-                    maxvals=[names_max],
-                    year_suffix=old.year_suffix,
-                    disambiguate=old.disambiguate,
+                new_config = _merge_ambig_configs(
+                    betterbase, old,
                 )
+                new_config.maxvals = [
+                    max(self._nameset_max(
+                        self.registry[item_id]['item'], index,
+                    ), 1)
+                    for index in range(len(names_max))
+                ]
             self.registry[item_id]['disambig'] = new_config
             self.bib.source[item_id]['_disambig'] = new_config
 
@@ -420,81 +458,84 @@ class Disambiguation:
         primary_only = gd_rule.startswith('primary-name')
         with_initials_only = 'with-initials' in gd_rule
 
-        # Search the full style tree for initialize-with because citation
-        # <name> elements may be defined in macros, not directly in the layout.
+        # Find initialize-with within each nameset. Name elements may be defined
+        # in macros rather than directly in the citation or bibliography layout.
         style_root = self.bib.style.root
-        initialize_with: str | None = None
-        for name_el in style_root.findall('.//cs:name', style_root.nsmap):
-            iw = name_el.get('initialize-with')
-            if iw is not None:
-                initialize_with = iw
-                break
+        nameset_initialize_with: list[str | None] = [None] * len(
+            self._nameset_variables,
+        )
+        for names_el in style_root.findall('.//cs:names', style_root.nsmap):
+            slot = int(names_el.get('_disambig_index', '0'))
+            if nameset_initialize_with[slot] is not None:
+                continue
+            for name_el in names_el.findall('cs:name', style_root.nsmap):
+                initialize_with = name_el.get('initialize-with')
+                if initialize_with is not None:
+                    nameset_initialize_with[slot] = initialize_with
+                    break
 
-        # Build namereg: rendered_family → {ikey: set_of_normalized_given_names}
-        # A family name gets level 1 when it has >1 distinct ikey (distinct initials).
-        # An ikey gets level 2 when it maps to >1 distinct given name (same initials clash).
-        # pkey uses the rendered family form (ndp + family) so "dos Santos" ≠ "Santos".
-        # skey is the normalized given name so "J. J." == "J.J." don't trigger expansion.
-        namereg: dict[str, dict[str, set[str]]] = {}
-        for entry in self.registry.values():
-            item = entry['item']
-            for var in self._name_vars:
-                names_list = item.reference.get(var, [])
-                for pos, name in enumerate(names_list):
-                    if primary_only and pos > 0:
-                        break
-                    given, family, _dp, ndp, _suffix = name.parts()
-                    if not family:
-                        continue
-                    pkey = ' '.join(n for n in (ndp, family) if n)
-                    ikey = _compute_ikey(given, initialize_with)
-                    skey = ' '.join(given.replace('.', ' ').split()).lower() if given else ''
-                    namereg.setdefault(pkey, {}).setdefault(ikey, set()).add(skey)
+        for slot, variables in enumerate(self._nameset_variables):
+            initialize_with = nameset_initialize_with[slot]
 
-        # Assign levels and write back to each item's AmbigConfig
-        for item_id, entry in self.registry.items():
-            item = entry['item']
-            modified = False
-            for var in self._name_vars:
-                names_list = item.reference.get(var, [])
-                if not names_list:
-                    continue
-                names_max = len(names_list)
-                for pos, name in enumerate(names_list):
-                    if primary_only and pos > 0:
-                        break
-                    given, family, _dp, ndp, _suffix = name.parts()
-                    if not family:
-                        continue
-                    pkey = ' '.join(n for n in (ndp, family) if n)
-                    if pkey not in namereg:
-                        continue
-                    ikeys_for_family = namereg[pkey]
-                    ikey = _compute_ikey(given, initialize_with)
+            # Build namereg: rendered_family → {ikey: set_of_given_names} for
+            # this nameset only. A family receives initials at level 1 when it
+            # has distinct initials, and full given names at level 2 when
+            # initials collide. Combined variables intentionally share a registry.
+            namereg: dict[str, dict[str, set[str]]] = {}
+            for entry in self.registry.values():
+                item = entry['item']
+                for var in variables:
+                    names_list = item.reference.get(var, [])
+                    for pos, name in enumerate(names_list):
+                        if primary_only and pos > 0:
+                            break
+                        given, family, _dp, ndp, _suffix = name.parts()
+                        if not family:
+                            continue
+                        # Key the family by its rendered form, including the
+                        # non-dropping particle (so "dos Santos" differs from
+                        # "Santos"). Normalize the full given name separately
+                        # so punctuation/spacing variants such as "J. J." and
+                        # "J.J." count as the same name when detecting clashes.
+                        pkey = ' '.join(n for n in (ndp, family) if n)
+                        ikey = _compute_ikey(given, initialize_with)
+                        skey = (' '.join(given.replace('.', ' ').split()).lower()
+                                if given else '')
+                        namereg.setdefault(pkey, {}).setdefault(ikey, set()).add(skey)
 
-                    level = 0
-                    if len(ikeys_for_family) > 1:
-                        level = 1
-                    if not with_initials_only:
-                        if initialize_with is None and level > 0:
-                            level = 2
-                        elif ikey in ikeys_for_family and len(ikeys_for_family[ikey]) > 1:
-                            level = 2
+            # Assign independent levels per nameset and name position.
+            for item_id, entry in self.registry.items():
+                item = entry['item']
+                modified = False
+                for var in variables:
+                    names_list = item.reference.get(var, [])
+                    for pos, name in enumerate(names_list):
+                        if primary_only and pos > 0:
+                            break
+                        given, family, _dp, ndp, _suffix = name.parts()
+                        if not family:
+                            continue
+                        pkey = ' '.join(n for n in (ndp, family) if n)
+                        ikeys_for_family = namereg.get(pkey)
+                        if not ikeys_for_family:
+                            continue
+                        ikey = _compute_ikey(given, initialize_with)
 
-                    if level == 0:
-                        continue
+                        level = 0
+                        if len(ikeys_for_family) > 1:
+                            level = 1
+                        if not with_initials_only:
+                            if initialize_with is None and level > 0:
+                                level = 2
+                            elif (ikey in ikeys_for_family
+                                  and len(ikeys_for_family[ikey]) > 1):
+                                level = 2
 
-                    disambig = entry['disambig']
-                    if not disambig.givens:
-                        disambig.names = [1]
-                        disambig.maxvals = [names_max]
-                        disambig.givens = [[0] * names_max]
-                    elif len(disambig.givens[0]) < names_max:
-                        disambig.givens[0].extend([0] * (names_max - len(disambig.givens[0])))
+                        if level:
+                            entry['disambig'].givens[slot][pos] = max(
+                                entry['disambig'].givens[slot][pos], level,
+                            )
+                            modified = True
 
-                    if pos < len(disambig.givens[0]):
-                        disambig.givens[0][pos] = max(disambig.givens[0][pos], level)
-                        modified = True
-
-            if modified:
-                self.bib.source[item_id]['_disambig'] = entry['disambig']
+                if modified:
+                    self.bib.source[item_id]['_disambig'] = entry['disambig']
