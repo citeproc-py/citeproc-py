@@ -628,6 +628,10 @@ class Macro(CitationStylesElement, Parent):
 
 
 class Layout(CitationStylesElement, Parent, Formatted, Affixed, Delimited):
+    # Fields used by the current substitute candidate. Suppression starts only
+    # after the candidate succeeds, so repeated fields within it still render.
+    substitute_variables = None
+
     def render_citation(self, citation, callback):
         # first sort citation items according to bibliography order
         bibliography = citation.bibliography
@@ -769,7 +773,8 @@ class Text(CitationStylesElement, FormatNumber, Formatted, Affixed, Quoted,
 
     def _variable(self, item, context):
         variable = self.get('variable')
-        repressed = context.get_layout().repressed
+        layout = context.get_layout()
+        repressed = layout.repressed
         if self.tag in repressed and variable in repressed[self.tag]:
             return None
 
@@ -787,6 +792,13 @@ class Text(CitationStylesElement, FormatNumber, Formatted, Affixed, Quoted,
             text = str(item.locator.identifier).replace('-', en_dash)
         else:
             text = item.reference[variable.replace('-', '_')]
+
+        # A substitute can reach this field through macros, groups or a
+        # selected branch. Record the fields actually used, rather than the
+        # attributes of the substitute's immediate child.
+        variables = layout.substitute_variables
+        if text and variables is not None:
+            variables.add((self.tag, self.get('variable')))
 
         return text
 
@@ -1313,29 +1325,39 @@ class Et_Al(CitationStylesElement, Formatted, Affixed):
 
 class Substitute(CitationStylesElement, Parent):
     def render(self, item, context=None, **kwargs):
-        for child in self.getchildren():
-            try:
-                if isinstance(child, Names) and child.name is None:
-                    names = self.xpath_search('./parent::cs:names[1]')[0]
-                    text = child.render(item, names_context=names,
-                                        context=context, **kwargs)
-                else:
-                    text = child.render(item, context=context, **kwargs)
-            except VariableError:
-                continue
-            if text:
-                self.add_to_repressed_list(child, context)
-                break
-        try:
-            return text
-        except NameError:
-            return None
-
-    def add_to_repressed_list(self, child, context):
         layout = context.get_layout()
-        tag_list = layout.repressed.get(child.tag, [])
-        tag_list.append(child.get('variable'))
-        layout.repressed[child.tag] = tag_list
+        previous = layout.substitute_variables
+        variables = layout.substitute_variables = set()
+        try:
+            for child in self.getchildren():
+                variables.clear()
+                try:
+                    if isinstance(child, Names) and child.name is None:
+                        names = self.xpath_search('./parent::cs:names[1]')[0]
+                        text = child.render(item, names_context=names,
+                                            context=context, **kwargs)
+                    else:
+                        text = child.render(item, context=context, **kwargs)
+                except VariableError:
+                    continue
+                if text:
+                    variable = child.get('variable')
+                    if variable is not None:
+                        variables.add((child.tag, variable))
+                    self.add_to_repressed_list(variables, context)
+                    if previous is not None:
+                        previous.update(variables)
+                    return text
+        finally:
+            # Nested substitutes contribute to their parent's successful
+            # candidate; failed candidates and exceptions must not leak state.
+            layout.substitute_variables = previous
+        return None
+
+    def add_to_repressed_list(self, variables, context):
+        layout = context.get_layout()
+        for tag, variable in variables:
+            layout.repressed.setdefault(tag, []).append(variable)
 
 
 class Label(CitationStylesElement, Formatted, Affixed, StrippedPeriods,
