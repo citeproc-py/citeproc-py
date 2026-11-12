@@ -1,0 +1,76 @@
+>>===== MODE =====>>
+citation
+<<===== MODE =====<<
+
+
+>>===== DESCRIPTION =====>>
+With by-cite given-name expansion and add-names enabled, revealing a second
+author should not reveal a second editor from a separate names element.
+<<===== DESCRIPTION =====<<
+
+
+>>===== RESULT =====>>
+Smith, Jones, et al. (Adams et al.); Smith, Brown, et al. (Adams et al.)
+<<===== RESULT =====<<
+
+
+>>===== CSL =====>>
+<style xmlns="http://purl.org/net/xbiblio/csl" class="note" version="1.0">
+  <info>
+    <id />
+    <title />
+    <updated>2026-11-12T00:00:00+00:00</updated>
+  </info>
+  <citation disambiguate-add-names="true"
+            disambiguate-add-givenname="true"
+            givenname-disambiguation-rule="by-cite">
+    <layout delimiter="; ">
+      <names variable="author">
+        <name form="short" initialize-with="."
+              et-al-min="2" et-al-use-first="1"/>
+      </names>
+      <names variable="editor" prefix=" (" suffix=")">
+        <name form="short" initialize-with="."
+              et-al-min="2" et-al-use-first="1"/>
+      </names>
+    </layout>
+  </citation>
+</style>
+<<===== CSL =====<<
+
+
+>>===== INPUT =====>>
+[
+  {
+    "id": "ITEM-1",
+    "author": [
+      {"given": "Alan", "family": "Smith"},
+      {"given": "John", "family": "Jones"},
+      {"given": "Alex", "family": "Gray"}
+    ],
+    "editor": [
+      {"family": "Adams"},
+      {"family": "Baker"},
+      {"family": "Clark"}
+    ]
+  },
+  {
+    "id": "ITEM-2",
+    "author": [
+      {"given": "Alan", "family": "Smith"},
+      {"given": "Jane", "family": "Brown"},
+      {"given": "Alex", "family": "White"}
+    ],
+    "editor": [
+      {"family": "Adams"},
+      {"family": "Baker"},
+      {"family": "Clark"}
+    ]
+  }
+]
+<<===== INPUT =====<<
+
+
+>>===== VERSION =====>>
+1.0
+<<===== VERSION =====<<

@@ -1,0 +1,57 @@
+>>===== MODE =====>>
+citation
+<<===== MODE =====<<
+
+
+>>===== DESCRIPTION =====>>
+An editor given-name clash under the all-names rule should not force given-name
+expansion on unambiguous authors in a separate names element.
+<<===== DESCRIPTION =====<<
+
+
+>>===== RESULT =====>>
+J. Doe (Alan Smith); J. Roe (Alice Smith)
+<<===== RESULT =====<<
+
+
+>>===== CSL =====>>
+<style xmlns="http://purl.org/net/xbiblio/csl" class="note" version="1.0">
+  <info>
+    <id />
+    <title />
+    <updated>2026-11-12T00:00:00+00:00</updated>
+  </info>
+  <citation disambiguate-add-givenname="true"
+            givenname-disambiguation-rule="all-names">
+    <layout delimiter="; ">
+      <names variable="author">
+        <name initialize-with="."/>
+      </names>
+      <names variable="editor" prefix=" (" suffix=")">
+        <name initialize-with="."/>
+      </names>
+    </layout>
+  </citation>
+</style>
+<<===== CSL =====<<
+
+
+>>===== INPUT =====>>
+[
+  {
+    "id": "ITEM-1",
+    "author": [{"given": "John", "family": "Doe"}],
+    "editor": [{"given": "Alan", "family": "Smith"}]
+  },
+  {
+    "id": "ITEM-2",
+    "author": [{"given": "Jane", "family": "Roe"}],
+    "editor": [{"given": "Alice", "family": "Smith"}]
+  }
+]
+<<===== INPUT =====<<
+
+
+>>===== VERSION =====>>
+1.0
+<<===== VERSION =====<<
