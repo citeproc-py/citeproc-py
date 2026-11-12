@@ -1,0 +1,59 @@
+>>===== MODE =====>>
+citation
+<<===== MODE =====<<
+
+
+>>===== DESCRIPTION =====>>
+Implicit year-suffix disambiguation must place the suffix immediately after the
+rendered year date-part, even when another date-part follows it.
+<<===== DESCRIPTION =====<<
+
+
+>>===== RESULT =====>>
+Smith 1980a May; Smith 1980b May
+<<===== RESULT =====<<
+
+
+>>===== CSL =====>>
+<style xmlns="http://purl.org/net/xbiblio/csl" class="in-text" version="1.0">
+  <info>
+    <title>Year suffix placement</title>
+    <id>test-year-suffix-after-year-part</id>
+    <updated>2026-11-12T00:00:00+00:00</updated>
+  </info>
+  <citation disambiguate-add-year-suffix="true">
+    <layout delimiter="; ">
+      <names variable="author">
+        <name form="short"/>
+      </names>
+      <date variable="issued" prefix=" ">
+        <date-part name="year"/>
+        <date-part name="month" prefix=" " form="short"/>
+      </date>
+    </layout>
+  </citation>
+</style>
+<<===== CSL =====<<
+
+
+>>===== INPUT =====>>
+[
+  {
+    "id": "a",
+    "type": "book",
+    "author": [{"family": "Smith"}],
+    "issued": {"date-parts": [[1980, 5]]}
+  },
+  {
+    "id": "b",
+    "type": "book",
+    "author": [{"family": "Smith"}],
+    "issued": {"date-parts": [[1980, 5]]}
+  }
+]
+<<===== INPUT =====<<
+
+
+>>===== VERSION =====>>
+1.0
+<<===== VERSION =====<<

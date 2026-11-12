@@ -844,23 +844,26 @@ class Date(CitationStylesElement, Parent, Formatted, Affixed, Delimited):
         except IndexError:
             return False
 
-    def render_single_date(self, date, show_parts=None, context=None):
+    def render_single_date(self, date, show_parts=None, context=None,
+                           year_suffix=None, item=None):
         if context != self:
-            parts = self.parts(date, show_parts, context)
+            parts = self.parts(date, show_parts, context, year_suffix, item)
         else:
-            parts = self.parts(date, show_parts)
+            parts = self.parts(date, show_parts, year_suffix=year_suffix,
+                               item=item)
         if parts:
             style_context = context if self.is_locale_date() else self
             return style_context.join(parts)
         else:
             return None
 
-    def render_date_range(self, date_range, show_parts=None, context=None):
+    def render_date_range(self, date_range, show_parts=None, context=None,
+                          year_suffix=None, item=None):
         same_show_parts = []
         if date_range.end.is_nil():
             same = None
             diff_begin = self.render_single_date(date_range.begin, show_parts,
-                                                 context)
+                                                 context, year_suffix, item)
             diff_end = ''
         else:
             if date_range.begin.year == date_range.end.year:
@@ -881,12 +884,15 @@ class Date(CitationStylesElement, Parent, Formatted, Affixed, Delimited):
                 except AttributeError:
                     show_parts.remove('month')
 
-            same = self.render_single_date(date_range.end, same_show_parts,
-                                           context)
-            diff_begin = self.render_single_date(date_range.begin, show_parts,
-                                                 context)
-            diff_end = self.render_single_date(date_range.end, show_parts,
-                                               context)
+            same = self.render_single_date(
+                date_range.end, same_show_parts, context, year_suffix, item,
+            )
+            diff_begin = self.render_single_date(
+                date_range.begin, show_parts, context, year_suffix, item,
+            )
+            diff_end = self.render_single_date(
+                date_range.end, show_parts, context, year_suffix, item,
+            )
 
         if not (diff_begin and diff_begin):
             return None
@@ -913,6 +919,16 @@ class Date(CitationStylesElement, Parent, Formatted, Affixed, Delimited):
         if context.get_root().just_looking and variable == 'accessed':
             return None
 
+        year_suffix = None
+        if (variable == 'issued'
+                and not self.get_root().just_looking
+                and not context.get_root().has_explicit_year_suffix_element()
+                and not item.get('has_done_year_suffix', False)):
+            try:
+                year_suffix = item.reference['year_suffix']
+            except (KeyError, AttributeError, VariableError):
+                pass
+
         form = self.get('form')
         date_parts = self.get('date-parts')
         if not self.is_locale_date() and form is not None:
@@ -929,34 +945,36 @@ class Date(CitationStylesElement, Parent, Formatted, Affixed, Delimited):
                 text = date_or_range.text
             elif isinstance(date_or_range, DateRange):
                 text = self.render_date_range(date_or_range, show_parts,
-                                              context)
+                                              context, year_suffix, item)
             else:
-                text = self.render_single_date(date_or_range, show_parts,
-                                               context)
+                text = self.render_single_date(
+                    date_or_range, show_parts, context, year_suffix, item,
+                )
             if text is not None:
-                if (variable == 'issued'
-                        and not self.get_root().just_looking
-                        and not context.get_root().has_explicit_year_suffix_element()
+                if (year_suffix
                         and not item.get('has_done_year_suffix', False)):
-                    try:
-                        year_suffix = item.reference['year_suffix']
-                        if year_suffix:
-                            item.has_done_year_suffix = True
-                            text = text + year_suffix
-                    except (KeyError, AttributeError, VariableError):
-                        pass
+                    # Preserve suffix behavior for literal dates or formats
+                    # that don't render a year date-part.
+                    item.has_done_year_suffix = True
+                    text = text + year_suffix
                 style_context = context if self.is_locale_date() else self
                 return style_context.wrap(text)
             else:
                 return None
 
-    def parts(self, date, show_parts, context=None):
+    def parts(self, date, show_parts, context=None, year_suffix=None,
+              item=None):
         output = []
         for part in self.iterchildren():
             if part.get('name') in show_parts:
                 try:
                     part_text = part.render(date, context)
                     if part_text is not None:
+                        if (part.get('name') == 'year' and year_suffix
+                                and item is not None
+                                and not item.get('has_done_year_suffix', False)):
+                            part_text += year_suffix
+                            item.has_done_year_suffix = True
                         output.append(part_text)
                 except VariableError:
                     pass
