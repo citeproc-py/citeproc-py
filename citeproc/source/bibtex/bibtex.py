@@ -38,6 +38,9 @@ class BibTeX(BibliographySource):
 #              'year': None,
               'volume': 'volume',
 
+              'doi': 'DOI',
+              'url': 'URL',
+
               # non-standard fields
               'isbn': 'ISBN',
               'issn': 'ISSN'}
